@@ -7,13 +7,14 @@
 import SwiftUI
 
 
-enum CalendarViewType {
-    case standard
-    case listBullet
+enum CalendarViewType: String {
+    case standard = "standard"
+    case listBullet = "listBullet"
 }
 
 struct MainView: View {
-    @State private var viewType: CalendarViewType = .standard
+    @EnvironmentObject private var appSettings: AppSettings
+    @State private var calendarViewType: CalendarViewType = .standard
     @State private var tabSelection = 0
     
     var body: some View {
@@ -21,7 +22,7 @@ struct MainView: View {
             TabView(selection: $tabSelection) {
                 NavigationStack {
                     Group {
-                        switch viewType {
+                        switch calendarViewType {
                         case .standard:
                             CalendarView()
                         case .listBullet:
@@ -32,10 +33,10 @@ struct MainView: View {
                         ToolbarItem(placement: .topBarTrailing) {
                             Button {
                                 withAnimation {
-                                    viewType = viewType == .standard ? .listBullet : .standard
+                                    calendarViewType = calendarViewType == .standard ? .listBullet : .standard
                                 }
                             } label: {
-                                Image(systemName: viewType == .standard ? "list.bullet.below.rectangle" : "list.dash.header.rectangle")
+                                Image(systemName: calendarViewType == .standard ? "list.bullet.below.rectangle" : "list.dash.header.rectangle")
                             }
                         }
                     }
@@ -44,7 +45,6 @@ struct MainView: View {
                     Label("Calendar", systemImage: "calendar")
                 }
                 .tag(0)
-                
                 
                 NavigationStack {
                     SubscriptionListView()
@@ -55,10 +55,10 @@ struct MainView: View {
                 .tag(1)
                 
                 NavigationStack {
-                    Text("Analytics view coming soon")
-                        .padding()
+//                    Text("Analyze with Screen Time API coming soon...")
+                    AnalyticsView()
                 }
-                .tabItem {
+                 .tabItem {
                     Label("Analytics", systemImage: "chart.bar")
                 }
                 .tag(2)
@@ -72,10 +72,15 @@ struct MainView: View {
                 .tag(3)
             }
             .tint(.blue)
+            .onAppear {
+                self.calendarViewType = appSettings.defaultCalendarView
+                self.tabSelection = appSettings.defaultTab
+            }
         }
     }
 }
 
 #Preview {
     MainView()
+        .environmentObject(AppSettings())
 }

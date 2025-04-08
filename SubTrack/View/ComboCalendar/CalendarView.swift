@@ -1,14 +1,14 @@
 //
-//  ComboCalendarView.swift
+//  CalendarView.swift
 //  SubTrack
 //
-//  Created by Sam on 2025/3/19.
+//  Created by Sam on 2025/3/16.
 //
 import SwiftUI
 import SwiftData
 
 
-struct ComboCalendarView: View {
+struct CalendarView: View {
     @EnvironmentObject private var appSettings: AppSettings
     @Environment(\.modelContext) private var modelContext
     
@@ -26,32 +26,27 @@ struct ComboCalendarView: View {
     // Repository
     @State private var repository: SubscriptionRepository?
     
-    private let weekdays = ["Sat", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: 15), count: 7)
+    private let weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+    private let columns = Array(repeating: GridItem(.flexible(), spacing:  0), count: 7)
     
     var body: some View {
-        VStack(spacing: 0) {
-            ScrollView {
-                VStack(spacing: 20) {
-                    monthSelectorView
-                    
-                    weekdayHeaderView
-                    
-                    if isLoading {
-                        ProgressView()
-                            .frame(height: 300)
-                    } else {
+        GeometryReader { geometry in
+            VStack(spacing: 20) {
+                monthSelectorView
+                    .padding(.horizontal)
+                
+                weekdayHeaderView
+                
+                if isLoading {
+                    ProgressView()
+                        .frame(height: 300)
+                } else {
+                    ScrollView {
                         calendarGridView
                     }
-                    
-                    if let selectedDate = selectedDate {
-                        selectedDateView(for: selectedDate)
-                            .padding(.top)
-                    }
                 }
-                .padding(.horizontal)
-                .padding(.top, 10)
             }
+            .padding(.top, 10)
         }
         .navigationTitle("Total Costs: \(formattedMonthlyTotal(currency: appSettings.currencyCode))")
         .navigationBarTitleDisplayMode(.inline)
@@ -65,8 +60,9 @@ struct ComboCalendarView: View {
             }
         }
         .sheet(isPresented: $showAddSubscription) {
-            AddSubscriptionView()
-                .presentationDetents([.medium, .large])
+            NavigationStack {
+                AddSubscriptionView()
+            }
         }
         .alert(
             Text("Error"),
@@ -84,6 +80,7 @@ struct ComboCalendarView: View {
             generateCalendarDates()
         }
         .onChange(of: subscriptions) { _, _ in
+            // Refresh calendar when subscriptions change
             generateCalendarDates()
         }
     }
@@ -168,9 +165,9 @@ struct ComboCalendarView: View {
     }
     
     private var calendarGridView: some View {
-        LazyVGrid(columns: columns, spacing: 2) {
+        LazyVGrid(columns: columns, spacing: 0) {
             ForEach(calendarDates) { calendarDate in
-                ComboCalendarDayView(
+                CalendarDayView(
                     calendarDate: calendarDate,
                     isSelected: selectedDate?.date == calendarDate.date,
                     isToday: isToday(date: calendarDate.date)
@@ -180,7 +177,6 @@ struct ComboCalendarView: View {
                 }
             }
         }
-        .padding(.horizontal)
     }
     
     private func selectedDateView(for date: CalendarDate) -> some View {
@@ -366,8 +362,9 @@ struct ComboCalendarView: View {
 }
 
 // Preview Provider
-struct ComboCalendarView_Previews: PreviewProvider {
+struct CalendarView_Previews: PreviewProvider {
     static var previews: some View {
-        ComboCalendarView()
+        CalendarView()
+            .environmentObject(AppSettings())
     }
 }

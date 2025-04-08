@@ -26,9 +26,15 @@ struct SubscriptionListItemView: View {
                 Text(subscription.name)
                     .font(.headline)
                 
-                Text(subscription.billingCycle.description)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                if appSettings.subscriptionDisplayStyle == .billingCycle {
+                    Text(subscription.billingCycle.description)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text(subscription.nextBillingDate.formatted(date: .abbreviated, time: .omitted))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
             
             Spacer()

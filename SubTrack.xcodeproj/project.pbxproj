@@ -6,7 +6,18 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		222983272DA3B28800B29732 /* monitorExtension.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = 2229831B2DA3B28800B29732 /* monitorExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
+		222983252DA3B28800B29732 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 22B399F72D87096100675103 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2229831A2DA3B28800B29732;
+			remoteInfo = monitorExtension;
+		};
 		22B39A132D87096300675103 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 22B399F72D87096100675103 /* Project object */;
@@ -23,13 +34,61 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		22C02AB42DA2F64200C37B68 /* Embed ExtensionKit Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(EXTENSIONS_FOLDER_PATH)";
+			dstSubfolderSpec = 16;
+			files = (
+				222983272DA3B28800B29732 /* monitorExtension.appex in Embed ExtensionKit Extensions */,
+			);
+			name = "Embed ExtensionKit Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		2229831B2DA3B28800B29732 /* monitorExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = monitorExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		22B399FF2D87096100675103 /* SubTrack.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SubTrack.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		22B39A122D87096300675103 /* SubTrackTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SubTrackTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		22B39A1C2D87096300675103 /* SubTrackUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SubTrackUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		222983492DA4E78200B29732 /* Exceptions for "monitorExtension" folder in "SubTrackUITests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+				Localizable.xcstrings,
+				monitorExtension.swift,
+				TotalActivityReport.swift,
+				TotalActivityView.swift,
+			);
+			target = 22B39A1B2D87096300675103 /* SubTrackUITests */;
+		};
+		2229834A2DA4E78200B29732 /* Exceptions for "monitorExtension" folder in "monitorExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Localizable.xcstrings,
+				monitorExtension.swift,
+				TotalActivityReport.swift,
+				TotalActivityView.swift,
+			);
+			target = 2229831A2DA3B28800B29732 /* monitorExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		222983452DA4E78100B29732 /* monitorExtension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				222983492DA4E78200B29732 /* Exceptions for "monitorExtension" folder in "SubTrackUITests" target */,
+				2229834A2DA4E78200B29732 /* Exceptions for "monitorExtension" folder in "monitorExtension" target */,
+			);
+			path = monitorExtension;
+			sourceTree = "<group>";
+		};
 		22B39A012D87096100675103 /* SubTrack */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = SubTrack;
@@ -48,6 +107,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		222983182DA3B28800B29732 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		22B399FC2D87096100675103 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -78,6 +144,7 @@
 				22B39A012D87096100675103 /* SubTrack */,
 				22B39A152D87096300675103 /* SubTrackTests */,
 				22B39A1F2D87096300675103 /* SubTrackUITests */,
+				222983452DA4E78100B29732 /* monitorExtension */,
 				22B39A002D87096100675103 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -88,6 +155,7 @@
 				22B399FF2D87096100675103 /* SubTrack.app */,
 				22B39A122D87096300675103 /* SubTrackTests.xctest */,
 				22B39A1C2D87096300675103 /* SubTrackUITests.xctest */,
+				2229831B2DA3B28800B29732 /* monitorExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -95,6 +163,25 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		2229831A2DA3B28800B29732 /* monitorExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 222983292DA3B28800B29732 /* Build configuration list for PBXNativeTarget "monitorExtension" */;
+			buildPhases = (
+				222983172DA3B28800B29732 /* Sources */,
+				222983182DA3B28800B29732 /* Frameworks */,
+				222983192DA3B28800B29732 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = monitorExtension;
+			packageProductDependencies = (
+			);
+			productName = monitorExtension;
+			productReference = 2229831B2DA3B28800B29732 /* monitorExtension.appex */;
+			productType = "com.apple.product-type.extensionkit-extension";
+		};
 		22B399FE2D87096100675103 /* SubTrack */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 22B39A262D87096300675103 /* Build configuration list for PBXNativeTarget "SubTrack" */;
@@ -102,10 +189,12 @@
 				22B399FB2D87096100675103 /* Sources */,
 				22B399FC2D87096100675103 /* Frameworks */,
 				22B399FD2D87096100675103 /* Resources */,
+				22C02AB42DA2F64200C37B68 /* Embed ExtensionKit Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				222983262DA3B28800B29732 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				22B39A012D87096100675103 /* SubTrack */,
@@ -154,6 +243,7 @@
 				22B39A1E2D87096300675103 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
+				222983452DA4E78100B29732 /* monitorExtension */,
 				22B39A1F2D87096300675103 /* SubTrackUITests */,
 			);
 			name = SubTrackUITests;
@@ -170,9 +260,12 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1620;
-				LastUpgradeCheck = 1620;
+				LastSwiftUpdateCheck = 1630;
+				LastUpgradeCheck = 1630;
 				TargetAttributes = {
+					2229831A2DA3B28800B29732 = {
+						CreatedOnToolsVersion = 16.3;
+					};
 					22B399FE2D87096100675103 = {
 						CreatedOnToolsVersion = 16.2;
 					};
@@ -204,11 +297,19 @@
 				22B399FE2D87096100675103 /* SubTrack */,
 				22B39A112D87096300675103 /* SubTrackTests */,
 				22B39A1B2D87096300675103 /* SubTrackUITests */,
+				2229831A2DA3B28800B29732 /* monitorExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		222983192DA3B28800B29732 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		22B399FD2D87096100675103 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -233,6 +334,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		222983172DA3B28800B29732 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		22B399FB2D87096100675103 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -257,6 +365,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		222983262DA3B28800B29732 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2229831A2DA3B28800B29732 /* monitorExtension */;
+			targetProxy = 222983252DA3B28800B29732 /* PBXContainerItemProxy */;
+		};
 		22B39A142D87096300675103 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 22B399FE2D87096100675103 /* SubTrack */;
@@ -270,11 +383,67 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		2229832A2DA3B28800B29732 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = monitorExtension/monitorExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = monitorExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = monitorExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sam.SubTrack.monitorExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		2229832B2DA3B28800B29732 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = monitorExtension/monitorExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = monitorExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = monitorExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sam.SubTrack.monitorExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		22B39A242D87096300675103 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -304,7 +473,9 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = FQPPA3M9P2;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -337,6 +508,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -366,7 +538,9 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = FQPPA3M9P2;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -394,8 +568,8 @@
 				CODE_SIGN_ENTITLEMENTS = SubTrack/SubTrack.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"SubTrack/Preview Content\"";
-				DEVELOPMENT_TEAM = FQPPA3M9P2;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -433,8 +607,8 @@
 				CODE_SIGN_ENTITLEMENTS = SubTrack/SubTrack.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"SubTrack/Preview Content\"";
-				DEVELOPMENT_TEAM = FQPPA3M9P2;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -470,7 +644,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = FQPPA3M9P2;
+				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
@@ -493,7 +667,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = FQPPA3M9P2;
+				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
@@ -515,7 +689,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = FQPPA3M9P2;
+				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
@@ -537,7 +711,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = FQPPA3M9P2;
+				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
@@ -557,6 +731,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		222983292DA3B28800B29732 /* Build configuration list for PBXNativeTarget "monitorExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2229832A2DA3B28800B29732 /* Debug */,
+				2229832B2DA3B28800B29732 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		22B399FA2D87096100675103 /* Build configuration list for PBXProject "SubTrack" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

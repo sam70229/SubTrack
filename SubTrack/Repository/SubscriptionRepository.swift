@@ -1,55 +1,19 @@
 //
-//  SubscriptionDataSource.swift
+//  SubscriptionRepository.swift
 //  SubTrack
 //
-//  Created by Sam on 2025/3/16.
+//  Created by Sam on 2025/3/31.
 //
 import SwiftUI
 import SwiftData
 
-protocol SubscriptionDataSourceProtocol {
-    func fetchSubscriptions() -> [Subscription]
-    func fetchSubscriptionsForDate(_ date: Date) -> [Subscription]
-    func addSubscription(_ subscription: Subscription) throws
-    func updateSubscription(_ subscription: Subscription) throws
-    func deleteSubscription(_ subscription: Subscription) throws
-}
 
-
-class SubscriptionDataSource: SubscriptionDataSourceProtocol {
-    private let modelContainer: ModelContainer
+// A repository class that handles business logic
+class SubscriptionRepository: ObservableObject {
     private let modelContext: ModelContext
     
-    @MainActor
-    static let shared = SubscriptionDataSource()
-    
-    @MainActor
-    private init() {
-        self.modelContainer = try! ModelContainer(for: Subscription.self, configurations: ModelConfiguration(isStoredInMemoryOnly: false))
-        self.modelContext = modelContainer.mainContext
-    }
-    
-    func addSubscription(_ subscription: Subscription) throws {
-        modelContext.insert(subscription)
-    }
-    
-    func updateSubscription(_ subscription: Subscription) throws {
-        // Implement the update logic
-        // Since SwiftData automatically tracks changes to managed objects,
-        // we just need to save the context
-        try modelContext.save()
-    }
-    
-    func deleteSubscription(_ subscription: Subscription) throws {
-        // Implement the delete logic
-        modelContext.delete(subscription)
-        try modelContext.save()
-    }
-    
-    func refreshContext() {
-        // This method forces the context to refresh its state
-        // Call this when returning to a view that displays data
-        modelContext.processPendingChanges()
+    init(modelContext: ModelContext) {
+        self.modelContext = modelContext
     }
     
     func fetchSubscriptions() -> [Subscription] {
@@ -59,6 +23,20 @@ class SubscriptionDataSource: SubscriptionDataSourceProtocol {
         } catch {
             return []
         }
+    }
+    
+    func addSubscription(_ subscription: Subscription) throws {
+        modelContext.insert(subscription)
+        try modelContext.save()
+    }
+    
+    func updateSubscription(_ subscription: Subscription) throws {
+        try modelContext.save()
+    }
+    
+    func deleteSubscription(_ subscription: Subscription) throws {
+        modelContext.delete(subscription)
+        try modelContext.save()
     }
     
     func fetchSubscriptionsForDate(_ date: Date) -> [Subscription] {
@@ -118,4 +96,4 @@ class SubscriptionDataSource: SubscriptionDataSourceProtocol {
             }
         }
     }
-}
+} 

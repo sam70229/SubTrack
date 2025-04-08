@@ -24,6 +24,20 @@ extension Color {
         
     }
     
+    // Check if color is dark
+    var isDark: Bool {
+        guard let components = UIColor(self).cgColor.components else {
+            return false
+        }
+        
+        let r = components[0]
+        let g = components[1]
+        let b = components[2]
+        
+        let luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
+        return luminance < 0.5
+    }
+    
     func toHexString() -> String {
         let uic = UIColor(self)
         guard let components = uic.cgColor.components, components.count >= 3 else {

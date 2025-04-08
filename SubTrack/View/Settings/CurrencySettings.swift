@@ -13,7 +13,6 @@ struct CurrencyPickerView: View {
     
     @State private var searchText = ""
     @Binding var currencies: [CurrencyInfo]
-    @Binding var selectedCurrencyCode: String
     
     var filteredCurrencies: [CurrencyInfo] {
         if searchText.isEmpty {
@@ -31,8 +30,7 @@ struct CurrencyPickerView: View {
             List {
                 ForEach(filteredCurrencies) { currency in
                     Button(action: {
-                        self.selectedCurrencyCode = currency.code
-                        appSettings.currencyCode = currency.code
+                        appSettings.selectCurrnecy(currency.code)
                         dismiss()
                     }) {
                         HStack {
@@ -49,7 +47,7 @@ struct CurrencyPickerView: View {
                             Text(currency.exampleFormatted)
                                 .foregroundColor(.secondary)
                             
-                            if currency.code == self.selectedCurrencyCode {
+                            if currency.code == appSettings.userSelectedCurrencyCode {
                                 Image(systemName: "checkmark")
                                     .foregroundColor(.blue)
                             }
@@ -68,46 +66,48 @@ struct CurrencyPickerView: View {
 
 struct CurrencySection: View {
     @EnvironmentObject var appSettings: AppSettings
-    @ObservedObject var currencyViewModel: CurrencyViewModel
-    @State private var showingPicker = false
-    var onSelect: () -> Void
+    
+    @Binding var currencies: [CurrencyInfo]
+    
+    @State private var showPickerView: Bool = false
     
     var body: some View {
-        Section(header: Text("Currency")) {
-            Toggle("Set Automatically", isOn: $appSettings.autoCurrencyCode)
-                .onChange(of: appSettings.autoCurrencyCode) { oldValue, newValue in
-                    if newValue {
-                        let selectedCurrencyCode = Locale.current.currency!.identifier
-                        currencyViewModel.selectedCurrencyCode = selectedCurrencyCode
-                        appSettings.currencyCode = selectedCurrencyCode
+        List {
+            Toggle("Set Automatically", isOn: $appSettings.autoSetCurrencyCode)
+                .onChange(of: appSettings.autoSetCurrencyCode) { _, _ in
+                    if appSettings.autoSetCurrencyCode {
+                        appSettings.updateSystemCurrencyCode(Locale.current.currency?.identifier ?? "USD")
                     }
-                    appSettings.autoCurrencyCode = newValue
                 }
-
-            HStack {
-                Text("Currency")
-                
-                Spacer()
-                
-                if let selectedCurrency = currencyViewModel.currencies.first(where: { $0.code == appSettings.currencyCode }) {
-                    HStack(spacing: 4) {
-                        Text(selectedCurrency.symbol)
-                        Text(selectedCurrency.code)
-                            .foregroundColor(appSettings.autoCurrencyCode ? .secondary : .primary)
+            Button {
+                if !appSettings.autoSetCurrencyCode {
+                    showPickerView.toggle()
+                }
+            } label: {
+                HStack {
+                    Text("Currency")
+                    
+                    Spacer()
+                    
+                    if let selectedCurrency = currencies.first(where: { $0.code == appSettings.currencyCode }) {
+                        HStack(spacing: 4) {
+                            Text(selectedCurrency.symbol)
+                            Text(selectedCurrency.code)
+                                .foregroundColor(appSettings.autoSetCurrencyCode ? .secondary : .primary)
+                        }
+                    }
+                    
+                    if !appSettings.autoSetCurrencyCode {
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                     }
                 }
             }
-            .contentShape(Rectangle())
-            .onTapGesture {
-                if !appSettings.autoCurrencyCode {
-                    showingPicker = true
-                    onSelect()
-                }
-            }
-            .disabled(appSettings.autoCurrencyCode)
+            .disabled(appSettings.autoSetCurrencyCode)
         }
-        .onAppear {
-            self.currencyViewModel.loadSelectedCurrencyCode(appSettings.currencyCode)
+        .navigationDestination(isPresented: $showPickerView) {
+            CurrencyPickerView(currencies: $currencies)
         }
     }
 }

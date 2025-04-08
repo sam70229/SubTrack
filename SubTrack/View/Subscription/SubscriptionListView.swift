@@ -5,18 +5,28 @@
 //  Created by Sam on 2025/3/17.
 //
 import SwiftUI
-
+import SwiftData
 
 struct SubscriptionListView: View {
-    @StateObject private var subscriptionViewModel: SubscriptionViewModel = .init(dataSource: .shared)
+    // Access the model context directly from the environment
+    @Environment(\.modelContext) private var modelContext
+    
+    // Use SwiftUI's query capabilities
+    @Query private var subscriptions: [Subscription]
+    
     @State private var showAddSubscription: Bool = false
+    @State private var selectedSubscription: Subscription?
+    @State private var isLoading = false
 
     var body: some View {
-        List {
-            ForEach(subscriptionViewModel.subscriptions) { subscription in
+        List(subscriptions) { subscription in
+            Button {
+                selectedSubscription = subscription
+            } label: {
                 SubscriptionListItemView(subscription: subscription)
-                    .listRowSeparator(.hidden)
             }
+            .buttonStyle(.plain)
+            .listRowSeparator(.hidden)
         }
         .listRowSpacing(8)
         .navigationTitle("Subscriptions")
@@ -30,21 +40,23 @@ struct SubscriptionListView: View {
             }
         }
         .overlay {
-            if subscriptionViewModel.isLoading {
+            if isLoading {
                 ProgressView()
-            } else if subscriptionViewModel.subscriptions.isEmpty {
+            } else if subscriptions.isEmpty {
                 ContentUnavailableView("No Subscriptions", systemImage: "creditcard", description: Text("Add subscriptions to start tracking."))
             }
         }
         .sheet(isPresented: $showAddSubscription) {
-            AddSubscriptionView()
-                .presentationDetents([.medium, .large])
+            NavigationStack {
+                AddSubscriptionView()
+            }
         }
-        .refreshable {
-            subscriptionViewModel.fetchSubscriptions()
-        }
-        .onAppear {
-            subscriptionViewModel.fetchSubscriptions()
+        .navigationDestination(item: $selectedSubscription) { subscription in
+            SubscriptionDetailView(subscription: subscription)
         }
     }
+}
+
+#Preview {
+    SubscriptionListView()
 }

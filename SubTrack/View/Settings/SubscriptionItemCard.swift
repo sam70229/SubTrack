@@ -6,11 +6,6 @@
 //
 import SwiftUI
 
-enum SubscriptionInfoStyle: String, CaseIterable {
-    case nextBillingDate = "Next Billing Date"
-    case billingCycle = "Billing Cycle"
-}
-
 
 struct SubscriptionItemCard: View {
     @EnvironmentObject var appSettings: AppSettings
@@ -31,7 +26,7 @@ struct SubscriptionItemCard: View {
                 Text(subscription.name)
                     .font(.headline)
                 
-                switch appSettings.subscriptionInfoType {
+                switch appSettings.subscriptionDisplayStyle {
                 case .nextBillingDate:
                     Text(subscription.nextBillingDate.formatted(date: .abbreviated, time: .omitted))
                         .font(.caption)

@@ -5,13 +5,69 @@
 
     },
     "%@" : {
-
+      "shouldTranslate" : false
+    },
+    "%lf" : {
+      "shouldTranslate" : false
     },
     "%lld" : {
-
+      "shouldTranslate" : false
+    },
+    "%lld days" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld天"
+          }
+        }
+      }
     },
     "+%lld" : {
+      "shouldTranslate" : false
+    },
+    "3 days" : {
 
+    },
+    "About" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "關於"
+          }
+        }
+      }
+    },
+    "About SubTrack" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "關於SubTrack"
+          }
+        }
+      }
+    },
+    "Accent Color" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主色"
+          }
+        }
+      }
+    },
+    "Acknowledgements" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "感謝"
+          }
+        }
+      }
     },
     "Add" : {
       "localizations" : {
@@ -24,7 +80,7 @@
       }
     },
     "Add Item" : {
-
+      "shouldTranslate" : false
     },
     "Add Subscription" : {
       "localizations" : {
@@ -47,10 +103,54 @@
       }
     },
     "Analytics" : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分析"
+          }
+        }
+      }
     },
-    "Analytics view coming soon" : {
-
+    "Annually" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每年"
+          }
+        }
+      }
+    },
+    "App Theme" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App主題"
+          }
+        }
+      }
+    },
+    "Appearance" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "外觀"
+          }
+        }
+      }
+    },
+    "Biennially" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每兩年"
+          }
+        }
+      }
     },
     "Billing Cycle" : {
       "localizations" : {
@@ -72,6 +172,16 @@
         }
       }
     },
+    "Bimonthly" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每兩個月"
+          }
+        }
+      }
+    },
     "Calendar" : {
       "localizations" : {
         "zh-Hant" : {
@@ -81,6 +191,9 @@
           }
         }
       }
+    },
+    "Calendar View" : {
+
     },
     "Cancel" : {
       "localizations" : {
@@ -92,12 +205,42 @@
         }
       }
     },
+    "Category" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分類"
+          }
+        }
+      }
+    },
+    "Clear All Data" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除所有資料"
+          }
+        }
+      }
+    },
     "Color" : {
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "顏色"
+          }
+        }
+      }
+    },
+    "Contact" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聯繫"
           }
         }
       }
@@ -113,10 +256,84 @@
       }
     },
     "Custom" : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自訂"
+          }
+        }
+      }
     },
-    "Details" : {
-
+    "Custom Color" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自訂顏色"
+          }
+        }
+      }
+    },
+    "Dark" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暗"
+          }
+        }
+      }
+    },
+    "Data" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "資料"
+          }
+        }
+      }
+    },
+    "Days to Billing" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "距離下次扣款"
+          }
+        }
+      }
+    },
+    "Default Calendar View" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "預設日曆顯示"
+          }
+        }
+      }
+    },
+    "Default Tab" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "預設頁面"
+          }
+        }
+      }
+    },
+    "Developer" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開發者"
+          }
+        }
+      }
     },
     "Error" : {
       "localizations" : {
@@ -129,10 +346,73 @@
       }
     },
     "First Billing Date" : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "第一次扣款日"
+          }
+        }
+      }
+    },
+    "GitHub" : {
+      "shouldTranslate" : false
+    },
+    "icon" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "圖示"
+          }
+        }
+      }
+    },
+    "Import/Export" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "匯入/匯出"
+          }
+        }
+      }
     },
     "Item at %@" : {
-
+      "shouldTranslate" : false
+    },
+    "Libraries" : {
+      "shouldTranslate" : false
+    },
+    "Light" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "亮"
+          }
+        }
+      }
+    },
+    "List" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "列表"
+          }
+        }
+      }
+    },
+    "Monthly" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每月"
+          }
+        }
+      }
     },
     "Name" : {
       "localizations" : {
@@ -144,8 +424,25 @@
         }
       }
     },
-    "No payments due" : {
-
+    "Next Billing Date" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下次付款日"
+          }
+        }
+      }
+    },
+    "Next Payment" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下一次付款"
+          }
+        }
+      }
     },
     "No Subscriptions" : {
       "localizations" : {
@@ -157,8 +454,25 @@
         }
       }
     },
+    "Notification Settings" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知設定"
+          }
+        }
+      }
+    },
     "OK" : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "好"
+          }
+        }
+      }
     },
     "Price" : {
       "localizations" : {
@@ -166,6 +480,76 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "價格"
+          }
+        }
+      }
+    },
+    "Price a Month" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一個月費用"
+          }
+        }
+      }
+    },
+    "Price a Year" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一年費用"
+          }
+        }
+      }
+    },
+    "Price Details" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "費用詳細資訊"
+          }
+        }
+      }
+    },
+    "Privacy Policy" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隱私政策"
+          }
+        }
+      }
+    },
+    "Quarterly" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每季"
+          }
+        }
+      }
+    },
+    "Reminder Notifications" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "提醒通知"
+          }
+        }
+      }
+    },
+    "Reminds me" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "提醒我"
           }
         }
       }
@@ -181,7 +565,7 @@
       }
     },
     "Select an item" : {
-
+      "shouldTranslate" : false
     },
     "Select Currency" : {
       "localizations" : {
@@ -189,6 +573,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選擇幣別"
+          }
+        }
+      }
+    },
+    "Semiannually" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每半年"
+          }
+        }
+      }
+    },
+    "Semimonthly" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每半個月"
           }
         }
       }
@@ -213,6 +617,78 @@
         }
       }
     },
+    "Show Currency Symbols" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示幣別符號"
+          }
+        }
+      }
+    },
+    "Show Subscription Icons" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示訂閱圖示"
+          }
+        }
+      }
+    },
+    "Since First Payment" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自首次付款以來"
+          }
+        }
+      }
+    },
+    "Start Tracking" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開始追蹤"
+          }
+        }
+      }
+    },
+    "Starting Date" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開始日期"
+          }
+        }
+      }
+    },
+    "Stop Tracking" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "停止追蹤"
+          }
+        }
+      }
+    },
+    "Subscription" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "訂閱"
+          }
+        }
+      }
+    },
     "Subscription Calendar" : {
       "localizations" : {
         "zh-Hant" : {
@@ -223,12 +699,91 @@
         }
       }
     },
+    "Subscription Details" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "訂閱詳情"
+          }
+        }
+      }
+    },
+    "Subscription Display Style" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "訂閱顯示方式"
+          }
+        }
+      }
+    },
+    "Subscription Info" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "訂閱資訊"
+          }
+        }
+      }
+    },
     "Subscriptions" : {
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "訂閱"
+          }
+        }
+      }
+    },
+    "SubTrack" : {
+      "shouldTranslate" : false
+    },
+    "SwiftData" : {
+      "shouldTranslate" : false
+    },
+    "SwiftUI" : {
+      "shouldTranslate" : false
+    },
+    "System" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "系統"
+          }
+        }
+      }
+    },
+    "Terms of Service" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "服務條款"
+          }
+        }
+      }
+    },
+    "Theme" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主題"
+          }
+        }
+      }
+    },
+    "Third-Party Libraries" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "第三方函式庫"
           }
         }
       }
@@ -252,6 +807,19 @@
           }
         }
       }
+    },
+    "UI Options" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UI選項"
+          }
+        }
+      }
+    },
+    "Version 1.0.0" : {
+      "shouldTranslate" : false
     }
   },
   "version" : "1.0"
