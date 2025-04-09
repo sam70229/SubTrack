@@ -5,16 +5,23 @@
 //  Created by Sam on 2025/3/20.
 //
 import SwiftUI
+import SwiftData
 import Foundation
 
 
 struct SettingsView: View {
+    @Environment(\.modelContext) private var modelContext: ModelContext
     @EnvironmentObject private var appSettings: AppSettings
     
     // State for currency settings
     @State private var currencies: [CurrencyInfo] = []
     
     @State private var showPicker: Bool = false
+    @State private var showClearDataAlert: Bool = false
+    
+    // SYSTEM ALERT
+    @State private var showSystemAlert: Bool = false
+    @State private var errorMessage: String? = nil
     
     var body: some View {
         List {
@@ -37,16 +44,39 @@ struct SettingsView: View {
             Section(header: Text("Data")) {
                 Button(role: .destructive) {
                     // Show confirmation dialog
+                    showClearDataAlert = true
                 } label: {
                     Label("Clear All Data", systemImage: "trash")
                 }
                 
+                // TODO: Support import/export, but i dunno why we need this
+//                NavigationLink {
+//                    Text("Import/Export")
+//                        .navigationTitle("Import/Export")
+//                } label: {
+//                    Label("Import/Export", systemImage: "square.and.arrow.up.on.square")
+//                }
+            }
+            .alert(isPresented: $showClearDataAlert) {
+                Alert(title: Text("Do u really wanna clear all data?"), primaryButton: .destructive(Text("Confirm"), action: {
+                    do {
+                        try modelContext.delete(model: Subscription.self)
+                        try modelContext.delete(model: Category.self)
+                    } catch {
+                        showSystemAlert = true
+                        errorMessage = "Failed to clear data: \(error)"
+                    }
+                }), secondaryButton: .cancel())
+            }
+            
+            Section {
                 NavigationLink {
-                    Text("Import/Export")
-                        .navigationTitle("Import/Export")
+                    WishListView()
                 } label: {
-                    Label("Import/Export", systemImage: "square.and.arrow.up.on.square")
+                    Label("Wishlist", systemImage: "star.fill")
                 }
+            } header: {
+                Text("Wishlist")
             }
             
             // About section
@@ -57,13 +87,14 @@ struct SettingsView: View {
                     Label("About SubTrack", systemImage: "info.circle")
                 }
                 
-                Link(destination: URL(string: "https://example.com/privacy")!) {
-                    Label("Privacy Policy", systemImage: "hand.raised")
-                }
-                
-                Link(destination: URL(string: "https://example.com/terms")!) {
-                    Label("Terms of Service", systemImage: "doc.text")
-                }
+                // TODO: MAYBE NEEDED, BUT CAN WAIT
+//                Link(destination: URL(string: "https://example.com/privacy")!) {
+//                    Label("Privacy Policy", systemImage: "hand.raised")
+//                }
+//                
+//                Link(destination: URL(string: "https://example.com/terms")!) {
+//                    Label("Terms of Service", systemImage: "doc.text")
+//                }
             }
         }
         .navigationTitle("Settings")
@@ -72,6 +103,9 @@ struct SettingsView: View {
             if currencies.isEmpty {
                 currencies = CurrencyInfo.loadAvailableCurrencies()
             }
+        }
+        .alert(isPresented: $showSystemAlert) {
+            Alert(title: Text("Error"), message: Text(errorMessage!), dismissButton: .default(Text("OK")))
         }
     }
 }

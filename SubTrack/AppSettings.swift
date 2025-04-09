@@ -30,6 +30,9 @@ enum SubscriptionDisplayStyle: String, CaseIterable {
 
 
 class AppSettings: ObservableObject {
+    // Device ID
+    @AppStorage("device_id") var deviceID: String = UUID().uuidString
+
     @AppStorage("showDebugInfo") var showDebugInfo: Bool = false
     @AppStorage("subscriptionDisplayStyle") var subscriptionDisplayStyle: SubscriptionDisplayStyle = .billingCycle
     

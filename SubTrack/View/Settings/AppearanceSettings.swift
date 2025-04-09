@@ -34,8 +34,9 @@ struct AppearanceSettings: View {
             // App Theme Section
             themeSection
             
+            // TODO: Add this if it needed
             // Accent Color Section
-            accentColorSection
+//            accentColorSection
             
             // UI Options Section
             uiOptionsSection

@@ -29,7 +29,7 @@ struct ContentView: View {
 #endif
             .toolbar {
 #if os(iOS)
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .topBarTrailing) {
                     EditButton()
                 }
 #endif

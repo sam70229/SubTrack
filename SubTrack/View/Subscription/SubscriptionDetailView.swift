@@ -27,7 +27,8 @@ struct SubscriptionDetailView: View {
 
             subscriptionDetailsInfoSection
 
-            notificationSettingsSection
+            // TODO: - Support notifications before payment day
+//            notificationSettingsSection
             
             priceInfoSection
         }

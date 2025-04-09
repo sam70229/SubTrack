@@ -192,7 +192,7 @@ struct CalendarView: View {
                             .font(.largeTitle)
                             .foregroundStyle(.green)
                         
-                        Text("No Subscriptions")
+                        Text("No Subscriptions Needs To Be Paid Today")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }

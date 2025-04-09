@@ -28,12 +28,12 @@ struct AboutView: View {
             }
             
             Section(header: Text("Developer")) {
-                Link(destination: URL(string: "https://github.com/yourusername")!) {
+                Link(destination: URL(string: "https://github.com/sam70229")!) {
                     Label("GitHub", systemImage: "link")
                 }
                 
-                Link(destination: URL(string: "mailto:your.email@example.com")!) {
-                    Label("Contact", systemImage: "envelope")
+                Link(destination: URL(string: "mailto:sam70229@gmail.com")!) {
+                    Label("Contact Me", systemImage: "envelope")
                 }
             }
             

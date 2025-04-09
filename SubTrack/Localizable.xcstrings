@@ -235,15 +235,28 @@
         }
       }
     },
-    "Contact" : {
+    "Confirm" : {
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "聯繫"
+            "value" : "確認"
           }
         }
       }
+    },
+    "Contact Me" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聯繫我"
+          }
+        }
+      }
+    },
+    "Created at: %@" : {
+
     },
     "Currency" : {
       "localizations" : {
@@ -325,12 +338,25 @@
         }
       }
     },
+    "Description" : {
+
+    },
     "Developer" : {
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "開發者"
+          }
+        }
+      }
+    },
+    "Do u really wanna clear all data?" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "真的要刪除全部資料嗎？"
           }
         }
       }
@@ -369,6 +395,7 @@
       }
     },
     "Import/Export" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
@@ -454,6 +481,16 @@
         }
       }
     },
+    "No Subscriptions Needs To Be Paid Today" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天沒有訂閱項目"
+          }
+        }
+      }
+    },
     "Notification Settings" : {
       "localizations" : {
         "zh-Hant" : {
@@ -515,6 +552,7 @@
       }
     },
     "Privacy Policy" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
@@ -679,6 +717,12 @@
         }
       }
     },
+    "Submit" : {
+
+    },
+    "Submit a Wish" : {
+
+    },
     "Subscription" : {
       "localizations" : {
         "zh-Hant" : {
@@ -759,6 +803,7 @@
       }
     },
     "Terms of Service" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
@@ -787,6 +832,9 @@
           }
         }
       }
+    },
+    "Title" : {
+
     },
     "Total Costs: %@" : {
       "localizations" : {
@@ -820,6 +868,12 @@
     },
     "Version 1.0.0" : {
       "shouldTranslate" : false
+    },
+    "Wishes" : {
+
+    },
+    "Wishlist" : {
+
     }
   },
   "version" : "1.0"

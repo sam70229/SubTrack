@@ -7,16 +7,26 @@
 
 import SwiftUI
 import SwiftData
-import DeviceActivity
-import FamilyControls
-import ManagedSettings
+import Firebase
 
+
+class AppDelegate: NSObject, UIApplicationDelegate {
+  func application(_ application: UIApplication,
+                   didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+    FirebaseApp.configure()
+
+    return true
+  }
+}
 
 @main
 struct SubTrackApp: App {
     @StateObject private var appSettings = AppSettings()
     @StateObject private var appUsageManager = AppUsageManager()
-    
+
+    // Firebase
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+
     // Create a shared model container for the entire app
     let modelContainer: ModelContainer
     
