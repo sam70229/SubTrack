@@ -4,77 +4,159 @@
 //
 //  Created by Sam on 2025/4/9.
 //
+//
+//  Data will be like
+//
+//      {
+//          deviceID: {
+//              "createdAt":
+//          }
+//          wishes:
+//              {WishID}
+//                  title:
+//                  cotent:
+//                  createdAt:
+//                  voteCount:
+//          votes:
+//              {WishID}:
+//                  voters:
+//                      {DeviceID}:
+//                          createdAt:
+//              {WishID}:
+//                  voters:
+//                      {DeviceID}:
+//                          createdAt
+//      }
+//
 import SwiftUI
-import FirebaseDatabase
+import Firebase
+import FirebaseFirestore
 
 
 class WishRepository: ObservableObject {
-    private let dbRef = Database.database().reference()
-    private let wishNode = "wishes"
-    private let voteNode = "votes"
+    @Published var wishes: [Wish] = []
+    @Published var errorMessage: String?
     
+    private let db = Firestore.firestore()
+    private let wishCollection = "wishes"
+    private let voteCollection = "votes"
     
-    func fetchWishes(completion: @escaping([Wish]) -> Void) {
-        dbRef.child(wishNode).observe(.value) { snapshot in
-            var wishes: [Wish] = []
-            for child in snapshot.children {
-                if let snapshot = child as? DataSnapshot,
-                   let dict = snapshot.value as? [String: Any],
-                   let title = dict["title"] as? String,
-                   let createdAt = dict["createdAt"] as? TimeInterval,
-                   let content = dict["content"] as? String {
-                    let votes = dict["voteCount"] as? Int ?? 0
-                    wishes.append(Wish(id: snapshot.key, title: title, content: content, createdAt: Date(timeIntervalSince1970: createdAt), voteCount: votes))
+    func fetchWishes(deviceID: String) {
+        db.collection(wishCollection)
+            .order(by: "createdAt", descending: true)
+            .addSnapshotListener { [weak self] snapshot, error in
+                guard let self = self, let documents = snapshot?.documents else {
+                    return
+                }
+                
+                var newWishes: [Wish] = []
+                let group = DispatchGroup()
+
+                for document in documents {
+                    group.enter()
+                    let data = document.data()
+                    let wishId = document.documentID
+                    
+                    let title = data["title"] as? String ?? "Untitled"
+                    let createdAt = data["createdAt"] as? Date ?? Date()
+                    let content = data["content"] as? String ?? "no content"
+                    let voteCount = data["voteCount"] as? Int ?? 0
+                    let createdBy = data["createdBy"] as? String ?? "Anonymous"
+                    
+                    var wish = Wish(id: wishId, title: title, content: content, createdAt: createdAt, voteCount: voteCount, createdBy: createdBy)
+                    
+                    // Check if this device has voted for this wish
+                    self.checkVoted(for: wish, deviceID: deviceID) { hasVoted in
+                        wish.voted = hasVoted
+                        newWishes.append(wish)
+                        group.leave()
+                    }
+                }
+                
+                group.notify(queue: .main) {
+                    newWishes.sort { $0.createdAt.timeIntervalSince1970 < $1.createdAt.timeIntervalSince1970 }
+                    self.wishes = newWishes
                 }
             }
-            completion(wishes)
-        }
     }
     
-    func addWish(title: String, content: String?) {
-        let newRef = dbRef.child(wishNode).childByAutoId()
-        newRef.setValue(["title": title, "content": content ?? "", "createdAt": Date().timeIntervalSince1970, "voteCount": 0])
+    func addWish(title: String, content: String?, deviceId: String) {
+        let newWish: [String: Any] = [
+            "title": title,
+            "content": content ?? "",
+            "createdAt": FieldValue.serverTimestamp(),
+            "voteCount": 0,
+            "createdBy": deviceId,
+        ]
+        
+        db.collection(wishCollection).addDocument(data: newWish) { error in
+            if let error = error {
+                self.errorMessage = "Failed to add wish: \(error.localizedDescription)"
+            }
+        }
     }
     
     func vote(for wish: Wish, deviceID: String) {
-        let votePath = dbRef.child(voteNode).child(wish.id).child(deviceID)
-        print(votePath)
-        let voteCountRef = self.dbRef.child(self.wishNode).child(wish.id).child("voteCount")
-        votePath.observeSingleEvent(of: .value) { snapshot in
-            if snapshot.exists() {
-                votePath.removeValue()
-                voteCountRef.runTransactionBlock { currentData in
-                    if var count = currentData.value as? Int {
-                        if count >= 0 {
-                            count -= 1
-                        }
-                        currentData.value = count
-                        return TransactionResult.success(withValue: currentData)
-                    }
-                    return TransactionResult.success(withValue: currentData)
+        let voteRef = db.collection(voteCollection).document(wish.id).collection("voters").document(deviceID)
+        let wishRef = db.collection(wishCollection).document(wish.id)
+        
+        db.runTransaction({ (transaction, errorPointer) -> Any? in
+            let voteSnapshot: DocumentSnapshot
+            let wishSnapshot: DocumentSnapshot
+            do {
+                try voteSnapshot = transaction.getDocument(voteRef)
+                try wishSnapshot = transaction.getDocument(wishRef)
+                
+                if voteSnapshot.exists {
+                    transaction.deleteDocument(voteRef)
+                    
+                    let currentCount = wishSnapshot.data()?["voteCount"] as? Int ?? 0
+                    transaction.updateData(["voteCount": max(0, currentCount - 1)], forDocument: wishRef)
+                    return false
+                } else {
+                    transaction.setData(["createdAt": FieldValue.serverTimestamp()], forDocument: voteRef)
+                    
+                    let currentCount = wishSnapshot.data()?["voteCount"] as? Int ?? 0
+                    transaction.updateData(["voteCount": currentCount + 1], forDocument: wishRef)
+                    
+                    return true
                 }
-                return
+            } catch {
+                return nil
             }
+        }) { [weak self] (result, error) in
+            guard let self = self else { return }
             
-            votePath.setValue(true)
-            
-            voteCountRef.runTransactionBlock { currentData in
-                var count = currentData.value as? Int ?? 0
-                count += 1
-                currentData.value = count
-                return TransactionResult.success(withValue: currentData)
+            if let error = error {
+                self.errorMessage = error.localizedDescription
+            } else if let didVote = result as? Bool {
+                // Immediately update the local wish array
+                DispatchQueue.main.async {
+                    if let index = self.wishes.firstIndex(where: { $0.id == wish.id }) {
+                        
+                        var updatedWish = self.wishes[index]
+                        updatedWish.voted = didVote
+                        updatedWish.voteCount = didVote ? 
+                            updatedWish.voteCount + 1 : 
+                            max(0, updatedWish.voteCount - 1)
+                        
+                        // Replace the old wish with the updated one
+                        self.wishes[index] = updatedWish
+                    }
+                }
             }
         }
     }
     
-    func checkVoted(for wish: Wish, deviceID: String, completion: @escaping (Bool) -> Void) {
-        let votePath = dbRef.child(voteNode).child(wish.id).child(deviceID)
-        votePath.observeSingleEvent(of: .value) { snapshot in
-            if snapshot.exists() {
-                completion(true)
-            } else {
-                completion(false)
-            }
+    func checkVoted(for wish: Wish, deviceID: String, completion: @escaping(Bool) -> Void) {
+        let voteRef = db.collection(voteCollection)
+            .document(wish.id)
+            .collection("voters")
+            .document(deviceID)
+        
+        voteRef.getDocument { (document, error) in
+            let hasVoted = document?.exists ?? false
+            completion(hasVoted)
         }
     }
 }

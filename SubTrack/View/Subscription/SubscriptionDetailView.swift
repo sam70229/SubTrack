@@ -11,14 +11,17 @@ struct SubscriptionDetailView: View {
     @EnvironmentObject var appSettings: AppSettings
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.presentationMode) var presentationMode
     
     var subscription: Subscription
+    @State private var subscriptionRepository: SubscriptionRepository?
+    @State private var categoryRepository: CategoryRepository?
     
     @State private var isEnabledNotification: Bool = false
     @State private var selectedReminder: NotificationDate = .one_day_before
     @State private var categoryName: String = "None"
-    @State private var subscriptionRepository: SubscriptionRepository?
-    @State private var categoryRepository: CategoryRepository?
+    @State private var showDeleteConfirmation: Bool = false
+    @State private var errorMessage: String? = nil
 
     var body: some View {
         List {
@@ -31,6 +34,29 @@ struct SubscriptionDetailView: View {
 //            notificationSettingsSection
             
             priceInfoSection
+            
+            
+            // Delete Subscription
+            Button(role: .destructive) {
+                showDeleteConfirmation = true
+            } label: {
+                Text("Delete")
+            }
+        }
+        .alert(item: $errorMessage) { msg in
+                .init(title: Text("Error"))
+            
+        }
+        .alert(isPresented: $showDeleteConfirmation) {
+            Alert(title: Text("Delete Subscription"), primaryButton: .destructive(Text("Confirm"), action: {
+                do {
+                    try subscriptionRepository?.deleteSubscription(subscription)
+                    // Then when you want to pop:
+                    presentationMode.wrappedValue.dismiss()
+                } catch {
+                    errorMessage = "Delete failed: \(error.localizedDescription)"
+                }
+            }), secondaryButton: .cancel())
         }
         .onAppear {
             subscriptionRepository = SubscriptionRepository(modelContext: modelContext)
@@ -151,6 +177,7 @@ struct SubscriptionDetailView: View {
                         Text("\(selectedReminder.description)")
                     }
                     .onChange(of: selectedReminder) { oldValue, newValue in
+                        // TODO: IMPLEMENT NOTIFICATION
                         print(oldValue, newValue)
                     }
                 }

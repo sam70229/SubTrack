@@ -1,52 +1,46 @@
 import SwiftUI
-import Firebase
-import FirebaseDatabase
-
 
 struct AddWishView: View {
     @Environment(\.dismiss) private var dismiss
-    private let repository = WishRepository()
+    @EnvironmentObject private var appSettings: AppSettings
+    @ObservedObject var viewModel: WishViewModel
+    
     @State private var title: String = ""
     @State private var description: String = ""
     
     var body: some View {
-        VStack {
-            VStack(alignment: .leading) {
+        Form {
+            Section {
+                TextField("Title", text: $viewModel.newTitle)
+            } header: {
                 Text("Title")
-                TextField("Title", text: $title)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
             }
-            .padding()
             
-            VStack(alignment: .leading) {
+            Section {
+                TextEditor(text: $viewModel.newContent)
+                    .frame(minHeight: 100)
+            } header: {
                 Text("Description")
-                TextField("Description", text: $description)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
             }
-            .padding()
-
-            Button("Submit") {
-                submitWish()
-                dismiss()
-            }
-            .buttonStyle(.borderedProminent)
-            .padding()
-            Spacer()
         }
         .navigationTitle("Submit a Wish")
-    }
-    
-    private func submitWish() {
-        let newWish = Wish(id: UUID().uuidString, title: title, content: description, createdAt: Date(), voteCount: 0)
-        
-        // Save the wish to your chosen storage
-        // For example, append to a list or save to a database
-        print("Wish submitted: \(newWish)")
-        repository.addWish(title: title, content: description)
-        
-    }
-} 
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button("Cancel") {
+                    dismiss()
+                }
+            }
 
-#Preview {
-    AddWishView()
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Submit") {
+                    viewModel.submitWish()
+                    dismiss()
+                }
+                .disabled(viewModel.newTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            }
+        }
+        .onAppear {
+            viewModel.setDeviceId(appSettings.deviceID)
+        }
+    }
 }

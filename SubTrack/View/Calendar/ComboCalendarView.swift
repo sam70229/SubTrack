@@ -65,8 +65,9 @@ struct ComboCalendarView: View {
             }
         }
         .sheet(isPresented: $showAddSubscription) {
-            AddSubscriptionView()
-                .presentationDetents([.medium, .large])
+            NavigationStack {
+                AddSubscriptionView()
+            }
         }
         .alert(
             Text("Error"),

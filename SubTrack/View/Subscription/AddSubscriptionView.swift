@@ -61,33 +61,12 @@ struct AddSubscriptionView: View {
     var body: some View {
         
         VStack(spacing: 20) {
-//                headerSection
             Form {
-                Section {
-                    VStack {
-                        TextField("Name", text: $name)
-                            .autocorrectionDisabled()
-                        
-                        HStack {
-                            TextField("Price", value: $price, format: .currency(code: appSettings.currencyCode).precision(.fractionLength(0)))
-                                .keyboardType(.decimalPad)
-                        }
-                    }
-                } header: {
-                    Text("Subscription Info")
-                }
+                basicInfoSection
                 
                 colorSelectionSection
                 
-                Picker("icon", selection: $icon) {
-                    ForEach(iconOptions, id: \.image) { icon in
-                        HStack {
-                            Text(icon.name)
-                            Spacer()
-                            Image(systemName: icon.image).tag(icon.name)
-                        }
-                    }
-                }
+                iconSelectionSection
                 
                 billingInfoSection
 
@@ -138,23 +117,20 @@ struct AddSubscriptionView: View {
         }
     }
     
-    private var headerSection: some View {
-        HStack {
-            Button("Cancel") {
-                dismiss()
+    private var basicInfoSection: some View {
+        Section {
+            VStack {
+                TextField("Name", text: $name)
+                    .autocorrectionDisabled()
+                
+                HStack {
+                    TextField("Price", value: $price, format: .currency(code: appSettings.currencyCode).precision(.fractionLength(0)))
+                        .keyboardType(.decimalPad)
+                }
             }
-            Spacer()
-            Text("Add Subscription")
-                .bold()
-            Spacer()
-            Button("Add") {
-                saveSubscription()
-            }
-            .bold()
-            .disabled(name.isEmpty || price == 0 || isLoading)
+        } header: {
+            Text("Subscription Info")
         }
-        .padding(.horizontal)
-        .padding(.vertical, 16)
     }
     
     private var colorSelectionSection: some View {
@@ -162,6 +138,20 @@ struct AddSubscriptionView: View {
             colorSelectionScrollView
         } header: {
             Text("Color")
+        }
+    }
+    
+    private var iconSelectionSection: some View {
+        Section {
+            Picker("icon", selection: $icon) {
+                ForEach(iconOptions, id: \.image) { icon in
+                    HStack {
+                        Text(icon.name)
+                        Spacer()
+                        Image(systemName: icon.image).tag(icon.name)
+                    }.tag(icon.id)
+                }
+            }
         }
     }
     

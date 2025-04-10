@@ -12,4 +12,7 @@ struct Wish: Identifiable {
     var content: String?
     var createdAt: Date
     var voteCount: Int
+    
+    var voted: Bool = false
+    var createdBy: String
 }

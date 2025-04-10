@@ -8,12 +8,7 @@ import SwiftUI
 
 
 struct WishView: View {
-    @EnvironmentObject private var appSettings: AppSettings
-    private let repo = WishRepository()
-    
-    @State var wish: Wish
-    
-    @State var voted: Bool = false
+    var wish: Wish
     
     var body: some View {
         HStack {
@@ -29,13 +24,7 @@ struct WishView: View {
             Spacer()
             Text("\(wish.voteCount)")
         }
-        .background(voted ? Color.green : Color.gray)
         .padding()
-        .onAppear {
-            repo.checkVoted(for: wish, deviceID: appSettings.deviceID) { voted in
-                self.voted = voted
-            }
-        }
     }
     
     private var dateFormatter: DateFormatter {
@@ -48,6 +37,7 @@ struct WishView: View {
 
 
 #Preview {
-    let wish = Wish(id: UUID().uuidString, title: "Test Wish", content: "Test Content", createdAt: Date(), voteCount: 0)
+    let uuid = UUID().uuidString
+    let wish = Wish(id: uuid, title: "Test Wish", content: "Test Content", createdAt: Date(), voteCount: 0, createdBy: uuid)
     WishView(wish: wish)
 }

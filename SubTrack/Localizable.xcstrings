@@ -1,13 +1,7 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "" : {
-
-    },
     "%@" : {
-      "shouldTranslate" : false
-    },
-    "%lf" : {
       "shouldTranslate" : false
     },
     "%lld" : {
@@ -27,7 +21,14 @@
       "shouldTranslate" : false
     },
     "3 days" : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@天前"
+          }
+        }
+      }
     },
     "About" : {
       "localizations" : {
@@ -78,9 +79,6 @@
           }
         }
       }
-    },
-    "Add Item" : {
-      "shouldTranslate" : false
     },
     "Add Subscription" : {
       "localizations" : {
@@ -256,7 +254,14 @@
       }
     },
     "Created at: %@" : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "建立於: %@"
+          }
+        }
+      }
     },
     "Currency" : {
       "localizations" : {
@@ -338,8 +343,35 @@
         }
       }
     },
+    "Delete" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "刪除"
+          }
+        }
+      }
+    },
+    "Delete Subscription" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "刪除訂閱"
+          }
+        }
+      }
+    },
     "Description" : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "描述"
+          }
+        }
+      }
     },
     "Developer" : {
       "localizations" : {
@@ -405,9 +437,6 @@
         }
       }
     },
-    "Item at %@" : {
-      "shouldTranslate" : false
-    },
     "Libraries" : {
       "shouldTranslate" : false
     },
@@ -437,6 +466,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "每月"
+          }
+        }
+      }
+    },
+    "My Wishes" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "我的願望"
           }
         }
       }
@@ -507,6 +546,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "好"
+          }
+        }
+      }
+    },
+    "Other Wishes" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "其他人的願望"
           }
         }
       }
@@ -601,9 +650,6 @@
           }
         }
       }
-    },
-    "Select an item" : {
-      "shouldTranslate" : false
     },
     "Select Currency" : {
       "localizations" : {
@@ -718,10 +764,24 @@
       }
     },
     "Submit" : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "提交"
+          }
+        }
+      }
     },
     "Submit a Wish" : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "許願"
+          }
+        }
+      }
     },
     "Subscription" : {
       "localizations" : {
@@ -834,7 +894,14 @@
       }
     },
     "Title" : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "標題"
+          }
+        }
+      }
     },
     "Total Costs: %@" : {
       "localizations" : {
@@ -847,6 +914,7 @@
       }
     },
     "Total Costs: %lf" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
@@ -869,11 +937,26 @@
     "Version 1.0.0" : {
       "shouldTranslate" : false
     },
-    "Wishes" : {
-
+    "Wish Wall" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "許願牆"
+          }
+        }
+      }
     },
-    "Wishlist" : {
-
+    "Wishes" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "許願表"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

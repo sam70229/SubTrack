@@ -13,6 +13,8 @@ struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext: ModelContext
     @EnvironmentObject private var appSettings: AppSettings
     
+    @StateObject private var wishListViewModel = WishViewModel()
+    
     // State for currency settings
     @State private var currencies: [CurrencyInfo] = []
     
@@ -71,12 +73,12 @@ struct SettingsView: View {
             
             Section {
                 NavigationLink {
-                    WishListView()
+                    WishListView(viewModel: wishListViewModel)
                 } label: {
-                    Label("Wishlist", systemImage: "star.fill")
+                    Label("Wish Wall", systemImage: "star.fill")
                 }
             } header: {
-                Text("Wishlist")
+                Text("Wish Wall")
             }
             
             // About section
@@ -103,6 +105,7 @@ struct SettingsView: View {
             if currencies.isEmpty {
                 currencies = CurrencyInfo.loadAvailableCurrencies()
             }
+            wishListViewModel.setDeviceId(appSettings.deviceID)
         }
         .alert(isPresented: $showSystemAlert) {
             Alert(title: Text("Error"), message: Text(errorMessage!), dismissButton: .default(Text("OK")))
