@@ -7,64 +7,7 @@
 import SwiftUI
 
 
-struct CurrencyPickerView: View {
-    @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject var appSettings: AppSettings
-    
-    @State private var searchText = ""
-    @Binding var currencies: [CurrencyInfo]
-    
-    var filteredCurrencies: [CurrencyInfo] {
-        if searchText.isEmpty {
-            return currencies
-        } else {
-            return currencies.filter { currency in
-                currency.name.localizedCaseInsensitiveContains(searchText) ||
-                currency.code.localizedCaseInsensitiveContains(searchText)
-            }
-        }
-    }
-    
-    var body: some View {
-        NavigationStack {
-            List {
-                ForEach(filteredCurrencies) { currency in
-                    Button(action: {
-                        appSettings.selectCurrnecy(currency.code)
-                        dismiss()
-                    }) {
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text(currency.name)
-                                    .font(.body)
-                                Text(currency.code)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            
-                            Spacer()
-                            
-                            Text(currency.exampleFormatted)
-                                .foregroundColor(.secondary)
-                            
-                            if currency.code == appSettings.userSelectedCurrencyCode {
-                                Image(systemName: "checkmark")
-                                    .foregroundColor(.blue)
-                            }
-                        }
-                    }
-                    .foregroundColor(.primary)
-                }
-            }
-            .navigationTitle("Select Currency")
-            .navigationBarTitleDisplayMode(.inline)
-            .searchable(text: $searchText, prompt: "Search currencies")
-        }
-    }
-}
-
-
-struct CurrencySection: View {
+struct CurrencySettings: View {
     @EnvironmentObject var appSettings: AppSettings
     
     @Binding var currencies: [CurrencyInfo]
@@ -104,10 +47,13 @@ struct CurrencySection: View {
                     }
                 }
             }
+            .buttonStyle(.plain)
             .disabled(appSettings.autoSetCurrencyCode)
         }
         .navigationDestination(isPresented: $showPickerView) {
-            CurrencyPickerView(currencies: $currencies)
+            CurrencyPickerView(currencies: $currencies, onSelect: { currency in
+                appSettings.selectCurrency(currency.code)
+            })
         }
     }
 }

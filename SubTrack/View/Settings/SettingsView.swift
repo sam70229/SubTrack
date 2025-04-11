@@ -29,7 +29,7 @@ struct SettingsView: View {
         List {
             Section {
                 NavigationLink {
-                    CurrencySection(currencies: $currencies)
+                    CurrencySettings(currencies: $currencies)
                 } label: {
                     Label("Currency", systemImage: "dollarsign.circle")
                 }

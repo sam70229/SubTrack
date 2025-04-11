@@ -14,6 +14,8 @@ struct AddSubscriptionView: View {
     
     // Create the repository with the injected model context
     @State private var repository: SubscriptionRepository?
+
+    @State private var currencies: [CurrencyInfo] = []
     
     // UI States
     @State private var isLoading: Bool = false
@@ -25,7 +27,9 @@ struct AddSubscriptionView: View {
     @State private var billingCycle: BillingCycle = .monthly
     @State private var firstBillingDate: Date = Date()
     @State private var colorHex: String = "#3E80F7"
-    @State private var icon: String = ""
+    @State private var icon: String = "creditcard"
+    @State private var selectedCurrency: String = Locale.current.currency!.identifier
+    @State private var showCurrencyPicker: Bool = false
     
     private let iconOptions: [IconOption] = [
         IconOption(name: "Credit Card", image: "creditcard"),
@@ -39,13 +43,6 @@ struct AddSubscriptionView: View {
         IconOption(name: "News", image: "newspaper"),
     ]
 
-//    private let iconOptions = [
-//        "creditcard", "play.tv", "music.note", "gamecontroller", "book.closed",
-//        "newspaper", "film", "cloud", "network", "phone", "desktopcomputer",
-//        "antenna.radiowaves.left.and.right", "car", "fork.knife", "hammer",
-//        "briefcase", "house", "gift", "person.2", "heart", "bell"
-//    ]
-    
     // Define the color options as a collection of ColorOption objects
     private let colorOptions: [ColorOption] = [
         ColorOption(name: "Blue", hex: "#3E80F7"),
@@ -74,6 +71,11 @@ struct AddSubscriptionView: View {
         }
         .navigationTitle("Add Subscription")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationDestination(isPresented: $showCurrencyPicker) {
+            CurrencyPickerView(currencies: $currencies, onSelect: { currency in
+                selectedCurrency = currency.code
+            })
+        }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Add") {
@@ -114,6 +116,7 @@ struct AddSubscriptionView: View {
         .onAppear {
             // Initialize the repository with the model context
             repository = SubscriptionRepository(modelContext: modelContext)
+            currencies = CurrencyInfo.loadAvailableCurrencies()
         }
     }
     
@@ -122,10 +125,28 @@ struct AddSubscriptionView: View {
             VStack {
                 TextField("Name", text: $name)
                     .autocorrectionDisabled()
-                
+
                 HStack {
-                    TextField("Price", value: $price, format: .currency(code: appSettings.currencyCode).precision(.fractionLength(0)))
+                    let hasDecimal = currencyHasDecimals(code: selectedCurrency)
+                    let formatStyle: Decimal.FormatStyle.Currency = hasDecimal ? .currency(code: selectedCurrency) : .currency(code: selectedCurrency).precision(.fractionLength(0))
+                    TextField("Price", value: $price, format: formatStyle)
                         .keyboardType(.decimalPad)
+                        .onChange(of: price) { oldValue, newValue in
+                            if oldValue ==  0 {
+                                price = newValue
+                            }
+                        }
+                    Spacer()
+                    Button {
+                        showCurrencyPicker = true
+                    } label: {
+                        HStack {
+                            Text("\(selectedCurrency)")
+                            Image(systemName: "chevron.right")
+                                .font(.caption2)
+                        }.foregroundColor(.secondary)
+                    }
+                    .buttonStyle(.plain)
                 }
             }
         } header: {
@@ -149,7 +170,7 @@ struct AddSubscriptionView: View {
                         Text(icon.name)
                         Spacer()
                         Image(systemName: icon.image).tag(icon.name)
-                    }.tag(icon.id)
+                    }
                 }
             }
         }
@@ -212,6 +233,15 @@ struct AddSubscriptionView: View {
                     .strokeBorder(isSelected ? .primary : .tertiary, lineWidth: 2)
                     .padding(2)
             )
+    }
+    
+    // Helper function
+    private func currencyHasDecimals(code: String) -> Bool {
+        let nonDecimal: Set<String> = ["TWD"]
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = code
+        return nonDecimal.contains(code) ? false : formatter.minimumFractionDigits > 0
     }
     
     private func saveSubscription() {

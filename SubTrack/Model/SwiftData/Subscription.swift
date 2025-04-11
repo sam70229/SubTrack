@@ -101,6 +101,28 @@ class Subscription {
         }
         return nextDate
     }
+    
+    private func calculateTotalPrice(for billingDate: Date) -> Decimal {
+        let today = Date()
+        
+        if firstBillingDate > today || !isActive {
+            return 0
+        }
+        
+        var currentDate = firstBillingDate
+        var numberOfCycles: Int = 0
+        
+        while currentDate <= today {
+            numberOfCycles += 1
+            currentDate = billingCycle.calculateNextDate(from: currentDate)
+        }
+        
+        if currentDate.timeIntervalSince(today) < 86400 && numberOfCycles > 0 {
+            numberOfCycles -= 1
+        }
+        
+        return price * Decimal(numberOfCycles)
+    }
 }
 
 

@@ -29,7 +29,6 @@ struct TotalActivityReport: DeviceActivityReportScene {
         // the report's view.
 
         var appUsage: [Application:TimeInterval] = [:]
-        let selection = FamilyActivitySelection()
         
         for await d in data {
             for await segment in d.activitySegments {
@@ -40,25 +39,7 @@ struct TotalActivityReport: DeviceActivityReportScene {
                 }
             }
         }
-        
+
         return TotalActivityView.Configuration(totalUsageByApp: appUsage)
-        
-        
-        // Use safe unwrapping and provide default values
-//        let formatter = DateComponentsFormatter()
-//        formatter.allowedUnits = [.day, .hour, .minute, .second]
-//        formatter.unitsStyle = .abbreviated
-//        formatter.zeroFormattingBehavior = .dropAll
-//        
-//        let totalActivityDuration = await data.flatMap { $0.activitySegments }.reduce(0, {
-//            $0 + $1.totalActivityDuration
-//        })
-//        if let userDefaults = UserDefaults(suiteName: "group.com.sam.subtrack.monitor") {
-//            userDefaults.set(totalActivityDuration, forKey: "totalActivityDuration")
-//        } else {
-//            print("Error: Could not access shared UserDefaults")
-//        }
-//
-//        return formatter.string(from: totalActivityDuration) ?? "No activity data"
     }
 }

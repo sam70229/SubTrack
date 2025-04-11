@@ -49,7 +49,7 @@ class AppSettings: ObservableObject {
         systemCurrencyCode = Locale.current.currency?.identifier ?? "USD"
     }
     
-    func selectCurrnecy(_ code: String) {
+    func selectCurrency(_ code: String) {
         userSelectedCurrencyCode = code
     }
     
