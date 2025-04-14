@@ -179,36 +179,6 @@ struct CalendarView: View {
         }
     }
     
-    private func selectedDateView(for date: CalendarDate) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(dateString(from: date.date))
-                .font(.headline)
-            
-            if date.subscriptions.isEmpty {
-                HStack {
-                    Spacer()
-                    VStack(spacing: 8) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.largeTitle)
-                            .foregroundStyle(.green)
-                        
-                        Text("No Subscriptions Needs To Be Paid Today")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(.vertical, 30)
-                    Spacer()
-                }
-            } else {
-                VStack(spacing: 8) {
-                    ForEach(date.subscriptions) { subscription in
-                        SubscriptionListItemView(subscription: subscription)
-                    }
-                }
-            }
-        }
-    }
-    
     // MARK: - Calender Generation
     
     private func generateCalendarDates() {

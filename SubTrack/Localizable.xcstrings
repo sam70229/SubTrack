@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "**** **** **** %@" : {
+
+    },
     "%@" : {
       "shouldTranslate" : false
     },
@@ -79,6 +82,9 @@
           }
         }
       }
+    },
+    "Add Card" : {
+
     },
     "Add Subscription" : {
       "localizations" : {
@@ -203,6 +209,12 @@
         }
       }
     },
+    "Card Color" : {
+
+    },
+    "Card Name" : {
+
+    },
     "Category" : {
       "localizations" : {
         "zh-Hant" : {
@@ -222,6 +234,9 @@
           }
         }
       }
+    },
+    "Click add to add a card" : {
+
     },
     "Color" : {
       "localizations" : {
@@ -437,6 +452,9 @@
         }
       }
     },
+    "last 4 digits" : {
+
+    },
     "Libraries" : {
       "shouldTranslate" : false
     },
@@ -510,6 +528,9 @@
         }
       }
     },
+    "No Cards" : {
+
+    },
     "No Subscriptions" : {
       "localizations" : {
         "zh-Hant" : {
@@ -560,6 +581,9 @@
         }
       }
     },
+    "Pick a card" : {
+
+    },
     "Price" : {
       "localizations" : {
         "zh-Hant" : {
@@ -600,6 +624,9 @@
         }
       }
     },
+    "PRICE VIEW" : {
+
+    },
     "Privacy Policy" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -621,6 +648,9 @@
         }
       }
     },
+    "Record Credit Card Info" : {
+
+    },
     "Reminder Notifications" : {
       "localizations" : {
         "zh-Hant" : {
@@ -641,6 +671,12 @@
         }
       }
     },
+    "Remove" : {
+
+    },
+    "Reset to default" : {
+
+    },
     "Search currencies" : {
       "localizations" : {
         "zh-Hant" : {
@@ -660,6 +696,9 @@
           }
         }
       }
+    },
+    "Selected Card Color" : {
+
     },
     "Semiannually" : {
       "localizations" : {

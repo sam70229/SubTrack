@@ -76,4 +76,12 @@ struct CurrencyInfo: Identifiable, Hashable {
     static func format(value: Double, currencyCode: String) -> String {
         return formatter(for: currencyCode).string(from: NSNumber(value: value)) ?? "\(value)"
     }
+    
+    static func hasDecimals(_ currencyCode: String) -> Bool {
+        let nonDecimal: Set<String> = ["TWD"]
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = currencyCode
+        return nonDecimal.contains(currencyCode) ? false : formatter.minimumFractionDigits > 0
+    }
 }

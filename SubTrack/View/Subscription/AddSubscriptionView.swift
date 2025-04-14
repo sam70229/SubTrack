@@ -6,6 +6,11 @@
 //
 import SwiftUI
 
+enum PickerDestination {
+    case currencyPicker
+    case creditCardPicker
+}
+
 
 struct AddSubscriptionView: View {
     @Environment(\.modelContext) private var modelContext
@@ -20,16 +25,28 @@ struct AddSubscriptionView: View {
     // UI States
     @State private var isLoading: Bool = false
     @State private var errorMessage: String?
+    @State private var pickerDestination: PickerDestination?
 
     // Form states
     @State private var name: String = ""
+    @State private var priceString = ""
     @State private var price: Decimal = 0
     @State private var billingCycle: BillingCycle = .monthly
     @State private var firstBillingDate: Date = Date()
     @State private var colorHex: String = "#3E80F7"
     @State private var icon: String = "creditcard"
-    @State private var selectedCurrency: String = Locale.current.currency!.identifier
-    @State private var showCurrencyPicker: Bool = false
+    @State private var selectedCurrency: CurrencyInfo = CurrencyInfo(
+        id: Locale.current.currency?.identifier ?? "USD",
+        code: Locale.current.currency?.identifier ?? "USD",
+        symbol: Locale.current.currencySymbol ?? "$",
+        name: Locale.current.localizedString(forCurrencyCode: Locale.current.currency?.identifier ?? "USD") ?? Locale.current.currency?.identifier ?? "USD",
+        exampleFormatted: "1234.56"
+    )
+    @State private var showPicker: Bool = false
+    
+    // Credit Card Section
+    @State private var recordCreditCard: Bool = false
+    @State private var creditCard: CreditCard? = nil
     
     private let iconOptions: [IconOption] = [
         IconOption(name: "Credit Card", image: "creditcard"),
@@ -66,15 +83,28 @@ struct AddSubscriptionView: View {
                 iconSelectionSection
                 
                 billingInfoSection
+                
+                creditCardSection
 
             }
         }
         .navigationTitle("Add Subscription")
         .navigationBarTitleDisplayMode(.inline)
-        .navigationDestination(isPresented: $showCurrencyPicker) {
-            CurrencyPickerView(currencies: $currencies, onSelect: { currency in
-                selectedCurrency = currency.code
-            })
+        .navigationDestination(isPresented: $showPicker) {
+            switch pickerDestination {
+            case .currencyPicker:
+                CurrencyPickerView(currencies: $currencies, onSelect: { currency in
+                    selectedCurrency = currency
+                })
+                
+            case .creditCardPicker:
+                CreditCardPickerView { card in
+                    print(card)
+                }
+            case .none:
+                EmptyView()
+            }
+            
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -120,6 +150,8 @@ struct AddSubscriptionView: View {
         }
     }
     
+    // MARK: - Sections
+    
     private var basicInfoSection: some View {
         Section {
             VStack {
@@ -127,21 +159,23 @@ struct AddSubscriptionView: View {
                     .autocorrectionDisabled()
 
                 HStack {
-                    let hasDecimal = currencyHasDecimals(code: selectedCurrency)
-                    let formatStyle: Decimal.FormatStyle.Currency = hasDecimal ? .currency(code: selectedCurrency) : .currency(code: selectedCurrency).precision(.fractionLength(0))
-                    TextField("Price", value: $price, format: formatStyle)
-                        .keyboardType(.decimalPad)
-                        .onChange(of: price) { oldValue, newValue in
-                            if oldValue ==  0 {
-                                price = newValue
-                            }
+                    let hasDecimal = CurrencyInfo.hasDecimals(selectedCurrency.code)
+                    let formatStyle: Decimal.FormatStyle.Currency = hasDecimal ? .currency(code: selectedCurrency.code) : .currency(code: selectedCurrency.code).precision(.fractionLength(0))
+                    Text(selectedCurrency.symbol)
+                    TextField("Price", text: $priceString)
+                        .keyboardType(hasDecimal ? .decimalPad : .numberPad)
+                        .onChange(of: priceString) { _, newValue in
+                            self.price = (try? Decimal(newValue, format: formatStyle)) ?? 0
                         }
+                        
+
                     Spacer()
                     Button {
-                        showCurrencyPicker = true
+                        showPicker = true
+                        pickerDestination = .currencyPicker
                     } label: {
                         HStack {
-                            Text("\(selectedCurrency)")
+                            Text("\(selectedCurrency.code)")
                             Image(systemName: "chevron.right")
                                 .font(.caption2)
                         }.foregroundColor(.secondary)
@@ -193,6 +227,31 @@ struct AddSubscriptionView: View {
         }
     }
     
+    private var creditCardSection: some View {
+        Section {
+            Toggle("Record Credit Card Info", isOn: $recordCreditCard)
+            
+            if recordCreditCard {
+                HStack {
+                    Text("Pick a card")
+                    Spacer()
+                    Button {
+                        showPicker = true
+                        pickerDestination = .creditCardPicker
+                    } label: {
+                        Image(systemName: "chevron.right")
+                    }
+                }
+                
+//                Picker("Credit Card", selection: $creditCard) {
+//                    ForEach()
+//                }
+            }
+        }
+    }
+    
+    
+    // MARK: - HELPER VIEWS
     // Break out the ScrollView into its own computed property
     private var colorSelectionScrollView: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -235,15 +294,6 @@ struct AddSubscriptionView: View {
             )
     }
     
-    // Helper function
-    private func currencyHasDecimals(code: String) -> Bool {
-        let nonDecimal: Set<String> = ["TWD"]
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = code
-        return nonDecimal.contains(code) ? false : formatter.minimumFractionDigits > 0
-    }
-    
     private func saveSubscription() {
         if price < 0 {
             errorMessage = "Please enter a valid price"
@@ -269,16 +319,19 @@ struct AddSubscriptionView: View {
             isLoading = false
         }
     }
+    
+    
+    //MARK: - Helper function
+    private var formatter: NumberFormatter {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = selectedCurrency.code
+        formatter.maximumFractionDigits = CurrencyInfo.hasDecimals(selectedCurrency.code) ? 2 : 0
+        formatter.minimumFractionDigits = CurrencyInfo.hasDecimals(selectedCurrency.code) ? 2 : 0
+        return formatter
+    }
 }
 
 #Preview {
     AddSubscriptionView()
-}
-
-
-extension AddSubscriptionView {
-    @Observable
-    class ViewModel {
-        
-    }
 }

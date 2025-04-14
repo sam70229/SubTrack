@@ -36,7 +36,9 @@ struct SubTrackApp: App {
             // Define your schema with all model types
             let schema = Schema([
                 Subscription.self,
-                Category.self
+                Category.self,
+                BillingRecord.self,
+                CreditCard.self
                 // Add other model types as needed
             ])
             

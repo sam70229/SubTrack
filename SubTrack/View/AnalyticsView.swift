@@ -31,11 +31,9 @@ struct AnalyticsView: View {
     @State private var filter = DeviceActivityFilter(segment: .daily(during: Calendar.current.dateInterval(of: .weekOfYear, for: Date())!), applications: [])
     
     var body: some View {
-        VStack {
-
+        Group {
             DeviceActivityReport(context, filter: filter)
                     .frame(maxHeight: .infinity)
-
         }
         .navigationTitle("Analytics")
         .navigationBarTitleDisplayMode(.inline)

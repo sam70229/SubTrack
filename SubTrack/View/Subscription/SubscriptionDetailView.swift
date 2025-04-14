@@ -67,7 +67,7 @@ struct SubscriptionDetailView: View {
     }
     
     private func loadCategoryName() {
-        if let categoryID = subscription.categoryID,
+        if let categoryID = subscription.category?.id,
            let category = categoryRepository?.fetchCategory(withId: categoryID) {
             self.categoryName = category.name
         } else {
@@ -98,7 +98,7 @@ struct SubscriptionDetailView: View {
     
     private var subscriptionDetailsInfoSection: some View {
         Section {
-            if subscription.categoryID != nil {
+            if subscription.category?.id != nil {
                 HStack {
                     Text("Category")
                     Spacer()
@@ -146,7 +146,7 @@ struct SubscriptionDetailView: View {
             HStack {
                 Text("Since First Payment")
                 Spacer()
-                Text(totalPaidSinceStart, format: .currency(code: appSettings.currencyCode))
+                Text(subscription.totalAmountTillToday(), format: .currency(code: appSettings.currencyCode))
             }
         } header: {
             Text("Price Details")

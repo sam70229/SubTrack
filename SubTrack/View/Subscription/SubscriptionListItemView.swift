@@ -11,6 +11,8 @@ struct SubscriptionListItemView: View {
     @EnvironmentObject var appSettings: AppSettings
     let subscription: Subscription
     
+    let onSwipeToDelete: (Subscription) -> Void
+    
     var body: some View {
         HStack(spacing: 12) {
             // Icon
@@ -42,13 +44,20 @@ struct SubscriptionListItemView: View {
             Spacer()
             
             // Price
-            let price = appSettings.showCurrencySymbols ? subscription.price.formatted(.currency(code: appSettings.currencyCode)) : "\(subscription.price)"
-            Text(price)
+            let formatStyle: Decimal.FormatStyle.Currency = CurrencyInfo.hasDecimals(appSettings.currencyCode) ? .currency(code: appSettings.currencyCode) : .currency(code: appSettings.currencyCode).precision(.fractionLength(0))
+            appSettings.showCurrencySymbols ? Text(subscription.price, format: formatStyle) : Text("\(subscription.price)")
                 .font(.subheadline.bold())
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 12)
         .background(Color(.secondarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: 10))
+        .swipeActions {
+            Button(role: .destructive) {
+                onSwipeToDelete(subscription)
+            } label: {
+                Label("Remove", systemImage: "trash")
+            }
+        }
     }
 }

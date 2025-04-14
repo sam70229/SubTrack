@@ -17,3 +17,7 @@ struct ColorOption: Identifiable {
         Color(hex: hex) ?? .blue
     }
 }
+
+extension ColorOption: Hashable {
+
+}
