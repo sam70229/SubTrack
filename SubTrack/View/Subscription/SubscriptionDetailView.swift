@@ -35,7 +35,6 @@ struct SubscriptionDetailView: View {
             
             priceInfoSection
             
-            
             // Delete Subscription
             Button(role: .destructive) {
                 showDeleteConfirmation = true
@@ -67,7 +66,7 @@ struct SubscriptionDetailView: View {
     }
     
     private func loadCategoryName() {
-        if let categoryID = subscription.category?.id,
+        if let categoryID = subscription.category?.first?.id,
            let category = categoryRepository?.fetchCategory(withId: categoryID) {
             self.categoryName = category.name
         } else {
@@ -98,7 +97,7 @@ struct SubscriptionDetailView: View {
     
     private var subscriptionDetailsInfoSection: some View {
         Section {
-            if subscription.category?.id != nil {
+            if subscription.category?.first?.id != nil {
                 HStack {
                     Text("Category")
                     Spacer()
@@ -122,6 +121,14 @@ struct SubscriptionDetailView: View {
                 Text("Days to Billing")
                 Spacer()
                 Text("\(Calendar.current.dateComponents([.day], from: Date(), to: subscription.nextBillingDate).day!) days")
+            }
+            
+            if subscription.creditCard != nil {
+                VStack(alignment: .leading) {
+                    Text("Paying Card")
+                    CreditCardView(card: subscription.creditCard!)
+                        .frame(height: 200)
+                }
             }
 
         } header: {

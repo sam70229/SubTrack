@@ -17,7 +17,7 @@ class Subscription {
     var currencyCode: String // For supporting diff country
     var billingCycle: BillingCycle
     var firstBillingDate: Date
-    var category: Category?
+    var category: [Category]?
     var icon: String
     var colorHex: String
     var isActive: Bool
@@ -39,7 +39,7 @@ class Subscription {
         currencyCode: String = Locale.current.currency?.identifier ?? "USD",
         billingCycle: BillingCycle,
         firstBillingDate: Date,
-        category: Category? = nil,
+        category: [Category]? = nil,
         creditCard: CreditCard? = nil,
         icon: String,
         colorHex: String,

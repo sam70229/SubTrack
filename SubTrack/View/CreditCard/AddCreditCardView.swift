@@ -21,19 +21,7 @@ struct AddCreditCardView: View {
         ColorOption(name: "Gray", hex: Color.gray.toHexString())
     ]
     
-    private let colorOptions: [ColorOption] = [
-        ColorOption(name: "Blue", hex: "#3E80F7"),
-        ColorOption(name: "Red", hex: "#FF3B30"),
-        ColorOption(name: "Green", hex: "#34C759"),
-        ColorOption(name: "Purple", hex: "#AF52DE"),
-        ColorOption(name: "Orange", hex: "#FF9500"),
-        ColorOption(name: "Pink", hex: "#FF2D55"),
-        ColorOption(name: "Yellow", hex: "#FFCC00"),
-        ColorOption(name: "Teal", hex: "#5AC8FA"),
-        ColorOption(name: "Black", hex: Color.black.toHexString()),
-        ColorOption(name: "Gray", hex: Color.gray.toHexString()),
-        ColorOption(name: "White", hex: Color.white.toHexString())
-    ]
+    private let colorOptions: [ColorOption] = ColorOption.generateColors()
     
     var body: some View {
         GeometryReader { geometry in
@@ -45,6 +33,7 @@ struct AddCreditCardView: View {
                             Color(hex: color.hex)!
                         })
                                               , startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .shadow(color: .gray, radius: 2)
                     
                     VStack {
                         HStack {
@@ -61,7 +50,7 @@ struct AddCreditCardView: View {
                     }
                     .padding(20)
                 }
-                .environment(\.colorScheme, .dark)
+                .environment(\.colorScheme, selectedColors.count == 1 && selectedColors[0].name == "White" ? .light : .dark)
                 .frame(height: geometry.size.height / 3)
                 
                 Form {
@@ -81,7 +70,7 @@ struct AddCreditCardView: View {
             }
             .padding()
             .navigationTitle("Add Card")
-            navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -93,7 +82,9 @@ struct AddCreditCardView: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        
+                        let creditCard = CreditCard(name: cardName, last4Digits: cardLast4Digits, colors: selectedColors)
+                        repository?.addCreditCard(creditCard)
+                        dismiss()
                     } label: {
                         Text("Add")
                     }
@@ -107,7 +98,7 @@ struct AddCreditCardView: View {
     
     private var colorPickerSection: some View {
         Section {
-            CustomColorPicker(colorOptions: colorOptions, selectedColorOptions: $selectedColors)
+            CustomColorPicker(colorOptions: colorOptions, selectedColorOptions: $selectedColors, limit: 5)
         } header: {
             Text("Card Color")
         }

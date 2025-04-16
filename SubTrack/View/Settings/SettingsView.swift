@@ -81,6 +81,14 @@ struct SettingsView: View {
                 Text("Wish Wall")
             }
             
+            Section {
+                NavigationLink {
+                    CreditCardListView()
+                } label: {
+                    Label("Manage Credit Cards", systemImage: "creditcard")
+                }
+            }
+            
             // About section
             Section(header: Text("About")) {
                 NavigationLink {

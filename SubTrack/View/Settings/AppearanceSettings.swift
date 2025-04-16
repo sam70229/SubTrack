@@ -15,19 +15,7 @@ struct AppearanceSettings: View {
     @State private var selectedAccentColor: Color = .blue
     
     // Predefined accent colors
-    private let accentColors: [ColorOption] = [
-        ColorOption(name: "Blue", hex: Color.blue.toHexString()),
-        ColorOption(name: "Purple", hex: Color.purple.toHexString()),
-        ColorOption(name: "Pink", hex: Color.pink.toHexString()),
-        ColorOption(name: "Red", hex: Color.red.toHexString()),
-        ColorOption(name: "Orange", hex: Color.orange.toHexString()),
-        ColorOption(name: "Yellow", hex: Color.yellow.toHexString()),
-        ColorOption(name: "Green", hex: Color.green.toHexString()),
-        ColorOption(name: "Mint", hex: Color.mint.toHexString()),
-        ColorOption(name: "Teal", hex: Color.teal.toHexString()),
-        ColorOption(name: "Cyan", hex: Color.cyan.toHexString()),
-        ColorOption(name: "Indigo", hex: Color.indigo.toHexString())
-    ]
+    private let accentColors: [ColorOption] = ColorOption.generateColors()
     
     var body: some View {
         List {

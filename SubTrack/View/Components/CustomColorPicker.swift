@@ -12,6 +12,8 @@ struct CustomColorPicker: View {
     
     @Binding var selectedColorOptions: [ColorOption]
     
+    var limit: Int? = nil
+    
     var body: some View {
         colorSelectionScrollView
     }
@@ -22,6 +24,7 @@ struct CustomColorPicker: View {
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
         .padding(.horizontal, 8)
+        .disabled(limit != nil && selectedColorOptions.count == limit!)
     }
     
     // Break out the row of color options
@@ -38,7 +41,14 @@ struct CustomColorPicker: View {
     private func colorButton(for colorOption: ColorOption) -> some View {
         let newColorOption = ColorOption(name: colorOption.name, hex: colorOption.hex)
         return Button {
-            selectedColorOptions.append(newColorOption)
+            if limit != nil {
+                if selectedColorOptions.count < limit! {
+                    selectedColorOptions.append(newColorOption)
+                }
+            } else {
+                selectedColorOptions.append(newColorOption)
+            }
+            
         } label: {
             colorCircle(for: colorOption)
         }
@@ -53,10 +63,11 @@ struct CustomColorPicker: View {
         return Circle()
             .fill(Color(hex: colorOption.hex) ?? .blue)
             .frame(width: 32, height: 32)
+            .padding(4)
             .overlay(
                 Circle()
                     .strokeBorder(isSelected ? .primary : .tertiary, lineWidth: 2)
-                    .padding(2)
+                    .padding(1)
             )
     }
     
@@ -78,10 +89,17 @@ struct ColorButton: View {
         return Circle()
             .fill(Color(hex: color.hex) ?? .blue)
             .frame(width: 32, height: 32)
+            .padding(4)
             .overlay(
                 Circle()
                     .strokeBorder(.primary)
-                    .padding(2)
+                    .padding(1)
             )
     }
+}
+
+#Preview {
+    @Previewable @State var selectedColors: [ColorOption] = []
+    let colorOptions: [ColorOption] = ColorOption.generateColors()
+    CustomColorPicker(colorOptions: colorOptions, selectedColorOptions: $selectedColors)
 }
