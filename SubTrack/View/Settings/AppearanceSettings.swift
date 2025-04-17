@@ -102,14 +102,28 @@ struct AppearanceSettings: View {
             .pickerStyle(.navigationLink)
             
 
-            Picker(selection: $appSettings.subscriptionDisplayStyle) {
-                ForEach(SubscriptionDisplayStyle.allCases, id: \.self) { style in
+            Picker(selection: $appSettings.billingInfoDisplay) {
+                ForEach(BillingInfoDisplay.allCases, id: \.self) { style in
                     Text(style.description).tag(style)
                 }
             } label: {
                 Text("Subscription Display Style")
             }
             .pickerStyle(.navigationLink)
+            
+            Group {
+                Text("Price Display")
+                    
+                Picker(selection: $appSettings.priceDisplayMode) {
+                    ForEach(PriceDisplayMode.allCases, id: \.self) { mode in
+                        Text(mode.description).tag(mode)
+                    }
+                } label: {
+                    Text("Price Display")
+                }
+                .pickerStyle(SegmentedPickerStyle())
+                .listRowSeparator(.hidden)
+            }
         }
     }
     

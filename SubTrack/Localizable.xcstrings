@@ -73,6 +73,16 @@
         }
       }
     },
+    "Actual Price" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "實際價格"
+          }
+        }
+      }
+    },
     "Add" : {
       "localizations" : {
         "zh-Hant" : {
@@ -299,6 +309,16 @@
         }
       }
     },
+    "Converted Price" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "轉換後價格"
+          }
+        }
+      }
+    },
     "Created at: %@" : {
       "localizations" : {
         "zh-Hant" : {
@@ -435,6 +455,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "真的要刪除全部資料嗎？"
+          }
+        }
+      }
+    },
+    "Done" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完成"
           }
         }
       }
@@ -626,6 +656,16 @@
         }
       }
     },
+    "Original Price" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "原價"
+          }
+        }
+      }
+    },
     "Other Wishes" : {
       "localizations" : {
         "zh-Hant" : {
@@ -692,6 +732,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "費用詳細資訊"
+          }
+        }
+      }
+    },
+    "Price Display" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "價格顯示"
           }
         }
       }

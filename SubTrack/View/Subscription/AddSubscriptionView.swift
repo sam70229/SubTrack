@@ -140,6 +140,10 @@ struct AddSubscriptionView: View {
             // Initialize the repository with the model context
             repository = SubscriptionRepository(modelContext: modelContext)
             currencies = CurrencyInfo.loadAvailableCurrencies()
+
+            if let systemCurrency = CurrencyInfo.loadAvailableCurrencies().filter({ $0.code ==  appSettings.currencyCode }).first {
+                selectedCurrency = systemCurrency
+            }
         }
     }
     
@@ -150,6 +154,7 @@ struct AddSubscriptionView: View {
             VStack {
                 TextField("Name", text: $name)
                     .autocorrectionDisabled()
+                    .submitLabel(.continue)
 
                 HStack {
                     let hasDecimal = CurrencyInfo.hasDecimals(selectedCurrency.code)
@@ -160,7 +165,7 @@ struct AddSubscriptionView: View {
                         .onChange(of: priceString) { _, newValue in
                             self.price = (try? Decimal(newValue, format: formatStyle)) ?? 0
                         }
-                        
+                        .keyboardDoneButton()
 
                     Spacer()
                     Button {

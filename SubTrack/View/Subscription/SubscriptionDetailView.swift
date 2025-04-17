@@ -8,7 +8,8 @@ import SwiftUI
 
 
 struct SubscriptionDetailView: View {
-    @EnvironmentObject var appSettings: AppSettings
+    @EnvironmentObject private var appSettings: AppSettings
+    @EnvironmentObject private var exchangeRates: ExchangeRateRepository
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(\.presentationMode) var presentationMode
@@ -87,7 +88,16 @@ struct SubscriptionDetailView: View {
             HStack {
                 Text("Price")
                 Spacer()
-                Text(subscription.price, format: .currency(code: appSettings.currencyCode))
+                Text(subscription.price, format: .currency(code: subscription.currencyCode))
+            }
+
+            if subscription.currencyCode != appSettings.currencyCode {
+                HStack {
+                    let convertedPrice = exchangeRates.convert(subscription.price, from: subscription.currencyCode, to: appSettings.currencyCode) ?? subscription.price
+                    Text("Actual Price")
+                    Spacer()
+                    Text(convertedPrice, format: .currency(code: appSettings.currencyCode))
+                }
             }
             
         } header: {

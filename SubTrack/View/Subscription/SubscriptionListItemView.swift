@@ -9,6 +9,8 @@ import SwiftUI
 
 struct SubscriptionListItemView: View {
     @EnvironmentObject var appSettings: AppSettings
+    @EnvironmentObject private var exchangeRates: ExchangeRateRepository
+
     let subscription: Subscription
     
     let onSwipeToDelete: (Subscription) -> Void
@@ -30,7 +32,7 @@ struct SubscriptionListItemView: View {
                 Text(subscription.name)
                     .font(.headline)
                 
-                if appSettings.subscriptionDisplayStyle == .billingCycle {
+                if appSettings.billingInfoDisplay == .billingCycle {
                     Text(subscription.billingCycle.description)
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -44,8 +46,23 @@ struct SubscriptionListItemView: View {
             Spacer()
             
             // Price
-            let formatStyle: Decimal.FormatStyle.Currency = CurrencyInfo.hasDecimals(appSettings.currencyCode) ? .currency(code: appSettings.currencyCode) : .currency(code: appSettings.currencyCode).precision(.fractionLength(0))
-            appSettings.showCurrencySymbols ? Text(subscription.price, format: formatStyle) : Text("\(subscription.price)")
+            let price = switch appSettings.priceDisplayMode {
+            case .original:
+                subscription.price
+            case .converted:
+                exchangeRates.convert(subscription.price, from: subscription.currencyCode, to: appSettings.currencyCode) ?? subscription.price
+            }
+            
+            let currencyCode = switch appSettings.priceDisplayMode {
+            case .original:
+                subscription.currencyCode
+            case .converted:
+                appSettings.currencyCode
+            }
+
+            let formatStyle: Decimal.FormatStyle.Currency = CurrencyInfo.hasDecimals(currencyCode) ? .currency(code: currencyCode) : .currency(code: currencyCode).precision(.fractionLength(0))
+            
+            appSettings.showCurrencySymbols ? Text(price, format: formatStyle) : Text("\(price)")
                 .font(.subheadline.bold())
         }
         .padding(.vertical, 8)

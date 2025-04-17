@@ -55,6 +55,8 @@ struct AddCreditCardView: View {
                 
                 Form {
                     TextField("Card Name", text: $cardName)
+                        .submitLabel(.continue)
+
                     TextField("last 4 digits", text: $cardLast4Digits)
                         .keyboardType(.numberPad)
                         .onChange(of: cardLast4Digits) { oldValue, newValue in
@@ -62,6 +64,7 @@ struct AddCreditCardView: View {
                                 cardLast4Digits = oldValue
                             }
                         }
+                        .keyboardDoneButton()
 
                     colorPickerSection
                     

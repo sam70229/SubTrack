@@ -14,7 +14,7 @@ enum AppTheme: String, CaseIterable {
     case dark
 }
 
-enum SubscriptionDisplayStyle: String, CaseIterable {
+enum BillingInfoDisplay: String, CaseIterable {
     case billingCycle
     case nextBillingDate
     
@@ -28,13 +28,29 @@ enum SubscriptionDisplayStyle: String, CaseIterable {
     }
 }
 
+enum PriceDisplayMode: String, CaseIterable {
+    case original
+    case converted
+    
+    var description: String {
+        switch self {
+        case .original:
+            return String(localized: "Original Price")
+        case .converted:
+            return String(localized: "Converted Price")
+        }
+    }
+}
+
 
 class AppSettings: ObservableObject {
     // Device ID
     @AppStorage("device_id") var deviceID: String = UUID().uuidString
 
     @AppStorage("showDebugInfo") var showDebugInfo: Bool = false
-    @AppStorage("subscriptionDisplayStyle") var subscriptionDisplayStyle: SubscriptionDisplayStyle = .billingCycle
+    @AppStorage("billingInfoDisplay") var billingInfoDisplay: BillingInfoDisplay = .billingCycle
+    
+    @AppStorage("priceDisplayMode") var priceDisplayMode: PriceDisplayMode = .original
     
     // MARK: - Currency Settings
     @AppStorage("systemCurrencyCode") var systemCurrencyCode: String = Locale.current.currency?.identifier ?? "USD"
