@@ -18,16 +18,15 @@ class CategoryRepository: ObservableObject {
     
     func addCategory(_ category: Category) throws {
         modelContext.insert(category)
-        try modelContext.save()
     }
     
     func updateCategory(_ category: Category) throws {
-        try modelContext.save()
+        // SwiftData automatically tracks changes to existing objects
+        // No need to call save()
     }
     
     func deleteCategory(_ category: Category) throws {
         modelContext.delete(category)
-        try modelContext.save()
     }
     
     func fetchCategories() -> [Category] {

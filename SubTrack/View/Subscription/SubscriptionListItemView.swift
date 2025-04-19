@@ -9,7 +9,11 @@ import SwiftUI
 
 struct SubscriptionListItemView: View {
     @EnvironmentObject var appSettings: AppSettings
+    @EnvironmentObject private var exchangeRates: ExchangeRateRepository
+
     let subscription: Subscription
+    
+    let onSwipeToDelete: (Subscription) -> Void
     
     var body: some View {
         HStack(spacing: 12) {
@@ -28,7 +32,7 @@ struct SubscriptionListItemView: View {
                 Text(subscription.name)
                     .font(.headline)
                 
-                if appSettings.subscriptionDisplayStyle == .billingCycle {
+                if appSettings.billingInfoDisplay == .billingCycle {
                     Text(subscription.billingCycle.description)
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -42,13 +46,35 @@ struct SubscriptionListItemView: View {
             Spacer()
             
             // Price
-            let price = appSettings.showCurrencySymbols ? subscription.price.formatted(.currency(code: appSettings.currencyCode)) : "\(subscription.price)"
-            Text(price)
+            let price = switch appSettings.priceDisplayMode {
+            case .original:
+                subscription.price
+            case .converted:
+                exchangeRates.convert(subscription.price, from: subscription.currencyCode, to: appSettings.currencyCode) ?? subscription.price
+            }
+            
+            let currencyCode = switch appSettings.priceDisplayMode {
+            case .original:
+                subscription.currencyCode
+            case .converted:
+                appSettings.currencyCode
+            }
+
+            let formatStyle: Decimal.FormatStyle.Currency = CurrencyInfo.hasDecimals(currencyCode) ? .currency(code: currencyCode) : .currency(code: currencyCode).precision(.fractionLength(0))
+            
+            appSettings.showCurrencySymbols ? Text(price, format: formatStyle) : Text("\(price)")
                 .font(.subheadline.bold())
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 12)
         .background(Color(.secondarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: 10))
+        .swipeActions {
+            Button(role: .destructive) {
+                onSwipeToDelete(subscription)
+            } label: {
+                Label("Remove", systemImage: "trash")
+            }
+        }
     }
 }

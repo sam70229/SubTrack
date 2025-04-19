@@ -35,15 +35,12 @@ class SubscriptionDataSource: SubscriptionDataSourceProtocol {
     
     func updateSubscription(_ subscription: Subscription) throws {
         // Implement the update logic
-        // Since SwiftData automatically tracks changes to managed objects,
-        // we just need to save the context
-        try modelContext.save()
+        // Since SwiftData automatically tracks changes to managed objects
     }
     
     func deleteSubscription(_ subscription: Subscription) throws {
         // Implement the delete logic
         modelContext.delete(subscription)
-        try modelContext.save()
     }
     
     func refreshContext() {

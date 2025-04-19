@@ -26,7 +26,7 @@ struct SubscriptionItemCard: View {
                 Text(subscription.name)
                     .font(.headline)
                 
-                switch appSettings.subscriptionDisplayStyle {
+                switch appSettings.billingInfoDisplay {
                 case .nextBillingDate:
                     Text(subscription.nextBillingDate.formatted(date: .abbreviated, time: .omitted))
                         .font(.caption)

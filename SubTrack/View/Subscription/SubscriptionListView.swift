@@ -17,13 +17,18 @@ struct SubscriptionListView: View {
     @State private var showAddSubscription: Bool = false
     @State private var selectedSubscription: Subscription?
     @State private var isLoading = false
-
+    
     var body: some View {
         List(subscriptions) { subscription in
             Button {
                 selectedSubscription = subscription
             } label: {
-                SubscriptionListItemView(subscription: subscription)
+                SubscriptionListItemView(
+                    subscription: subscription,
+                    onSwipeToDelete: { subscription in
+                        swipeToDelete(subscription)
+                    }
+                )
             }
             .buttonStyle(.plain)
             .listRowSeparator(.hidden)
@@ -54,6 +59,10 @@ struct SubscriptionListView: View {
         .navigationDestination(item: $selectedSubscription) { subscription in
             SubscriptionDetailView(subscription: subscription)
         }
+    }
+    
+    func swipeToDelete(_ subscription: Subscription) {
+        modelContext.delete(subscription)
     }
 }
 

@@ -27,16 +27,15 @@ class SubscriptionRepository: ObservableObject {
     
     func addSubscription(_ subscription: Subscription) throws {
         modelContext.insert(subscription)
-        try modelContext.save()
     }
     
     func updateSubscription(_ subscription: Subscription) throws {
-        try modelContext.save()
+        // SwiftData automatically tracks changes to existing objects
+        // No need to call save()
     }
     
     func deleteSubscription(_ subscription: Subscription) throws {
         modelContext.delete(subscription)
-        try modelContext.save()
     }
     
     func fetchSubscriptionsForDate(_ date: Date) -> [Subscription] {

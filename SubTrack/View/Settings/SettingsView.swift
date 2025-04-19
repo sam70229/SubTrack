@@ -40,35 +40,12 @@ struct SettingsView: View {
                 } label: {
                     Label("Appearance", systemImage: "paintbrush")
                 }
-            }
-            
-            // Data management section
-            Section(header: Text("Data")) {
-                Button(role: .destructive) {
-                    // Show confirmation dialog
-                    showClearDataAlert = true
+
+                NavigationLink {
+                    CreditCardListView()
                 } label: {
-                    Label("Clear All Data", systemImage: "trash")
+                    Label("Manage Credit Cards", systemImage: "creditcard")
                 }
-                
-                // TODO: Support import/export, but i dunno why we need this
-//                NavigationLink {
-//                    Text("Import/Export")
-//                        .navigationTitle("Import/Export")
-//                } label: {
-//                    Label("Import/Export", systemImage: "square.and.arrow.up.on.square")
-//                }
-            }
-            .alert(isPresented: $showClearDataAlert) {
-                Alert(title: Text("Do u really wanna clear all data?"), primaryButton: .destructive(Text("Confirm"), action: {
-                    do {
-                        try modelContext.delete(model: Subscription.self)
-                        try modelContext.delete(model: Category.self)
-                    } catch {
-                        showSystemAlert = true
-                        errorMessage = "Failed to clear data: \(error)"
-                    }
-                }), secondaryButton: .cancel())
             }
             
             Section {
@@ -80,6 +57,9 @@ struct SettingsView: View {
             } header: {
                 Text("Wish Wall")
             }
+
+            // Data management section
+            dataManageSection
             
             // About section
             Section(header: Text("About")) {
@@ -109,6 +89,36 @@ struct SettingsView: View {
         }
         .alert(isPresented: $showSystemAlert) {
             Alert(title: Text("Error"), message: Text(errorMessage!), dismissButton: .default(Text("OK")))
+        }
+    }
+    
+    private var dataManageSection: some View {
+        Section(header: Text("Data")) {
+            Button(role: .destructive) {
+                // Show confirmation dialog
+                showClearDataAlert = true
+            } label: {
+                Label("Clear All Data", systemImage: "trash")
+            }
+            
+            // TODO: Support import/export, but i dunno why we need this
+//                NavigationLink {
+//                    Text("Import/Export")
+//                        .navigationTitle("Import/Export")
+//                } label: {
+//                    Label("Import/Export", systemImage: "square.and.arrow.up.on.square")
+//                }
+        }
+        .alert(isPresented: $showClearDataAlert) {
+            Alert(title: Text("Do u really wanna clear all data?"), primaryButton: .destructive(Text("Confirm"), action: {
+                do {
+                    try modelContext.delete(model: Subscription.self)
+                    try modelContext.delete(model: Category.self)
+                } catch {
+                    showSystemAlert = true
+                    errorMessage = "Failed to clear data: \(error)"
+                }
+            }), secondaryButton: .cancel())
         }
     }
 }

@@ -8,7 +8,8 @@ import SwiftUI
 
 
 struct SubscriptionDetailView: View {
-    @EnvironmentObject var appSettings: AppSettings
+    @EnvironmentObject private var appSettings: AppSettings
+    @EnvironmentObject private var exchangeRates: ExchangeRateRepository
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(\.presentationMode) var presentationMode
@@ -34,7 +35,6 @@ struct SubscriptionDetailView: View {
 //            notificationSettingsSection
             
             priceInfoSection
-            
             
             // Delete Subscription
             Button(role: .destructive) {
@@ -67,7 +67,7 @@ struct SubscriptionDetailView: View {
     }
     
     private func loadCategoryName() {
-        if let categoryID = subscription.categoryID,
+        if let categoryID = subscription.category?.first?.id,
            let category = categoryRepository?.fetchCategory(withId: categoryID) {
             self.categoryName = category.name
         } else {
@@ -88,7 +88,16 @@ struct SubscriptionDetailView: View {
             HStack {
                 Text("Price")
                 Spacer()
-                Text(subscription.price, format: .currency(code: appSettings.currencyCode))
+                Text(subscription.price, format: .currency(code: subscription.currencyCode))
+            }
+
+            if subscription.currencyCode != appSettings.currencyCode {
+                HStack {
+                    let convertedPrice = exchangeRates.convert(subscription.price, from: subscription.currencyCode, to: appSettings.currencyCode) ?? subscription.price
+                    Text("Actual Price")
+                    Spacer()
+                    Text(convertedPrice, format: .currency(code: appSettings.currencyCode))
+                }
             }
             
         } header: {
@@ -98,7 +107,7 @@ struct SubscriptionDetailView: View {
     
     private var subscriptionDetailsInfoSection: some View {
         Section {
-            if subscription.categoryID != nil {
+            if subscription.category?.first?.id != nil {
                 HStack {
                     Text("Category")
                     Spacer()
@@ -123,6 +132,14 @@ struct SubscriptionDetailView: View {
                 Spacer()
                 Text("\(Calendar.current.dateComponents([.day], from: Date(), to: subscription.nextBillingDate).day!) days")
             }
+            
+            if subscription.creditCard != nil {
+                VStack(alignment: .leading) {
+                    Text("Paying Card")
+                    CreditCardView(card: subscription.creditCard!)
+                        .frame(height: 200)
+                }
+            }
 
         } header: {
             Text("Subscription Details")
@@ -146,7 +163,7 @@ struct SubscriptionDetailView: View {
             HStack {
                 Text("Since First Payment")
                 Spacer()
-                Text(totalPaidSinceStart, format: .currency(code: appSettings.currencyCode))
+                Text(subscription.totalAmountTillToday(), format: .currency(code: appSettings.currencyCode))
             }
         } header: {
             Text("Price Details")

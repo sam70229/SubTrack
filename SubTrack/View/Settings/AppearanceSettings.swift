@@ -15,19 +15,7 @@ struct AppearanceSettings: View {
     @State private var selectedAccentColor: Color = .blue
     
     // Predefined accent colors
-    private let accentColors: [ColorOption] = [
-        ColorOption(name: "Blue", hex: Color.blue.toHexString()),
-        ColorOption(name: "Purple", hex: Color.purple.toHexString()),
-        ColorOption(name: "Pink", hex: Color.pink.toHexString()),
-        ColorOption(name: "Red", hex: Color.red.toHexString()),
-        ColorOption(name: "Orange", hex: Color.orange.toHexString()),
-        ColorOption(name: "Yellow", hex: Color.yellow.toHexString()),
-        ColorOption(name: "Green", hex: Color.green.toHexString()),
-        ColorOption(name: "Mint", hex: Color.mint.toHexString()),
-        ColorOption(name: "Teal", hex: Color.teal.toHexString()),
-        ColorOption(name: "Cyan", hex: Color.cyan.toHexString()),
-        ColorOption(name: "Indigo", hex: Color.indigo.toHexString())
-    ]
+    private let accentColors: [ColorOption] = ColorOption.generateColors()
     
     var body: some View {
         List {
@@ -114,14 +102,28 @@ struct AppearanceSettings: View {
             .pickerStyle(.navigationLink)
             
 
-            Picker(selection: $appSettings.subscriptionDisplayStyle) {
-                ForEach(SubscriptionDisplayStyle.allCases, id: \.self) { style in
+            Picker(selection: $appSettings.billingInfoDisplay) {
+                ForEach(BillingInfoDisplay.allCases, id: \.self) { style in
                     Text(style.description).tag(style)
                 }
             } label: {
                 Text("Subscription Display Style")
             }
             .pickerStyle(.navigationLink)
+            
+            Group {
+                Text("Price Display")
+                    
+                Picker(selection: $appSettings.priceDisplayMode) {
+                    ForEach(PriceDisplayMode.allCases, id: \.self) { mode in
+                        Text(mode.description).tag(mode)
+                    }
+                } label: {
+                    Text("Price Display")
+                }
+                .pickerStyle(SegmentedPickerStyle())
+                .listRowSeparator(.hidden)
+            }
         }
     }
     

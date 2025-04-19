@@ -207,7 +207,9 @@ struct ComboCalendarView: View {
             } else {
                 VStack(spacing: 8) {
                     ForEach(date.subscriptions) { subscription in
-                        SubscriptionListItemView(subscription: subscription)
+                        SubscriptionListItemView(subscription: subscription, onSwipeToDelete: { subscription in
+                            modelContext.delete(subscription)
+                        })
                     }
                 }
             }

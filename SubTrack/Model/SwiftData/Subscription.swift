@@ -17,29 +17,34 @@ class Subscription {
     var currencyCode: String // For supporting diff country
     var billingCycle: BillingCycle
     var firstBillingDate: Date
-    var categoryID: UUID?
+    var category: [Category]?
     var icon: String
     var colorHex: String
     var isActive: Bool
-    var creationDate: Date
+    var createdAt: Date
+    var creditCard: CreditCard?
     
     var nextBillingDate: Date {
         calculateNextBillingDate()
     }
+    
+    @Relationship(deleteRule: .cascade, inverse: \BillingRecord.subscription)
+    var billingRecords: [BillingRecord] = []
     
     init(
         id: UUID = UUID(),
         name: String,
         subscriptionDescription: String? = nil,
         price: Decimal,
-        currencyCode: String = "USD",
+        currencyCode: String = Locale.current.currency?.identifier ?? "USD",
         billingCycle: BillingCycle,
         firstBillingDate: Date,
-        categoryID: UUID? = nil,
+        category: [Category]? = nil,
+        creditCard: CreditCard? = nil,
         icon: String,
         colorHex: String,
         isActive: Bool = true,
-        creationDate: Date = Date()
+        createdAt: Date = Date()
     ) {
         self.id = id
         self.name = name
@@ -48,11 +53,12 @@ class Subscription {
         self.currencyCode = currencyCode
         self.billingCycle = billingCycle
         self.firstBillingDate = firstBillingDate
-        self.categoryID = categoryID
+        self.category = category
+        self.creditCard = creditCard
         self.icon = icon
         self.colorHex = colorHex
         self.isActive = isActive
-        self.creationDate = creationDate
+        self.createdAt = createdAt
     }
     
     var color: Color {
@@ -102,26 +108,68 @@ class Subscription {
         return nextDate
     }
     
-    private func calculateTotalPrice(for billingDate: Date) -> Decimal {
-        let today = Date()
+    func totalAmountTillToday() -> Decimal {
+        return billingRecords.filter { $0.isPaid && $0.billingDate <= Date() }
+            .reduce(0) { $0 + $1.amount }
+    }
+    
+    // Format the total amount with the subscription's currency
+    func formattedTotalAmount() -> String {
+        let total = totalAmountTillToday()
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
         
-        if firstBillingDate > today || !isActive {
-            return 0
+        // Find a locale that uses this currency
+        if let locale = Locale.availableIdentifiers
+            .map({ Locale(identifier: $0) })
+            .first(where: { $0.currency?.identifier == currencyCode }) {
+            formatter.locale = locale
         }
         
+        return formatter.string(from: NSDecimalNumber(decimal: total)) ?? "\(total)"
+    }
+    
+    func generateBillingHistory() {
+        let today = Date()
         var currentDate = firstBillingDate
-        var numberOfCycles: Int = 0
-        
+
+        if currentDate > today || !isActive {
+            return
+        }
+
         while currentDate <= today {
-            numberOfCycles += 1
+            let existingRecord = billingRecords.first {
+                Calendar.current.isDate($0.billingDate, inSameDayAs: currentDate)
+            }
+            
+            if existingRecord == nil {
+                let record = BillingRecord(
+                    subscriptionId: id,
+                    billingDate: currentDate,
+                    amount: price,
+                    currencyCode: currencyCode
+                )
+                billingRecords.append(record)
+            }
+            
             currentDate = billingCycle.calculateNextDate(from: currentDate)
         }
+    }
+    
+    // Update future billing records if price changes
+    func updateFutureBillingRecords() {
+        let today = Date()
         
-        if currentDate.timeIntervalSince(today) < 86400 && numberOfCycles > 0 {
-            numberOfCycles -= 1
+        // Update all future billing records with the new price
+        for record in billingRecords {
+            if record.billingDate > today {
+                record.amount = price
+                record.currencyCode = currencyCode
+            }
         }
         
-        return price * Decimal(numberOfCycles)
+        // Generate any new billing records with the updated price
+        generateBillingHistory()
     }
 }
 

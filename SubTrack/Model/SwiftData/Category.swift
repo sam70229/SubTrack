@@ -14,6 +14,9 @@ class Category {
     var name: String
     var colorHex: String
     
+    @Relationship(deleteRule: .nullify,  inverse: \Subscription.category)
+    var subscriptions: [Subscription]? = []
+    
     init(id: UUID = UUID(), name: String, colorHex: String) {
         self.id = id
         self.name = name

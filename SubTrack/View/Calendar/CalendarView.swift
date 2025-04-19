@@ -10,6 +10,7 @@ import SwiftData
 
 struct CalendarView: View {
     @EnvironmentObject private var appSettings: AppSettings
+    @EnvironmentObject private var exchangeRates: ExchangeRateRepository
     @Environment(\.modelContext) private var modelContext
     
     @State private var showAddSubscription = false
@@ -179,36 +180,6 @@ struct CalendarView: View {
         }
     }
     
-    private func selectedDateView(for date: CalendarDate) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(dateString(from: date.date))
-                .font(.headline)
-            
-            if date.subscriptions.isEmpty {
-                HStack {
-                    Spacer()
-                    VStack(spacing: 8) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.largeTitle)
-                            .foregroundStyle(.green)
-                        
-                        Text("No Subscriptions Needs To Be Paid Today")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(.vertical, 30)
-                    Spacer()
-                }
-            } else {
-                VStack(spacing: 8) {
-                    ForEach(date.subscriptions) { subscription in
-                        SubscriptionListItemView(subscription: subscription)
-                    }
-                }
-            }
-        }
-    }
-    
     // MARK: - Calender Generation
     
     private func generateCalendarDates() {
@@ -313,7 +284,7 @@ struct CalendarView: View {
         let currentMonthDates = calendarDates.filter { $0.isCurrentMonth }
         
         var processedSubscriptionIds = Set<String>()
-        var totalCost: Double = 0.0
+        var totalCost: Decimal = 0
         
         for calendarDate in currentMonthDates {
             for subscription in calendarDate.subscriptions {
@@ -322,20 +293,27 @@ struct CalendarView: View {
                 }
                 
                 processedSubscriptionIds.insert(subscription.id.uuidString)
+                
+                let convertedPrice = exchangeRates.convert(
+                    subscription.price,
+                    from: subscription.currencyCode,
+                    to: appSettings.currencyCode
+                ) ?? subscription.price
+
                 switch calculationMethod {
                 case .actualBilling:
-                    totalCost += NSDecimalNumber(decimal: subscription.price).doubleValue
+                    totalCost += convertedPrice
                 case .amortized:
                     if subscription.billingCycle == .annually {
-                        totalCost += NSDecimalNumber(decimal: subscription.price / 12).doubleValue
+                        totalCost += convertedPrice / 12
                     } else {
-                        totalCost += NSDecimalNumber(decimal: subscription.price).doubleValue
+                        totalCost += convertedPrice
                     }
                 }
             }
         }
         
-        return totalCost
+        return NSDecimalNumber(decimal: totalCost).doubleValue
     }
     
     private func formattedMonthlyTotal(currency: String) -> String {

@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "**** **** **** %@" : {
+      "shouldTranslate" : false
+    },
     "%@" : {
       "shouldTranslate" : false
     },
@@ -70,12 +73,32 @@
         }
       }
     },
+    "Actual Price" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "實際價格"
+          }
+        }
+      }
+    },
     "Add" : {
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "新增"
+          }
+        }
+      }
+    },
+    "Add Card" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新增卡片"
           }
         }
       }
@@ -109,6 +132,9 @@
           }
         }
       }
+    },
+    "Analyze with Screen Time API coming soon..." : {
+
     },
     "Annually" : {
       "localizations" : {
@@ -203,6 +229,26 @@
         }
       }
     },
+    "Card Color" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "卡的顏色"
+          }
+        }
+      }
+    },
+    "Card Name" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "卡的名稱"
+          }
+        }
+      }
+    },
     "Category" : {
       "localizations" : {
         "zh-Hant" : {
@@ -219,6 +265,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "清除所有資料"
+          }
+        }
+      }
+    },
+    "Click button below to add a card" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "點擊下方按鈕來新增卡片"
           }
         }
       }
@@ -249,6 +305,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "聯繫我"
+          }
+        }
+      }
+    },
+    "Converted Price" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "轉換後價格"
           }
         }
       }
@@ -393,6 +459,16 @@
         }
       }
     },
+    "Done" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完成"
+          }
+        }
+      }
+    },
     "Error" : {
       "localizations" : {
         "zh-Hant" : {
@@ -437,6 +513,16 @@
         }
       }
     },
+    "last 4 digits" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "末4碼"
+          }
+        }
+      }
+    },
     "Libraries" : {
       "shouldTranslate" : false
     },
@@ -456,6 +542,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "列表"
+          }
+        }
+      }
+    },
+    "Manage Credit Cards" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "管理信用卡"
           }
         }
       }
@@ -510,6 +606,16 @@
         }
       }
     },
+    "No Cards" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚無卡片"
+          }
+        }
+      }
+    },
     "No Subscriptions" : {
       "localizations" : {
         "zh-Hant" : {
@@ -550,12 +656,42 @@
         }
       }
     },
+    "Original Price" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "原價"
+          }
+        }
+      }
+    },
     "Other Wishes" : {
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "其他人的願望"
+          }
+        }
+      }
+    },
+    "Paying Card" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "付款卡"
+          }
+        }
+      }
+    },
+    "Pick a card" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選一張卡"
           }
         }
       }
@@ -600,6 +736,19 @@
         }
       }
     },
+    "Price Display" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "價格顯示"
+          }
+        }
+      }
+    },
+    "PRICE VIEW" : {
+
+    },
     "Privacy Policy" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -617,6 +766,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "每季"
+          }
+        }
+      }
+    },
+    "Record Credit Card Info" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "記錄信用卡資訊"
           }
         }
       }
@@ -641,6 +800,26 @@
         }
       }
     },
+    "Remove" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "刪除"
+          }
+        }
+      }
+    },
+    "Reset to default" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重置為預設值"
+          }
+        }
+      }
+    },
     "Search currencies" : {
       "localizations" : {
         "zh-Hant" : {
@@ -657,6 +836,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選擇幣別"
+          }
+        }
+      }
+    },
+    "Selected Card Color" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已選擇顏色"
           }
         }
       }
@@ -913,17 +1102,6 @@
         }
       }
     },
-    "Total Costs: %lf" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "總計：%lf"
-          }
-        }
-      }
-    },
     "UI Options" : {
       "localizations" : {
         "zh-Hant" : {
@@ -943,17 +1121,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "許願牆"
-          }
-        }
-      }
-    },
-    "Wishes" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "許願表"
           }
         }
       }

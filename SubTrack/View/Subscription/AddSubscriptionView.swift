@@ -6,6 +6,11 @@
 //
 import SwiftUI
 
+enum PickerDestination {
+    case currencyPicker
+    case creditCardPicker
+}
+
 
 struct AddSubscriptionView: View {
     @Environment(\.modelContext) private var modelContext
@@ -20,16 +25,28 @@ struct AddSubscriptionView: View {
     // UI States
     @State private var isLoading: Bool = false
     @State private var errorMessage: String?
+    @State private var pickerDestination: PickerDestination?
 
     // Form states
     @State private var name: String = ""
+    @State private var priceString = ""
     @State private var price: Decimal = 0
     @State private var billingCycle: BillingCycle = .monthly
     @State private var firstBillingDate: Date = Date()
-    @State private var colorHex: String = "#3E80F7"
+    @State private var selectedColorOptions: [ColorOption] = []
     @State private var icon: String = "creditcard"
-    @State private var selectedCurrency: String = Locale.current.currency!.identifier
-    @State private var showCurrencyPicker: Bool = false
+    @State private var selectedCurrency: CurrencyInfo = CurrencyInfo(
+        id: Locale.current.currency?.identifier ?? "USD",
+        code: Locale.current.currency?.identifier ?? "USD",
+        symbol: Locale.current.currencySymbol ?? "$",
+        name: Locale.current.localizedString(forCurrencyCode: Locale.current.currency?.identifier ?? "USD") ?? Locale.current.currency?.identifier ?? "USD",
+        exampleFormatted: "1234.56"
+    )
+    @State private var showPicker: Bool = false
+    
+    // Credit Card Section
+    @State private var recordCreditCard: Bool = false
+    @State private var creditCard: CreditCard? = nil
     
     private let iconOptions: [IconOption] = [
         IconOption(name: "Credit Card", image: "creditcard"),
@@ -44,16 +61,7 @@ struct AddSubscriptionView: View {
     ]
 
     // Define the color options as a collection of ColorOption objects
-    private let colorOptions: [ColorOption] = [
-        ColorOption(name: "Blue", hex: "#3E80F7"),
-        ColorOption(name: "Red", hex: "#FF3B30"),
-        ColorOption(name: "Green", hex: "#34C759"),
-        ColorOption(name: "Purple", hex: "#AF52DE"),
-        ColorOption(name: "Orange", hex: "#FF9500"),
-        ColorOption(name: "Pink", hex: "#FF2D55"),
-        ColorOption(name: "Yellow", hex: "#FFCC00"),
-        ColorOption(name: "Teal", hex: "#5AC8FA")
-    ]
+    private let colorOptions: [ColorOption] = ColorOption.generateColors()
     
     var body: some View {
         
@@ -66,15 +74,30 @@ struct AddSubscriptionView: View {
                 iconSelectionSection
                 
                 billingInfoSection
-
+                   
+                creditCardSection
             }
+            .presentationSizing(.fitted)
+            
         }
         .navigationTitle("Add Subscription")
         .navigationBarTitleDisplayMode(.inline)
-        .navigationDestination(isPresented: $showCurrencyPicker) {
-            CurrencyPickerView(currencies: $currencies, onSelect: { currency in
-                selectedCurrency = currency.code
-            })
+        .navigationDestination(isPresented: $showPicker) {
+            switch pickerDestination {
+            case .currencyPicker:
+                CurrencyPickerView(currencies: $currencies, onSelect: { currency in
+                    selectedCurrency = currency
+                })
+                
+            case .creditCardPicker:
+                CreditCardListView { card in
+                    print(card)
+                    creditCard = card
+                }
+            case .none:
+                EmptyView()
+            }
+            
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -117,31 +140,40 @@ struct AddSubscriptionView: View {
             // Initialize the repository with the model context
             repository = SubscriptionRepository(modelContext: modelContext)
             currencies = CurrencyInfo.loadAvailableCurrencies()
+
+            if let systemCurrency = CurrencyInfo.loadAvailableCurrencies().filter({ $0.code ==  appSettings.currencyCode }).first {
+                selectedCurrency = systemCurrency
+            }
         }
     }
+    
+    // MARK: - Sections
     
     private var basicInfoSection: some View {
         Section {
             VStack {
                 TextField("Name", text: $name)
                     .autocorrectionDisabled()
+                    .submitLabel(.continue)
 
                 HStack {
-                    let hasDecimal = currencyHasDecimals(code: selectedCurrency)
-                    let formatStyle: Decimal.FormatStyle.Currency = hasDecimal ? .currency(code: selectedCurrency) : .currency(code: selectedCurrency).precision(.fractionLength(0))
-                    TextField("Price", value: $price, format: formatStyle)
-                        .keyboardType(.decimalPad)
-                        .onChange(of: price) { oldValue, newValue in
-                            if oldValue ==  0 {
-                                price = newValue
-                            }
+                    let hasDecimal = CurrencyInfo.hasDecimals(selectedCurrency.code)
+                    let formatStyle: Decimal.FormatStyle.Currency = hasDecimal ? .currency(code: selectedCurrency.code) : .currency(code: selectedCurrency.code).precision(.fractionLength(0))
+                    Text(selectedCurrency.symbol)
+                    TextField("Price", text: $priceString)
+                        .keyboardType(hasDecimal ? .decimalPad : .numberPad)
+                        .onChange(of: priceString) { _, newValue in
+                            self.price = (try? Decimal(newValue, format: formatStyle)) ?? 0
                         }
+                        .keyboardDoneButton()
+
                     Spacer()
                     Button {
-                        showCurrencyPicker = true
+                        showPicker = true
+                        pickerDestination = .currencyPicker
                     } label: {
                         HStack {
-                            Text("\(selectedCurrency)")
+                            Text("\(selectedCurrency.code)")
                             Image(systemName: "chevron.right")
                                 .font(.caption2)
                         }.foregroundColor(.secondary)
@@ -156,7 +188,7 @@ struct AddSubscriptionView: View {
     
     private var colorSelectionSection: some View {
         Section {
-            colorSelectionScrollView
+            CustomColorPicker(colorOptions: colorOptions, selectedColorOptions: $selectedColorOptions, limit: 1)
         } header: {
             Text("Color")
         }
@@ -193,55 +225,32 @@ struct AddSubscriptionView: View {
         }
     }
     
-    // Break out the ScrollView into its own computed property
-    private var colorSelectionScrollView: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            colorOptionsRow
-        }
-        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
-        .padding(.horizontal, 8)
-    }
-    
-    // Break out the row of color options
-    private var colorOptionsRow: some View {
-        HStack(spacing: 12) {
-            ForEach(colorOptions, id: \.name) { colorOption in
-                colorButton(for: colorOption)
+    private var creditCardSection: some View {
+        Section {
+            Toggle("Record Credit Card Info", isOn: $recordCreditCard)
+            
+            if recordCreditCard {
+                HStack {
+                    if creditCard == nil {
+                        Text("Pick a card")
+                    } else {
+                        CreditCardView(card: creditCard!)
+                            .frame(width: 300, height: 200)
+                    }
+                    Spacer()
+                    Button {
+                        showPicker = true
+                        pickerDestination = .creditCardPicker
+                    } label: {
+                        Image(systemName: "chevron.right")
+                    }
+                }
+                
+                .alignmentGuide(.top) { dimension in
+                    dimension[.top] -  (creditCard == nil ? 100 : 0)
+                }
             }
         }
-        .padding(.vertical, 4)
-    }
-    
-    // Create a function that returns a view for each color button
-    private func colorButton(for colorOption: ColorOption) -> some View {
-        Button {
-            colorHex = colorOption.hex
-        } label: {
-            colorCircle(for: colorOption)
-        }
-    }
-    
-    // Create a function that returns the color circle view
-    private func colorCircle(for colorOption: ColorOption) -> some View {
-        let isSelected = colorHex == colorOption.hex
-        
-        return Circle()
-            .fill(Color(hex: colorOption.hex) ?? .blue)
-            .frame(width: 32, height: 32)
-            .overlay(
-                Circle()
-                    .strokeBorder(isSelected ? .primary : .tertiary, lineWidth: 2)
-                    .padding(2)
-            )
-    }
-    
-    // Helper function
-    private func currencyHasDecimals(code: String) -> Bool {
-        let nonDecimal: Set<String> = ["TWD"]
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = code
-        return nonDecimal.contains(code) ? false : formatter.minimumFractionDigits > 0
     }
     
     private func saveSubscription() {
@@ -254,10 +263,12 @@ struct AddSubscriptionView: View {
         let subscription = Subscription(
             name: name,
             price: price,
+            currencyCode: selectedCurrency.code,
             billingCycle: billingCycle,
             firstBillingDate: firstBillingDate,
+            creditCard: creditCard,
             icon: icon,
-            colorHex: colorHex
+            colorHex: selectedColorOptions.first?.hex ?? "#3E80F7",
         )
         
         do {
@@ -269,16 +280,19 @@ struct AddSubscriptionView: View {
             isLoading = false
         }
     }
+    
+    
+    //MARK: - Helper function
+    private var formatter: NumberFormatter {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = selectedCurrency.code
+        formatter.maximumFractionDigits = CurrencyInfo.hasDecimals(selectedCurrency.code) ? 2 : 0
+        formatter.minimumFractionDigits = CurrencyInfo.hasDecimals(selectedCurrency.code) ? 2 : 0
+        return formatter
+    }
 }
 
 #Preview {
     AddSubscriptionView()
-}
-
-
-extension AddSubscriptionView {
-    @Observable
-    class ViewModel {
-        
-    }
 }
