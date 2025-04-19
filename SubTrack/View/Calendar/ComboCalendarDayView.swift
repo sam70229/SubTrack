@@ -8,6 +8,8 @@ import SwiftUI
 
 
 struct ComboCalendarDayView: View {
+    @EnvironmentObject private var appSettings: AppSettings
+
     let calendarDate: CalendarDate
     let isSelected: Bool
     let isToday: Bool
@@ -40,16 +42,16 @@ struct ComboCalendarDayView: View {
         .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(isSelected ? Color.accentColor.opacity(0.1) : Color.clear)
+                .fill(isSelected ? Color(hex: appSettings.accentColorHex)!.opacity(0.1) : Color.clear)
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
-                        .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 1.5)
+                        .stroke(isSelected ? Color(hex: appSettings.accentColorHex)! : Color.clear, lineWidth: 1.5)
                 )
         )
         .overlay(
             // Today's Date Indicator
             RoundedRectangle(cornerRadius: 10)
-                .stroke(isToday ? Color.accentColor : Color.clear, lineWidth: 1.5)
+                .stroke(isToday ? .accentColor : Color.clear, lineWidth: 1.5)
         )
     }
 }

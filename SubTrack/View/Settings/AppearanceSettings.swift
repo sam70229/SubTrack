@@ -24,7 +24,7 @@ struct AppearanceSettings: View {
             
             // TODO: Add this if it needed
             // Accent Color Section
-//            accentColorSection
+            accentColorSection
             
             // UI Options Section
             uiOptionsSection

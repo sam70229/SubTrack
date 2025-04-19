@@ -318,7 +318,8 @@ struct CalendarView: View {
     
     private func formattedMonthlyTotal(currency: String) -> String {
         let total = calculateMonthlyTotal()
-        return Decimal(total).formatted(.currency(code: currency))
+        let formatStyle: Decimal.FormatStyle.Currency = CurrencyInfo.hasDecimals(currency) ? .currency(code: currency) : .currency(code: currency).precision(.fractionLength(0))
+        return Decimal(total).formatted(formatStyle)
     }
     
     // MARK: - Helper functions

@@ -70,7 +70,6 @@ struct CustomColorPicker: View {
                     .padding(1)
             )
     }
-    
 }
 
 struct ColorButton: View {
