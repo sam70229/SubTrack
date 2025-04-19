@@ -33,7 +33,7 @@ struct AddSubscriptionView: View {
     @State private var price: Decimal = 0
     @State private var billingCycle: BillingCycle = .monthly
     @State private var firstBillingDate: Date = Date()
-    @State private var selectedColorOptions: [ColorOption] = []
+    @State private var selectedColorOption: ColorOption = .init(name: "Blue", hex: Color.blue.toHexString())
     @State private var icon: String = "creditcard"
     @State private var selectedCurrency: CurrencyInfo = CurrencyInfo(
         id: Locale.current.currency?.identifier ?? "USD",
@@ -188,10 +188,39 @@ struct AddSubscriptionView: View {
     
     private var colorSelectionSection: some View {
         Section {
-            CustomColorPicker(colorOptions: colorOptions, selectedColorOptions: $selectedColorOptions, limit: 1)
+            ScrollView(.horizontal,showsIndicators: false) {
+                HStack(spacing: 12) {
+                    ForEach(colorOptions, id:\.name) { colorOption in
+                        colorButton(for: colorOption)
+                    }
+                }
+            }
         } header: {
             Text("Color")
         }
+    }
+    
+    private func colorButton(for colorOption: ColorOption) -> some View {
+        return Button {
+            selectedColorOption = colorOption
+        } label: {
+            colorCircle(for: colorOption)
+        }
+    }
+
+    // Create a function that returns the color circle view
+    private func colorCircle(for colorOption: ColorOption) -> some View {
+        let isSelected = selectedColorOption == colorOption
+
+        return Circle()
+            .fill(Color(hex: colorOption.hex) ?? .blue)
+            .frame(width: 32, height: 32)
+            .padding(4)
+            .overlay(
+                Circle()
+                    .strokeBorder(isSelected ? .primary : .tertiary, lineWidth: 2)
+                    .padding(1)
+            )
     }
     
     private var iconSelectionSection: some View {
@@ -268,7 +297,7 @@ struct AddSubscriptionView: View {
             firstBillingDate: firstBillingDate,
             creditCard: creditCard,
             icon: icon,
-            colorHex: selectedColorOptions.first?.hex ?? "#3E80F7",
+            colorHex: selectedColorOption.hex,
         )
         
         do {

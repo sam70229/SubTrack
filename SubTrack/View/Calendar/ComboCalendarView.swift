@@ -10,6 +10,7 @@ import SwiftData
 
 struct ComboCalendarView: View {
     @EnvironmentObject private var appSettings: AppSettings
+    @EnvironmentObject private var exchangeRates: ExchangeRateRepository
     @Environment(\.modelContext) private var modelContext
     
     @State private var showAddSubscription = false
@@ -320,7 +321,7 @@ struct ComboCalendarView: View {
         let currentMonthDates = calendarDates.filter { $0.isCurrentMonth }
         
         var processedSubscriptionIds = Set<String>()
-        var totalCost: Double = 0.0
+        var totalCost: Decimal = 0
         
         for calendarDate in currentMonthDates {
             for subscription in calendarDate.subscriptions {
@@ -329,25 +330,33 @@ struct ComboCalendarView: View {
                 }
                 
                 processedSubscriptionIds.insert(subscription.id.uuidString)
+                
+                let convertedPrice = exchangeRates.convert(
+                    subscription.price,
+                    from: subscription.currencyCode,
+                    to: appSettings.currencyCode
+                ) ?? subscription.price
+
                 switch calculationMethod {
                 case .actualBilling:
-                    totalCost += NSDecimalNumber(decimal: subscription.price).doubleValue
+                    totalCost += convertedPrice
                 case .amortized:
                     if subscription.billingCycle == .annually {
-                        totalCost += NSDecimalNumber(decimal: subscription.price / 12).doubleValue
+                        totalCost += convertedPrice / 12
                     } else {
-                        totalCost += NSDecimalNumber(decimal: subscription.price).doubleValue
+                        totalCost += convertedPrice
                     }
                 }
             }
         }
         
-        return totalCost
+        return NSDecimalNumber(decimal: totalCost).doubleValue
     }
     
     private func formattedMonthlyTotal(currency: String) -> String {
         let total = calculateMonthlyTotal()
-        return Decimal(total).formatted(.currency(code: currency))
+        let formatStyle: Decimal.FormatStyle.Currency = CurrencyInfo.hasDecimals(currency) ? .currency(code: currency) : .currency(code: currency).precision(.fractionLength(0))
+        return Decimal(total).formatted(formatStyle)
     }
     
     // MARK: - Helper functions

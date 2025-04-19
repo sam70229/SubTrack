@@ -8,6 +8,8 @@ import SwiftUI
 
 
 struct CalendarDayView: View {
+    @EnvironmentObject private var appSettings: AppSettings
+    
     let calendarDate: CalendarDate
     let isSelected: Bool
     let isToday: Bool
@@ -24,7 +26,7 @@ struct CalendarDayView: View {
                     ZStack {
                         if isSelected {
                             Circle()
-                                .fill(Color.red)
+                                .fill(isToday ? Color.red : Color(hex:appSettings.accentColorHex) ?? .accentColor)
                         }
                     }
                 )

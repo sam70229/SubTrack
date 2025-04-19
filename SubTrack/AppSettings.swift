@@ -97,7 +97,7 @@ class AppSettings: ObservableObject {
         }
     }
     
-    @AppStorage("accentColorHex") var accentColorHex: String = "#007AFF" // Default iOS blue
+    @AppStorage("accentColorHex") var accentColorHex: String = Color.blue.toHexString() // Default iOS blue
     @AppStorage("showCurrencySymbols") var showCurrencySymbols: Bool = true
     @AppStorage("showSubscriptionIcons") var showSubscriptionIcons: Bool = true
     @AppStorage("defaultTab") var defaultTab: Int = 0

@@ -55,8 +55,7 @@ struct MainView: View {
                 .tag(1)
                 
                 NavigationStack {
-                    Text("Analyze with Screen Time API coming soon...")
-//                    AnalyticsView()
+                    AnalyticsView()
                 }
                  .tabItem {
                     Label("Analytics", systemImage: "chart.bar")
