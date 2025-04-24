@@ -49,14 +49,33 @@ struct SettingsView: View {
             }
             
             Section {
-                NavigationLink {
-                    WishListView(viewModel: wishListViewModel)
-                } label: {
-                    Label("Wish Wall", systemImage: "star.fill")
+                ForEach(appSettings.enabledTabs.filter { !$0.isEnabled }) { tab in
+                    switch tab.title {
+                    case "Analytics":
+                        NavigationLink {
+                            AnalyticsView()
+                        } label: {
+                            Label(tab.title, systemImage: tab.icon)
+                        }
+                    case "Wish Wall":
+                        NavigationLink {
+                            WishListView(viewModel: wishListViewModel)
+                        } label: {
+//                            Label(tab.title, systemImage: tab.icon)
+                            Label {
+                                Text(tab.title)
+                            } icon: {
+                                Image(systemName: tab.icon)
+                            }
+                        }
+                    default:
+                        EmptyView()
+                    }
                 }
             } header: {
-                Text("Wish Wall")
+                Text("Hidden Tabs")
             }
+
 
             // Data management section
             dataManageSection

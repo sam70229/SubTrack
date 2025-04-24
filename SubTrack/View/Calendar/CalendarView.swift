@@ -2,286 +2,184 @@
 //  CalendarView.swift
 //  SubTrack
 //
-//  Created by Sam on 2025/3/16.
+//  Created by Sam on 2025/4/21.
 //
 import SwiftUI
 import SwiftData
 
 
 struct CalendarView: View {
+    @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var appSettings: AppSettings
     @EnvironmentObject private var exchangeRates: ExchangeRateRepository
-    @Environment(\.modelContext) private var modelContext
     
-    @State private var showAddSubscription = false
-    
-    // Use SwiftData's query capabilities
-    @Query private var subscriptions: [Subscription]
-    
-    @State private var calendarDates: [CalendarDate] = []
-    @State private var selectedDate: CalendarDate?
-    @State private var selectedMonth: Date = Date()
-    @State private var isLoading: Bool = false
-    @State private var errorMessage: String?
-    
-    // Repository
+    @State private var calendarState = CalendarState()
     @State private var repository: SubscriptionRepository?
-    
-    private let weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-    private let columns = Array(repeating: GridItem(.flexible(), spacing:  0), count: 7)
+    @State private var showAddSubscriptionView: Bool = false
     
     var body: some View {
-        GeometryReader { geometry in
-            VStack(spacing: 20) {
-                monthSelectorView
-                    .padding(.horizontal)
-                
-                weekdayHeaderView
-                
-                if isLoading {
-                    ProgressView()
-                        .frame(height: 300)
-                } else {
-                    ScrollView {
-                        calendarGridView
+        VStack(spacing: 0) {
+            monthSelectorView
+                .padding(.horizontal)
+            
+            weekdayHeaderView
+                .padding(.vertical, 10)
+//                .padding(.horizontal)
+            
+            if calendarState.isLoading {
+                ProgressView()
+                    .frame(height: 300)
+            } else {
+                Group {
+                    if calendarState.viewType == .standard {
+                        StandardCalendarGrid(state: calendarState)
+                    } else {
+                        ListCalendarGrid(state: calendarState)
                     }
                 }
             }
-            .padding(.top, 10)
+            
+            if calendarState.viewType == .listBullet {
+                if let selectedDate = calendarState.selectedDate {
+                    Divider()
+                        .padding(.top, 8)
+                    
+                    selectedDateView(date: selectedDate)
+                }
+            } else {
+                Spacer()
+            }
         }
+        .padding(.top, 10)
         .navigationTitle("Total Costs: \(formattedMonthlyTotal(currency: appSettings.currencyCode))")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItemGroup(placement: .topBarTrailing) {
                 Button {
-                    showAddSubscription = true
+                    withAnimation {
+                        calendarState.toggleViewType()
+                    }
+                } label: {
+                    Image(systemName: calendarState.viewType == .standard ? "list.bullet.below.rectangle" : "list.dash.header.rectangle")
+                }
+
+                Button {
+                    showAddSubscriptionView = true
                 } label: {
                     Image(systemName: "plus")
                 }
             }
         }
-        .sheet(isPresented: $showAddSubscription) {
+        .sheet(isPresented: $showAddSubscriptionView) {
             NavigationStack {
                 AddSubscriptionView()
             }
         }
-        .alert(
-            Text("Error"),
-            isPresented: Binding<Bool>(
-                get: { errorMessage != nil },
-                set: { if !$0 { errorMessage = nil } }
-            )
-        ) {
-            Button("OK", role: .cancel){}
-        } message: {
-            Text(errorMessage ?? "Unknown error")
+        .task(id: calendarState.selectedMonth) {
+            await generateCalendarDates()
         }
         .onAppear {
             repository = SubscriptionRepository(modelContext: modelContext)
-            generateCalendarDates()
-        }
-        .onChange(of: subscriptions) { _, _ in
-            // Refresh calendar when subscriptions change
-            generateCalendarDates()
         }
     }
     
     private var monthSelectorView: some View {
         HStack {
-            VStack(alignment: .leading) {
-                Text(monthYearString(from: selectedMonth))
-                    .font(.title2.bold())
+            Button{
+                calendarState.goToPreviousMonth()
+            } label: {
+                Image(systemName: "chevron.left")
             }
             
             Spacer()
             
-            HStack {
-                Button {
-                    goToPreviousMonth()
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .foregroundStyle(.primary)
-                        .fontWeight(.semibold)
-                        .frame(width: 30, height: 30)
-                }
-                
-                Button {
-                    goToNextMonth()
-                } label: {
-                    Image(systemName: "chevron.right")
-                        .foregroundStyle(.primary)
-                        .fontWeight(.semibold)
-                        .frame(width: 30, height: 30)
-                }
-            }
-        }
-    }
-    
-    private var calendarHeader: some View {
-        HStack {
-            VStack(alignment: .leading) {
-                Text(monthYearString(from: selectedMonth))
-                    .font(.title)
-                    .fontWeight(.bold)
-                
-                Text("Subscription Calendar")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
+            Text(calendarState.selectedMonth.formatted(.dateTime.month().year()))
+                .font(.title2.bold())
             
             Spacer()
             
-            // Navigation Buttons
-            HStack(spacing: 20) {
-                Button(action: {
-                    goToPreviousMonth()
-                }) {
-                    Image(systemName: "chevron.left")
-                        .font(.title3)
-                        .foregroundColor(.primary)
-                }
-                
-                Button(action: {
-                    goToNextMonth()
-                }) {
-                    Image(systemName: "chevron.right")
-                        .font(.title3)
-                        .foregroundColor(.primary)
-                }
+            Button {
+                calendarState.goToNextMonth()
+            } label: {
+                Image(systemName: "chevron.right")
             }
         }
-        .padding(.horizontal)
     }
     
     private var weekdayHeaderView: some View {
-        HStack(spacing: 0) {
-            ForEach(weekdays, id: \.self) { day in
-                Text(day.first!.uppercased())
+        HStack {
+            ForEach(Calendar.current.veryShortWeekdaySymbols, id: \.self) { symbol in
+                Text(symbol)
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity)
             }
         }
-        .padding(.bottom, 8)
     }
     
-    private var calendarGridView: some View {
-        LazyVGrid(columns: columns, spacing: 0) {
-            ForEach(calendarDates) { calendarDate in
-                CalendarDayView(
-                    calendarDate: calendarDate,
-                    isSelected: selectedDate?.date == calendarDate.date,
-                    isToday: isToday(date: calendarDate.date)
-                )
-                .onTapGesture {
-                    selectDate(calendarDate)
-                }
-            }
+    @MainActor
+    private func generateCalendarDates() async {
+        calendarState.isLoading = true
+        defer { calendarState.isLoading = false }
+        
+        let calendar = Calendar.current
+        var newDates: [CalendarDate] = []
+        
+        // Get first day of the month
+        let components = calendar.dateComponents([.year, .month], from: calendarState.selectedMonth)
+        guard let firstDayOfMonth = calendar.date(from: components),
+              let numberOfDays = calendar.range(of: .day, in: .month, for: calendarState.selectedMonth)?.count else {
+            return
         }
-    }
-    
-    // MARK: - Calender Generation
-    
-    private func generateCalendarDates() {
-        Task {
-            isLoading = true
-            defer { isLoading = false }
-            
-            var newCalendarDates: [CalendarDate] = []
-            
-            let calendar = Calendar.current
-            let currentMonth = calendar.component(.month, from: selectedMonth)
-            let currentYear = calendar.component(.year, from: selectedMonth)
-            
-            // Get first day of the month
-            guard let firstDayOfMonth = calendar.date(from: DateComponents(year: currentYear, month: currentMonth, day: 1)) else {
-                errorMessage = "Could not determine the first day of the month"
-                return
-            }
-            
-            // Get the number of days in the month
-            let range = calendar.range(of: .day, in: .month, for: firstDayOfMonth) ?? 1..<31
-            let numberOfDays = range.count
-            
-            // Get the weekday of the first day (0 is Sunday, 1 is Monday, etc.)
-            let firstWeekday = calendar.component(.weekday, from: firstDayOfMonth)
-            
-            // Add days from the previous month to fill the first week
-            let previousMonthDays = firstWeekday - 1
-            if previousMonthDays > 0 {
-                for dayOffset in (1...previousMonthDays).reversed() {
-                    if let date = calendar.date(byAdding: .day, value: -dayOffset, to: firstDayOfMonth) {
-                        var calendarDate = CalendarDate(date: date, isCurrentMonth: false)
-                        calendarDate.subscriptions = repository?.fetchSubscriptionsForDate(date) ?? []
-                        newCalendarDates.append(calendarDate)
-                    }
-                }
-            }
-            
-            // Add days from the current month
-            for dayOffset in 0..<numberOfDays {
-                if let date = calendar.date(byAdding: .day, value: dayOffset, to: firstDayOfMonth) {
-                    var calendarDate = CalendarDate(date: date)
+        
+        
+        // Get the weekday of the first day (0 is Sunday, 1 is Monday, etc.)
+        let firstWeekday = calendar.component(.weekday, from: firstDayOfMonth)
+        
+        // Add days from the previous month to fill the first week
+        let previousMonthDays = firstWeekday - 1
+        if previousMonthDays > 0 {
+            for dayOffset in (1...previousMonthDays).reversed() {
+                if let date = calendar.date(byAdding: .day, value: -dayOffset, to: firstDayOfMonth) {
+                    var calendarDate = CalendarDate(date: date, isCurrentMonth: false)
                     calendarDate.subscriptions = repository?.fetchSubscriptionsForDate(date) ?? []
-                    newCalendarDates.append(calendarDate)
-                    
-                    // Select today's date by default if it's in the current month
-                    if calendar.isDateInToday(date) {
-                        selectedDate = calendarDate
-                    }
+                    newDates.append(calendarDate)
                 }
             }
-            
-            // Fill the remaining days from the next month to complete the last week
-            let totalDays = previousMonthDays + numberOfDays
-            let remainingDays = 7 - (totalDays % 7)
-            if remainingDays < 7 {
-                for dayOffset in 1...remainingDays {
-                    if let date = calendar.date(byAdding: .day, value: numberOfDays + dayOffset - 1, to: firstDayOfMonth) {
-                        var calendarDate = CalendarDate(date: date, isCurrentMonth: false)
-                        calendarDate.subscriptions = repository?.fetchSubscriptionsForDate(date) ?? []
-                        newCalendarDates.append(calendarDate)
-                    }
+        }
+        
+        // Add days from the current month
+        for dayOffset in 0..<numberOfDays {
+            if let date = calendar.date(byAdding: .day, value: dayOffset, to: firstDayOfMonth) {
+                var calendarDate = CalendarDate(date: date)
+                calendarDate.subscriptions = repository?.fetchSubscriptionsForDate(date) ?? []
+                newDates.append(calendarDate)
+                
+                // Select today's date by default if it's in the current month
+                if calendar.isDateInToday(date) {
+                    calendarState.selectedDate = calendarDate
                 }
             }
-            
-            isLoading = false
-            self.calendarDates = newCalendarDates
         }
-    }
-    
-    // MARK: - Navigation Methods
-    func selectDate(_ date: CalendarDate) {
-        selectedDate = date
-    }
-    
-    func goToNextMonth() {
-        if let newDate = Calendar.current.date(byAdding: .month, value: 1, to: selectedMonth) {
-            selectedMonth = newDate
-            Task {
-                generateCalendarDates()
+        
+        // Fill the remaining days from the next month to complete the last week
+        let totalDays = previousMonthDays + numberOfDays
+        let remainingDays = 7 - (totalDays % 7)
+        if remainingDays < 7 {
+            for dayOffset in 1...remainingDays {
+                if let date = calendar.date(byAdding: .day, value: numberOfDays + dayOffset - 1, to: firstDayOfMonth) {
+                    var calendarDate = CalendarDate(date: date, isCurrentMonth: false)
+                    calendarDate.subscriptions = repository?.fetchSubscriptionsForDate(date) ?? []
+                    newDates.append(calendarDate)
+                }
             }
         }
+        
+        calendarState.dates = newDates
     }
     
-    func goToPreviousMonth() {
-        if let newDate = Calendar.current.date(byAdding: .month, value: -1, to: selectedMonth) {
-            selectedMonth = newDate
-            Task {
-                generateCalendarDates()
-            }
-        }
-    }
-    
-    // MARK: - Calculation Methods
-    
-    enum CalculationMethod {
-        case actualBilling   // Count subscriptions only when billed
-        case amortized       // Distribute annual costs across months
-    }
-    
-    private func calculateMonthlyTotal(calculationMethod: CalculationMethod = .actualBilling) -> Double {
-        let currentMonthDates = calendarDates.filter { $0.isCurrentMonth }
+    private func calculateMonthlyTotal() -> Double {
+        let currentMonthDates = calendarState.dates.filter { $0.isCurrentMonth }
         
         var processedSubscriptionIds = Set<String>()
         var totalCost: Decimal = 0
@@ -299,17 +197,18 @@ struct CalendarView: View {
                     from: subscription.currencyCode,
                     to: appSettings.currencyCode
                 ) ?? subscription.price
-
-                switch calculationMethod {
-                case .actualBilling:
-                    totalCost += convertedPrice
-                case .amortized:
-                    if subscription.billingCycle == .annually {
-                        totalCost += convertedPrice / 12
-                    } else {
-                        totalCost += convertedPrice
-                    }
-                }
+                
+                totalCost += convertedPrice
+                //                switch calculationMethod {
+                //                case .actualBilling:
+                //                    totalCost += convertedPrice
+                //                case .amortized:
+                //                    if subscription.billingCycle == .annually {
+                //                        totalCost += convertedPrice / 12
+                //                    } else {
+                //                        totalCost += convertedPrice
+                //                    }
+                //                }
             }
         }
         
@@ -322,11 +221,30 @@ struct CalendarView: View {
         return Decimal(total).formatted(formatStyle)
     }
     
-    // MARK: - Helper functions
-    private func monthYearString(from date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM yyyy"
-        return formatter.string(from: date)
+    private func selectedDateView(date: CalendarDate) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(dateString(from: date.date))
+                .font(.headline)
+            
+            ScrollView {
+                if date.subscriptions.isEmpty {
+                    ContentUnavailableView {
+                        Label("No Subscriptions", systemImage: "text.page.slash")
+                    } description: {
+                        Text("Subscriptions will appear here if the payment due date is reached.")
+                    }
+                } else {
+                    VStack(spacing: 8) {
+                        ForEach(date.subscriptions) { subscription in
+                            SubscriptionListItemView(subscription: subscription) { subscription in
+                                modelContext.delete(subscription)
+                            }
+                        }
+                    }
+                }
+            }
+            .defaultScrollAnchor(.center, for: .alignment)
+        }
     }
     
     private func dateString(from date: Date) -> String {
@@ -334,16 +252,51 @@ struct CalendarView: View {
         formatter.dateFormat = "EEEE, MMMM d, yyyy"
         return formatter.string(from: date)
     }
+}
+
+struct StandardCalendarGrid: View {
+    let state: CalendarState
     
-    private func isToday(date: Date) -> Bool {
-        Calendar.current.isDateInToday(date)
+    var body: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 8) {
+            ForEach(state.dates) { date in
+                BasicCalendarDayView(
+                    calendarDate: date,
+                    isSelected: state.selectedDate?.id == date.id,
+                    isToday: Calendar.current.isDateInToday(date.date)
+                )
+                .onTapGesture {
+                    state.selectedDate = date
+                }
+            }
+        }
     }
 }
 
-// Preview Provider
-struct CalendarView_Previews: PreviewProvider {
-    static var previews: some View {
+struct ListCalendarGrid: View {
+    let state: CalendarState
+    
+    var body: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 8) {
+            ForEach(state.dates) { date in
+                ComboCalendarDayView(
+                    calendarDate: date,
+                    isSelected: state.selectedDate?.id == date.id,
+                    isToday: Calendar.current.isDateInToday(date.date)
+                )
+                .onTapGesture {
+                    state.selectedDate = date
+                }
+            }
+        }
+        .padding(.horizontal)
+    }
+}
+
+#Preview {
+    NavigationStack {
         CalendarView()
             .environmentObject(AppSettings())
+            .environmentObject(ExchangeRateRepository())
     }
 }

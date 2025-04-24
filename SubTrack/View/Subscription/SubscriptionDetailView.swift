@@ -153,20 +153,34 @@ struct SubscriptionDetailView: View {
             HStack {
                 Text("Price a Month")
                 Spacer()
-                Text(monthlyPrice, format: .currency(code: appSettings.currencyCode))
+                VStack(alignment: .trailing) {
+                    Text(monthlyPrice, format: .currency(code: subscription.currencyCode))
+                    Text(convertedMonthlyPrice, format: .currency(code: appSettings.currencyCode))
+                }
             }
+            
             HStack {
                 Text("Price a Year")
                 Spacer()
-                Text(yearlyPrice, format: .currency(code: appSettings.currencyCode))
+                VStack(alignment: .trailing) {
+                    Text(yearlyPrice, format: .currency(code: subscription.currencyCode))
+                    Text(convertedYearlyPrice, format: .currency(code: appSettings.currencyCode))
+                }
             }
+            
             HStack {
                 Text("Since First Payment")
                 Spacer()
-                Text(subscription.totalAmountTillToday(), format: .currency(code: appSettings.currencyCode))
+                VStack(alignment: .trailing) {
+                    Text(subscription.totalAmountTillToday(), format: .currency(code: subscription.currencyCode))
+                    Text(exchangeRates.convert(subscription.totalAmountTillToday(), from: subscription.currencyCode, to: appSettings.currencyCode) ?? subscription.totalAmountTillToday(), format: .currency(code: appSettings.currencyCode))
+                }
             }
+            
         } header: {
             Text("Price Details")
+        } footer: {
+            Text("Exchange Rates updates every day")
         }
     }
 
@@ -229,6 +243,34 @@ struct SubscriptionDetailView: View {
         }
     }
     
+    private var convertedMonthlyPrice: Decimal {
+        let convertedPrice = exchangeRates.convert(
+            subscription.price,
+            from: subscription.currencyCode,
+            to: appSettings.currencyCode
+        ) ?? subscription.price
+
+        switch subscription.billingCycle {
+        case .semimonthly:
+            return convertedPrice * 2
+        case .monthly:
+            return convertedPrice
+        case .bimonthly:
+            return convertedPrice / 2
+        case .quarterly:
+            return convertedPrice / 3
+        case .semiannually:
+            return convertedPrice / 6
+        case .annually:
+            return convertedPrice / 12
+        case .biennially:
+            return convertedPrice / 24
+        case .custom:
+            // For custom billing cycles, we need a more complex approach
+            return convertedPrice // Default assumption
+        }
+    }
+    
     private var yearlyPrice: Decimal {
         switch subscription.billingCycle {
         case .semimonthly:
@@ -245,6 +287,34 @@ struct SubscriptionDetailView: View {
             return subscription.price
         case .biennially:
             return subscription.price * 0.5
+        case .custom:
+            // For custom billing cycles, we need a more complex approach
+            return subscription.price // Default assumption
+        }
+    }
+    
+    private var convertedYearlyPrice: Decimal {
+        let convertedPrice = exchangeRates.convert(
+            subscription.price,
+            from: subscription.currencyCode,
+            to: appSettings.currencyCode
+        ) ?? subscription.price
+
+        switch subscription.billingCycle {
+        case .semimonthly:
+            return convertedPrice * 24
+        case .monthly:
+            return convertedPrice * 12
+        case .bimonthly:
+            return convertedPrice * 6
+        case .quarterly:
+            return convertedPrice * 4
+        case .semiannually:
+            return convertedPrice * 2
+        case .annually:
+            return convertedPrice
+        case .biennially:
+            return convertedPrice * 0.5
         case .custom:
             // For custom billing cycles, we need a more complex approach
             return subscription.price // Default assumption
@@ -353,4 +423,5 @@ enum NotificationDate: Int, CaseIterable, Identifiable {
     )
     SubscriptionDetailView(subscription: subscription)
         .environmentObject(AppSettings())
+        .environmentObject(ExchangeRateRepository())
 }

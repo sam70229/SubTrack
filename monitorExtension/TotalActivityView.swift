@@ -35,8 +35,11 @@ struct TotalActivityView: View {
                     )
                 }
             }
+
             List {
-                ForEach(appUsage.filter { $0.duration / 3600 > 0.5}) { usage in
+
+//                ForEach(appUsage.filter { $0.duration / 3600 > 0.5}) { usage in
+                ForEach(appUsage) { usage in
                     HStack {
                         Text(usage.app.localizedDisplayName!)
                         Spacer()
@@ -44,17 +47,19 @@ struct TotalActivityView: View {
                     }
                 }
 
-                Section {
-                    ForEach(appUsage.filter { $0.duration / 3600 < 0.5}) { usage in
-                        HStack {
-                            Text(usage.app.localizedDisplayName!)
-                            Spacer()
-                            Text(formatTimeInterval(usage.duration))
-                        }
-                    }
-                } header: {
-                    Text("Suggest to unsubscribe")
-                }
+                // TODO: - Add settings to main app to let users sets the time
+                // if time is less than <user_set>, then it will appear in this section
+//                Section {
+//                    ForEach(appUsage.filter { $0.duration / 3600 < 0.5}) { usage in
+//                        HStack {
+//                            Text(usage.app.localizedDisplayName!)
+//                            Spacer()
+//                            Text(formatTimeInterval(usage.duration))
+//                        }
+//                    }
+//                } header: {
+//                    Text("Suggest to unsubscribe")
+//                }
             }
         }
     }

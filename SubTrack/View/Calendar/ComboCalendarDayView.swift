@@ -51,7 +51,7 @@ struct ComboCalendarDayView: View {
         .overlay(
             // Today's Date Indicator
             RoundedRectangle(cornerRadius: 10)
-                .stroke(isToday ? .accentColor : Color.clear, lineWidth: 1.5)
+                .stroke(isToday ? Color(hex: appSettings.todayColorHex) ?? Color.red : Color.clear, lineWidth: 1.5)
         )
     }
 }

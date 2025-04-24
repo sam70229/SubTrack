@@ -12,6 +12,7 @@ struct WishListView: View {
     @ObservedObject var viewModel: WishViewModel
     
     @State private var showAddWishView: Bool = false
+    @State private var showTutorial: Bool = false
     
     var body: some View {
         ScrollView {
@@ -69,8 +70,17 @@ struct WishListView: View {
                 AddWishView(viewModel: viewModel)
             }
         }
+        .sheet(isPresented: $showTutorial) {
+            WishListTutorialView()
+        }
         .onAppear {
             viewModel.fetchWishes(deviceID: appSettings.deviceID)
+            
+            // Tutorial
+            if !appSettings.hasSeenWishTutorial {
+                showTutorial = true
+                appSettings.hasSeenWishTutorial = true
+            }
         }
     }
 }

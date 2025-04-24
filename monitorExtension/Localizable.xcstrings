@@ -12,6 +12,7 @@
       }
     },
     "Suggest to unsubscribe" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {

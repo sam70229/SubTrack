@@ -32,8 +32,16 @@ struct AnalyticsView: View {
     
     var body: some View {
         Group {
-            DeviceActivityReport(context, filter: filter)
+            if !filter.applications.isEmpty {
+                DeviceActivityReport(context, filter: filter)
                     .frame(maxHeight: .infinity)
+            } else {
+                ContentUnavailableView {
+                    Label("No apps selected", systemImage: "app.dashed")
+                } description: {
+                    Text("Select apps to view their activity.")
+                }
+            }
         }
         .navigationTitle("Analytics")
         .navigationBarTitleDisplayMode(.inline)
