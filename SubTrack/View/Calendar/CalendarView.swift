@@ -13,6 +13,8 @@ struct CalendarView: View {
     @EnvironmentObject private var appSettings: AppSettings
     @EnvironmentObject private var exchangeRates: ExchangeRateRepository
     
+    @Query private var subscriptions: [Subscription]
+    
     @State private var calendarState = CalendarState()
     @State private var repository: SubscriptionRepository?
     @State private var showAddSubscriptionView: Bool = false
@@ -23,18 +25,19 @@ struct CalendarView: View {
                 .padding(.horizontal)
             
             weekdayHeaderView
-                .padding(.vertical, 10)
-//                .padding(.horizontal)
             
             if calendarState.isLoading {
                 ProgressView()
                     .frame(height: 300)
             } else {
-                Group {
-                    if calendarState.viewType == .standard {
-                        StandardCalendarGrid(state: calendarState)
-                    } else {
-                        ListCalendarGrid(state: calendarState)
+                GeometryReader { proxy in
+                    Group {
+                        if calendarState.viewType == .standard {
+                            StandardCalendarGrid(state: calendarState)
+                                .frame(width: proxy.size.width)
+                        } else {
+                            ListCalendarGrid(state: calendarState)
+                        }
                     }
                 }
             }
@@ -50,7 +53,7 @@ struct CalendarView: View {
                 Spacer()
             }
         }
-        .padding(.top, 10)
+        .padding(.top, 0)
         .navigationTitle("Total Costs: \(formattedMonthlyTotal(currency: appSettings.currencyCode))")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -80,6 +83,12 @@ struct CalendarView: View {
         }
         .onAppear {
             repository = SubscriptionRepository(modelContext: modelContext)
+        }
+        .onChange(of: subscriptions) { _, _ in
+            // Refresh calendar when subscriptions change
+            Task {
+                await generateCalendarDates()
+            }
         }
     }
     
@@ -115,6 +124,7 @@ struct CalendarView: View {
                     .frame(maxWidth: .infinity)
             }
         }
+        .padding(.vertical, 8)
     }
     
     @MainActor
@@ -257,8 +267,10 @@ struct CalendarView: View {
 struct StandardCalendarGrid: View {
     let state: CalendarState
     
+    private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
+    
     var body: some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 8) {
+        LazyVGrid(columns: columns, spacing: 0) {
             ForEach(state.dates) { date in
                 BasicCalendarDayView(
                     calendarDate: date,
@@ -289,7 +301,6 @@ struct ListCalendarGrid: View {
                 }
             }
         }
-        .padding(.horizontal)
     }
 }
 
