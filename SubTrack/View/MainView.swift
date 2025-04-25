@@ -40,14 +40,9 @@ struct MainView: View {
         Group {
             TabView(selection: $tabSelection) {
                 ForEach(appSettings.enabledTabs.filter(\.isEnabled)) { tab in
-                    Tab(tab.title, systemImage: tab.icon, value: tab.id) {
+                    Tab(LocalizedStringKey(tab.title), systemImage: tab.icon, value: tab.id) {
                         viewForTab(tab)
                     }
-//                    viewForTab(tab)
-//                    .tabItem {
-//                      Label(tab.title, systemImage: tab.icon)
-//                    }
-//                    .tag(tab.id)
                 }
             }
             .tint(Color(hex: appSettings.accentColorHex) ??  .blue)

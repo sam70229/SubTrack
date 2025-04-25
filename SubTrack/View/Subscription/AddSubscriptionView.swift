@@ -235,7 +235,7 @@ struct AddSubscriptionView: View {
             Picker("icon", selection: $icon) {
                 ForEach(iconOptions, id: \.image) { icon in
                     HStack {
-                        Text(icon.name)
+                        Text(LocalizedStringKey(icon.name))
                         Spacer()
                         Image(systemName: icon.image).tag(icon.name)
                     }

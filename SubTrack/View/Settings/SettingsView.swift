@@ -55,18 +55,13 @@ struct SettingsView: View {
                         NavigationLink {
                             AnalyticsView()
                         } label: {
-                            Label(tab.title, systemImage: tab.icon)
+                            Label(LocalizedStringKey(tab.title), systemImage: tab.icon)
                         }
                     case "Wish Wall":
                         NavigationLink {
                             WishListView(viewModel: wishListViewModel)
                         } label: {
-//                            Label(tab.title, systemImage: tab.icon)
-                            Label {
-                                Text(tab.title)
-                            } icon: {
-                                Image(systemName: tab.icon)
-                            }
+                            Label(LocalizedStringKey(tab.title), systemImage: tab.icon)
                         }
                     default:
                         EmptyView()
