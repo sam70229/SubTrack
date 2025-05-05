@@ -14,8 +14,15 @@ struct AppearanceSettings: View {
     @State private var showColorPicker = false
     @State private var selectedAccentColor: Color = .blue
     
+    // Tabs
+    @State private var tabs: [TabItem]
+    
     // Predefined accent colors
     private let accentColors: [ColorOption] = ColorOption.generateColors()
+    
+    init() {
+        _tabs = State(initialValue: TabItem.defaultTabs)
+    }
     
     var body: some View {
         List {
@@ -28,6 +35,10 @@ struct AppearanceSettings: View {
             
             // UI Options Section
             uiOptionsSection
+            
+            tabOptionsSection
+            
+            subscriptionDisplayOptionsSection
             
             // Calendar View Options
             calendarOptionsSection
@@ -92,7 +103,11 @@ struct AppearanceSettings: View {
             Toggle("Show Currency Symbols", isOn: $appSettings.showCurrencySymbols)
             
             Toggle("Show Subscription Icons", isOn: $appSettings.showSubscriptionIcons)
-            
+        }
+    }
+    
+    private var tabOptionsSection: some View {
+        Section {
             Picker("Default Tab", selection: $appSettings.defaultTab) {
                 Text("Calendar").tag(0)
                 Text("Subscriptions").tag(1)
@@ -101,15 +116,95 @@ struct AppearanceSettings: View {
             }
             .pickerStyle(.navigationLink)
             
-
-            Picker(selection: $appSettings.billingInfoDisplay) {
-                ForEach(BillingInfoDisplay.allCases, id: \.self) { style in
-                    Text(style.description).tag(style)
-                }
-            } label: {
-                Text("Subscription Display Style")
+            Picker("Max Tabs", selection: Binding(
+                get: { appSettings.maxTabCount },
+                set: { newValue in
+                    let oldValue = appSettings.maxTabCount
+                    appSettings.maxTabCount = newValue
+                    if newValue < oldValue {
+                        var enabledTabs = tabs.filter(\.isEnabled)
+                        while enabledTabs.count > newValue - 1 {
+                            if let lastTab = enabledTabs.last {
+                                if lastTab.title != "Settings" {
+                                    if let tabIndex = tabs.firstIndex(where: { $0.id == lastTab.id }) {
+                                        tabs[tabIndex].isEnabled = false
+                                        enabledTabs.removeLast()
+                                    }
+                                } else {
+                                    enabledTabs.removeLast()
+                                }
+                            }
+                        }
+                        appSettings.enabledTabs = tabs
+                    }
+                })
+            ) {
+                Text("3 Tabs").tag(3)
+                Text("4 Tabs").tag(4)
+                Text("5 Tabs").tag(5)
             }
-            .pickerStyle(.navigationLink)
+
+            .tint(.secondary)
+            
+            NavigationLink {
+                List {
+                    ForEach($tabs) { $tab in
+                        HStack {
+                            Image(systemName: tab.icon)
+                            Text(tab.title)
+                            Spacer()
+                            Toggle("", isOn: Binding(
+                                get: { tab.isEnabled },
+                                set: { newValue in
+                                    let enabledCount = tabs.filter(\.isEnabled).count
+                                    if newValue && enabledCount >= appSettings.maxTabCount {
+                                        return
+                                    }
+                                    if !newValue && enabledCount <= 1 {
+                                        return
+                                    }
+                                    tab.isEnabled = newValue
+                                    appSettings.enabledTabs = tabs
+                                }
+                            ))
+                        }
+                        .disabled(tab.title == "Settings")
+                    }
+                }
+                .navigationTitle("Manage Tabs")
+            } label: {
+                HStack {
+                    Text("Manage Tabs")
+                    Spacer()
+                    Text("\(tabs.filter(\.isEnabled).count) enabled")
+                        .foregroundStyle(.secondary)
+                }
+            }
+            
+            Text("You can access disabled tabs from settings menu")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        } header: {
+            Text("Tabs")
+        }
+    }
+    
+    private var subscriptionDisplayOptionsSection: some View {
+        Section {
+            Group {
+                Text("Subscription Display Style")
+                    .listRowSeparator(.hidden)
+
+                Picker(selection: $appSettings.billingInfoDisplay) {
+                    ForEach(BillingInfoDisplay.allCases, id: \.self) { style in
+                        Text(style.description).tag(style)
+                    }
+                } label: {
+                    Text("Subscription Display Style")
+                }
+                .pickerStyle(SegmentedPickerStyle())
+                
+            }
             
             Group {
                 Text("Price Display")
@@ -124,26 +219,33 @@ struct AppearanceSettings: View {
                 .pickerStyle(SegmentedPickerStyle())
                 .listRowSeparator(.hidden)
             }
+        } header: {
+            Text("Subscription Display")
         }
     }
     
     
     private var calendarOptionsSection: some View {
-        Section(header: Text("Calendar View")) {
+        Section {
             Picker("Default Calendar View", selection: $appSettings.defaultCalendarView) {
                 Text("Monthly").tag(CalendarViewType.standard)
                 Text("List").tag(CalendarViewType.listBullet)
             }
             .pickerStyle(.navigationLink)
             
-//            Toggle("Show Past Payments", isOn: $appSettings.showPastPayments)
-            
 //            Toggle("Highlight Today", isOn: $appSettings.highlightToday)
+
+        } header: {
+            Text("Calendar")
+        } footer: {
+            Text("This will only affect on app launch.")
         }
     }
 }
 
 #Preview {
-    AppearanceSettings()
-        .environmentObject(AppSettings())
+    NavigationStack {
+        AppearanceSettings()
+            .environmentObject(AppSettings())
+    }
 }

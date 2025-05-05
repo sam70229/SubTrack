@@ -98,6 +98,9 @@ class AppSettings: ObservableObject {
     }
     
     @AppStorage("accentColorHex") var accentColorHex: String = Color.blue.toHexString() // Default iOS blue
+    @AppStorage("todayColorHex") var todayColorHex: String = Color.red.toHexString()
+    
+    // MARK: - UIOptions
     @AppStorage("showCurrencySymbols") var showCurrencySymbols: Bool = true
     @AppStorage("showSubscriptionIcons") var showSubscriptionIcons: Bool = true
     @AppStorage("defaultTab") var defaultTab: Int = 0
@@ -115,6 +118,26 @@ class AppSettings: ObservableObject {
     
     // MARK: - Family Selection for Analytics
     @AppStorage("appSelection") var appSelection: Data = Data()
+    
+    
+    // MARK: - TabItems
+    @AppStorage("maxTabCount") var maxTabCount: Int = 4
+
+    @AppStorage("enabledTabs") private var enabledTabsData: Data = try! JSONEncoder().encode(TabItem.defaultTabs)
+    
+    var enabledTabs: [TabItem] {
+        get {
+            (try? JSONDecoder().decode([TabItem].self, from: enabledTabsData)) ?? TabItem.defaultTabs
+        }
+        set {
+            if let encoded = try? JSONEncoder().encode(newValue) {
+                enabledTabsData = encoded
+            }
+        }
+    }
+    
+    // MARK: - Tutorial Page
+    @AppStorage("hasSeenWishTutorial") var hasSeenWishTutorial: Bool = false
     
     // MARK: - Initialization
     init() {

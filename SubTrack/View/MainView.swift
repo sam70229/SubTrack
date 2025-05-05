@@ -17,60 +17,36 @@ struct MainView: View {
     @State private var calendarViewType: CalendarViewType = .standard
     @State private var tabSelection = 0
     
+    private func viewForTab(_ tab: TabItem) -> some View {
+         NavigationStack {
+             switch tab.title {
+             case "Calendar":
+//                 CalendarView()
+                 NewCalendarView()
+             case "Subscriptions":
+                 SubscriptionListView()
+             case "Analytics":
+                 AnalyticsView()
+             case "Settings":
+                 SettingsView()
+             case "Wish Wall":
+                 WishListView(viewModel: .init())
+             default:
+                 EmptyView()
+             }
+         }
+     }
+    
     var body: some View {
         Group {
             TabView(selection: $tabSelection) {
-                NavigationStack {
-                    Group {
-                        switch calendarViewType {
-                        case .standard:
-                            CalendarView()
-                        case .listBullet:
-                            ComboCalendarView()
-                        }
-                    }
-                    .toolbar {
-                        ToolbarItem(placement: .topBarTrailing) {
-                            Button {
-                                withAnimation {
-                                    calendarViewType = calendarViewType == .standard ? .listBullet : .standard
-                                }
-                            } label: {
-                                Image(systemName: calendarViewType == .standard ? "list.bullet.below.rectangle" : "list.dash.header.rectangle")
-                            }
-                        }
+                ForEach(appSettings.enabledTabs.filter(\.isEnabled)) { tab in
+                    Tab(LocalizedStringKey(tab.title), systemImage: tab.icon, value: tab.id) {
+                        viewForTab(tab)
                     }
                 }
-                .tabItem {
-                    Label("Calendar", systemImage: "calendar")
-                }
-                .tag(0)
-                
-                NavigationStack {
-                    SubscriptionListView()
-                }
-                .tabItem {
-                    Label("Subscriptions", systemImage: "list.bullet")
-                }
-                .tag(1)
-                
-                NavigationStack {
-                    AnalyticsView()
-                }
-                 .tabItem {
-                    Label("Analytics", systemImage: "chart.bar")
-                }
-                .tag(2)
-                
-                NavigationStack {
-                    SettingsView()
-                }
-                .tabItem {
-                    Label("Settings", systemImage: "gear")
-                }
-                .tag(3)
             }
-            .tint(.blue)
+            .tint(Color(hex: appSettings.accentColorHex) ??  .blue)
             .onAppear {
                 self.calendarViewType = appSettings.defaultCalendarView
                 self.tabSelection = appSettings.defaultTab

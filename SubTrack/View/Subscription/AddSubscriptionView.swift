@@ -42,6 +42,8 @@ struct AddSubscriptionView: View {
         name: Locale.current.localizedString(forCurrencyCode: Locale.current.currency?.identifier ?? "USD") ?? Locale.current.currency?.identifier ?? "USD",
         exampleFormatted: "1234.56"
     )
+    @State private var hasInitialPrice: Bool = false
+
     @State private var showPicker: Bool = false
     
     // Credit Card Section
@@ -91,7 +93,6 @@ struct AddSubscriptionView: View {
                 
             case .creditCardPicker:
                 CreditCardListView { card in
-                    print(card)
                     creditCard = card
                 }
             case .none:
@@ -139,10 +140,16 @@ struct AddSubscriptionView: View {
         .onAppear {
             // Initialize the repository with the model context
             repository = SubscriptionRepository(modelContext: modelContext)
-            currencies = CurrencyInfo.loadAvailableCurrencies()
 
-            if let systemCurrency = CurrencyInfo.loadAvailableCurrencies().filter({ $0.code ==  appSettings.currencyCode }).first {
-                selectedCurrency = systemCurrency
+            if currencies.isEmpty {
+                currencies = CurrencyInfo.loadAvailableCurrencies()
+            }
+
+            if !hasInitialPrice {
+                if let systemCurrency = CurrencyInfo.loadAvailableCurrencies().filter({ $0.code ==  appSettings.currencyCode }).first {
+                    selectedCurrency = systemCurrency
+                }
+                hasInitialPrice = true
             }
         }
     }
@@ -228,7 +235,7 @@ struct AddSubscriptionView: View {
             Picker("icon", selection: $icon) {
                 ForEach(iconOptions, id: \.image) { icon in
                     HStack {
-                        Text(icon.name)
+                        Text(LocalizedStringKey(icon.name))
                         Spacer()
                         Image(systemName: icon.image).tag(icon.name)
                     }

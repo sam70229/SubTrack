@@ -1,15 +1,14 @@
 //
-//  CalendarDayView.swift
+//  BasicCalendarDayView.swift
 //  SubTrack
 //
 //  Created by Sam on 2025/3/16.
 //
 import SwiftUI
 
-
-struct CalendarDayView: View {
+struct BasicCalendarDayView: View {
     @EnvironmentObject private var appSettings: AppSettings
-    
+
     let calendarDate: CalendarDate
     let isSelected: Bool
     let isToday: Bool
@@ -20,13 +19,13 @@ struct CalendarDayView: View {
             Text("\(Calendar.current.component(.day, from: calendarDate.date))")
                 .font(.system(size: 20))
                 .fontWeight(isToday ? .semibold : .regular)
-                .foregroundColor(isSelected ? .white: calendarDate.isCurrentMonth ? .primary : .secondary.opacity(0.5))
+                .foregroundColor(isSelected ? .white : (isToday ? .red : calendarDate.isCurrentMonth ? .primary : .secondary.opacity(0.5)))
                 .frame(width: 36, height: 36)
                 .background(
                     ZStack {
                         if isSelected {
                             Circle()
-                                .fill(isToday ? Color.red : Color(hex:appSettings.accentColorHex) ?? .accentColor)
+                                .fill(isToday ? Color(hex: appSettings.todayColorHex) ?? Color.red : Color(hex:appSettings.accentColorHex) ?? .accentColor)
                         }
                     }
                 )
@@ -75,5 +74,5 @@ struct CalendarDayView: View {
     let firstDayOfMonth = calendar.date(from: DateComponents(year: currentYear, month: currentMonth, day: 1))
     let date = calendar.date(byAdding: .day, value: 0, to: firstDayOfMonth!)
     let calendarDate = CalendarDate(date: date!, isCurrentMonth: false)
-    CalendarDayView(calendarDate: calendarDate, isSelected: false, isToday: true)
+    BasicCalendarDayView(calendarDate: calendarDate, isSelected: false, isToday: true)
 }
