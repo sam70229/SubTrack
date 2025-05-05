@@ -21,7 +21,8 @@ struct MainView: View {
          NavigationStack {
              switch tab.title {
              case "Calendar":
-                 CalendarView()
+//                 CalendarView()
+                 NewCalendarView()
              case "Subscriptions":
                  SubscriptionListView()
              case "Analytics":

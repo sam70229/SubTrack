@@ -1,5 +1,5 @@
 //
-//  CalendarGenerator.swift
+//  CalendarDateGenerator.swift
 //  SubTrack
 //
 //  Created by Sam on 2025/4/26.
@@ -7,7 +7,7 @@
 import Foundation
 
 
-class CalendarGenerator {
+class CalendarDateGenerator {
     // Generate calendar dates for a specific month
     static func generateDates(
         for month: Date,

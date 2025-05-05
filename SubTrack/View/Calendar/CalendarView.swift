@@ -33,7 +33,7 @@ struct CalendarView: View {
                 GeometryReader { proxy in
                     Group {
                         if calendarState.viewType == .standard {
-                            StandardCalendarGrid(state: calendarState)
+                            BasicCalendarGrid(state: calendarState)
                                 .frame(width: proxy.size.width)
                         } else {
                             ListCalendarGrid(state: calendarState)
@@ -264,7 +264,7 @@ struct CalendarView: View {
     }
 }
 
-struct StandardCalendarGrid: View {
+struct BasicCalendarGrid: View {
     let state: CalendarState
     
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)

@@ -8,81 +8,55 @@ import SwiftUI
 
 
 struct CalendarContainerView<Content: View>: View {
-    @Binding var currentMonth: Date
-    @State private var offset: CGFloat = 0
-    @State private var initialOffset: CGFloat = 0
-    @State private var contentWidth: CGFloat = 0
-    @State private var isDragging = false
+    @StateObject var calendarState: CalendarState
+    
+    @GestureState private var dragOffset: CGFloat = 0
+    @State private var activeOffset: CGFloat = 0
+    
+    @State private var displayMonths: [Date] = []
+    
+    private let dragThreshold: CGFloat = 50
     
     let content: (Date) -> Content
     
     var body: some View {
         GeometryReader { geometry in
             HStack(spacing: 0) {
-                
-                //Previous month
-                content(previousMonth)
+                content(calendarState.previousMonth)
                     .frame(width: geometry.size.width)
                 
-                // Current month
-                content(currentMonth)
+                content(calendarState.selectedMonth)
                     .frame(width: geometry.size.width)
                 
-                // Next month
-                content(nextMonth)
+                content(calendarState.nextMonth)
                     .frame(width: geometry.size.width)
             }
-            .offset(x: -geometry.size.width + offset)
-            .gesture(
+            .offset(x: -geometry.size.width + dragOffset + activeOffset)
+            .simultaneousGesture(
                 DragGesture()
-                    .onChanged { value in
-                        if !isDragging {
-                            initialOffset = offset
-                            isDragging = true
-                        }
-                        offset = initialOffset + value.translation.width
+                    .updating($dragOffset) { value, state, _ in
+                        state = value.translation.width    
                     }
                     .onEnded { value in
-                        isDragging = false
-                        let threshold = geometry.size.width / 3
+                        let horizontalDragAmount = value.translation.width
                         
-                        if offset < -threshold {
-                            // Next month
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                offset = -geometry.size.width
-                            }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                currentMonth = nextMonth
-                                offset = 0
-                            }
-                        } else if offset > threshold {
-                            // Previous month
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                offset = geometry.size.width
-                            }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                currentMonth = previousMonth
-                                offset = 0
-                            }
+                        if horizontalDragAmount > dragThreshold {
+                            calendarState.goToPreviousMonth()
+                        } else if horizontalDragAmount < -dragThreshold {
+                            calendarState.goToNextMonth()
                         } else {
-                            // Return to current month
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                offset = 0
+                            withAnimation {
+                                activeOffset = 0
                             }
                         }
                     }
             )
-            .onAppear {
-                contentWidth = geometry.size.width
+            .animation(.easeInOut, value: activeOffset)
+            .contentShape(Rectangle())
+            .onChange(of: calendarState.selectedMonth) { _, newMonth in
+                calendarState.previousMonth = Calendar.current.date(byAdding: .month, value: -1, to: newMonth) ?? newMonth
+                calendarState.nextMonth = Calendar.current.date(byAdding: .month, value: 1, to: newMonth) ?? newMonth
             }
         }
-    }
-    
-    private var previousMonth: Date {
-        Calendar.current.date(byAdding: .month, value: -1, to: currentMonth) ?? currentMonth
-    }
-    
-    private var nextMonth: Date {
-        Calendar.current.date(byAdding: .month, value: 1, to: currentMonth) ?? currentMonth
     }
 }

@@ -9,8 +9,15 @@ import SwiftData
 
 
 struct NewCalendarView: View {
+    @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var appSettings: AppSettings
+    @EnvironmentObject private var exchangeRates: ExchangeRateRepository
+    
     @StateObject private var calendarState = CalendarState()
     @Query private var subscriptions: [Subscription]
+    @State private var repository: SubscriptionRepository?
+    
+    @State private var showAddSubscriptionView: Bool = false
     
     // Local view state for gesture handling
     @GestureState private var dragOffset: CGFloat = 0
@@ -18,92 +25,218 @@ struct NewCalendarView: View {
     @State private var previousMonth: Date = Date()
     @State private var nextMonth: Date = Date()
     
+    
+    // Add state to control animation of header components
+    @State private var isTransitioning = false
+    
     var body: some View {
-        GeometryReader { geometry in
-            HStack(spacing: 0) {
-                MonthGridView(
-                    selectedDate: $calendarState.selectedDate,
-                    month: previousMonth,
-                    dates: [],
-                    onDateTap: calendarState.selectDate
-                )
-                    .frame(width: geometry.size.width)
+        ZStack(alignment: .top) {
+            VStack(spacing: 0) {
+                VStack(spacing: 0) {
+                    monthSelectorView
+                        .transition(.opacity)
+                        .padding(.horizontal)
+                    //                .padding(.top, 10)
+                    
+                    weekdayHeaderView
+                        .padding(.horizontal)
+                        .padding(.top, 10)
+                    
+                }
+                .frame(height: 80)
+                .zIndex(1)
                 
-                MonthGridView(
-                    selectedDate: $calendarState.selectedDate,
-                    month: calendarState.selectedMonth,
-                    dates: calendarState.dates,
-                    onDateTap: calendarState.selectDate
-                )
-                    .frame(width: geometry.size.width)
-                
-                MonthGridView(
-                    selectedDate: $calendarState.selectedDate,
-                    month: nextMonth,
-                    dates: [],
-                    onDateTap: calendarState.selectDate
-                )
-                    .frame(width: geometry.size.width)
+                ZStack {
+                    monthGridContainer
+//                    if calendarState.isLoading {
+//                        ProgressView()
+//                    } else {
+//                        monthGridContainer
+//                    }
+                }
+                .frame(maxHeight: .infinity)
             }
-            .offset(x: -geometry.size.width + activeOffset + dragOffset)
-            .gesture(
-                DragGesture()
-                    .updating($dragOffset) { value, state, _ in
-                        state = value.translation.width
-                    }
-                    .onEnded { value in
-                        let threshold = geometry.size.width / 3
-                        
-                        if value.translation.width > threshold {
-                            // Swiped right - go to previous month
-                            activeOffset = geometry.size.width
-                            
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                calendarState.selectedMonth = previousMonth
-                                activeOffset = 0
-                                
-                                updateAdjacentMonths()
-                            }
-                        } else if value.translation.width < -threshold {
-                               // Swiped left - go to next month
-                               activeOffset = -geometry.size.width
-                               
-                               // After animation completes, update state
-                               DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                   calendarState.selectedMonth = nextMonth
-                                   activeOffset = 0
-                                   // Update adjacent months
-                                   updateAdjacentMonths()
-                               }
-                           } else {
-                               // Not enough to change month, snap back
-                               activeOffset = 0
-                           }
-                    }
-            )
-            .animation(.easeInOut(duration: 0.3), value: activeOffset)
-            .onChange(of: calendarState.selectedMonth) { _, _ in
-                updateAdjacentMonths()
-            }
-            .onAppear {
-                updateAdjacentMonths()
+        }
+        .padding(.top, 0)
+        .navigationTitle("Total Costs: \(formattedMonthlyTotal(currency: appSettings.currencyCode))")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                Button {
+                    calendarState.toggleViewType()
+                } label: {
+                    Image(systemName: calendarState.viewType == .standard ? "list.bullet.below.rectangle" : "list.dash.header.rectangle")
+                }
                 
-                Task {
-                    await calendarState.loadCalendarDates(with: subscriptions)
+                Button {
+                    showAddSubscriptionView = true
+                } label: {
+                    Image(systemName: "plus")
+                }
+            }
+        }
+        .sheet(isPresented: $showAddSubscriptionView) {
+            NavigationStack {
+                AddSubscriptionView()
+            }
+        }
+        .task(id: calendarState.selectedMonth) {
+            await calendarState.loadCalendarDates(with: subscriptions)
+        }
+        .onAppear {
+            if repository == nil {
+                repository = SubscriptionRepository(modelContext: modelContext)
+                calendarState.viewType = appSettings.defaultCalendarView
+            }
+        }
+        .onChange(of: subscriptions) { _, _ in
+            // Refresh calendar when subscriptions change
+            Task {
+                await calendarState.loadCalendarDates(with: subscriptions)
+            }
+        }
+        // Synchronize header animations with month changes
+        .onChange(of: calendarState.selectedMonth) { _, _ in
+            withAnimation(.easeInOut(duration: 0.3)) {
+                isTransitioning = true
+            }
+            
+            // After a short delay, complete the transition
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isTransitioning = false
                 }
             }
         }
     }
-
-    private func updateAdjacentMonths() {
-         let calendar = Calendar.current
-         previousMonth = calendar.date(byAdding: .month, value: -1, to: calendarState.selectedMonth) ?? calendarState.selectedMonth
-         nextMonth = calendar.date(byAdding: .month, value: 1, to: calendarState.selectedMonth) ?? calendarState.selectedMonth
-     }
+    
+    private var monthSelectorView: some View {
+        HStack {
+            Button{
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    calendarState.goToPreviousMonth()
+                }
+            } label: {
+                Image(systemName: "chevron.left")
+            }
+            
+            Spacer()
+            
+            Text(calendarState.selectedMonth.formatted(.dateTime.month().year()))
+                .font(.title2.bold())
+            
+            Spacer()
+            
+            Button {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    calendarState.goToNextMonth()
+                }
+            } label: {
+                Image(systemName: "chevron.right")
+            }
+        }
+    }
+    
+    private var weekdayHeaderView: some View {
+        HStack {
+            ForEach(Calendar.current.veryShortWeekdaySymbols) { symbol in
+                Text(symbol)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity)
+            }
+        }
+    }
+    
+    private var monthGridContainer: some View {
+        GeometryReader { geometry in
+            CalendarContainerView(calendarState: calendarState) { monthDate in
+                monthView(for: monthDate, geometry: geometry)
+                    .transition(.slide)
+            }
+            .animation(.easeInOut, value: calendarState.viewType)
+        }
+        .frame(maxHeight: .infinity)
+    }
+    
+    private func monthView(for monthDate: Date, geometry: GeometryProxy) -> some View {
+        let monthDates = calendarState.getDatesForMonth(monthDate)
+        
+        return Group {
+            if calendarState.viewType == .standard {
+                StandardCalendarGrid(
+                    selectedDate: $calendarState.selectedDate,
+                    month: monthDate,
+                    dates: monthDates,
+                    onDateTap: calendarState.selectDate
+                )
+                .transition(.opacity) // Add a fade transition
+                
+            } else {
+                CompactCalendarGrid(
+                    selectedDate: $calendarState.selectedDate,
+                    month: monthDate,
+                    dates: monthDates,
+                    onDateTap: calendarState.selectDate,
+                )
+                .transition(.opacity) // Add a fade transition
+            }
+        }
+        .padding(.horizontal)
+        .frame(height: geometry.size.height)
+    }
+    
+    
+    // MARK: - Calculation Methods
+    
+    private func formattedMonthlyTotal(currency: String) -> String {
+        let total = calculateMonthlyTotal()
+        let formatStyle: Decimal.FormatStyle.Currency = CurrencyInfo.hasDecimals(currency) ? .currency(code: currency) : .currency(code: currency).precision(.fractionLength(0))
+        return Decimal(total).formatted(formatStyle)
+    }
+    
+    private func calculateMonthlyTotal() -> Double {
+        let currentMonthDates = calendarState.dates.filter { $0.isCurrentMonth }
+        
+        var processedSubscriptionIds = Set<String>()
+        var totalCost: Decimal = 0
+        
+        for calendarDate in currentMonthDates {
+            for subscription in calendarDate.subscriptions {
+                if processedSubscriptionIds.contains(subscription.id.uuidString) {
+                    continue
+                }
+                
+                processedSubscriptionIds.insert(subscription.id.uuidString)
+                
+                let convertedPrice = exchangeRates.convert(
+                    subscription.price,
+                    from: subscription.currencyCode,
+                    to: appSettings.currencyCode
+                ) ?? subscription.price
+                
+                totalCost += convertedPrice
+                //                switch calculationMethod {
+                //                case .actualBilling:
+                //                    totalCost += convertedPrice
+                //                case .amortized:
+                //                    if subscription.billingCycle == .annually {
+                //                        totalCost += convertedPrice / 12
+                //                    } else {
+                //                        totalCost += convertedPrice
+                //                    }
+                //                }
+            }
+        }
+        
+        return NSDecimalNumber(decimal: totalCost).doubleValue
+    }
 }
 
 #Preview {
     NavigationStack {
         NewCalendarView()
+            .environmentObject(AppSettings())
+            .environmentObject(ExchangeRateRepository())
     }
 }

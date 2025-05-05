@@ -20,6 +20,7 @@ struct StandardCalendarDayView: View {
         VStack(alignment: .center, spacing: 5) {
             dayView.dateNumberView
                 .font(.system(size: 20))
+                .foregroundColor(dayView.calendarDate.isCurrentMonth ? .primary : .secondary.opacity(0.5))
                 .frame(width: 36, height: 36)
                 .background {
                     ZStack {
@@ -27,17 +28,21 @@ struct StandardCalendarDayView: View {
                             Circle()
                                 .fill(dayView.isToday ?
                                       Color(hex: appSettings.todayColorHex) ?? Color.red :
-                                      Color(hex:appSettings.accentColorHex) ?? .accentColor)
+                                        Color(hex:appSettings.accentColorHex) ?? .accentColor)
+                        } else {
+                            if dayView.isToday {
+                                Circle()
+                                    .fill(Color(hex: appSettings.todayColorHex) ?? Color.red)
+                            }
                         }
                     }
                 }
             
             dayView.eventIndicators(maxCount: 3)
                 .frame(maxWidth: .infinity)
-                
+            
             Spacer()
         }
-        .frame(height: 100)
         .frame(maxWidth: .infinity)
         .padding(.vertical, 2)
     }

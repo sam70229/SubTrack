@@ -14,9 +14,17 @@ enum CalendarDayViewStyle {
     func makeView(calendarDate: CalendarDate, isSelected: Bool, isToday: Bool) -> some View {
         switch self {
         case .basic:
-            return AnyView(BasicCalendarDayView(calendarDate: calendarDate, isSelected: isSelected, isToday: isToday))
+            return AnyView(StandardCalendarDayView(
+                calendarDate: calendarDate,
+                isSelected: isSelected,
+                isToday: isToday)
+            )
         case .compact:
-            return AnyView(ComboCalendarDayView(calendarDate: calendarDate, isSelected: isSelected, isToday: isToday))
+            return AnyView(CompactCalendarDayView(
+                calendarDate: calendarDate,
+                isSelected: isSelected,
+                isToday: isToday)
+            )
         }
     }
 }
