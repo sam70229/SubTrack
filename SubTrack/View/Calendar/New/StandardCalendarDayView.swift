@@ -38,12 +38,15 @@ struct StandardCalendarDayView: View {
                     }
                 }
             
+            Spacer(minLength: 2)
+            
             dayView.eventIndicators(maxCount: 3)
                 .frame(maxWidth: .infinity)
+                .frame(maxHeight: 60) // Set a minimum height for the entire cell
             
-            Spacer()
         }
         .frame(maxWidth: .infinity)
+        .frame(minHeight: 100) // Set a minimum height for the entire cell
         .padding(.vertical, 2)
     }
 }

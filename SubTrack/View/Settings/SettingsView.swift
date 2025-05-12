@@ -92,6 +92,12 @@ struct SettingsView: View {
 //                    Label("Terms of Service", systemImage: "doc.text")
 //                }
             }
+            
+            Section {
+                
+            } footer: {
+                Text("Version \(Bundle.main.versionNumber), Build: \(Bundle.main.buildNumber)")
+            }
         }
         .navigationTitle("Settings")
         .onAppear {
@@ -138,6 +144,8 @@ struct SettingsView: View {
 }
 
 #Preview {
-    SettingsView()
-        .environmentObject(AppSettings())
+    NavigationStack {
+        SettingsView()
+            .environmentObject(AppSettings())
+    }
 }

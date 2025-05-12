@@ -136,6 +136,22 @@ class AppSettings: ObservableObject {
         }
     }
     
+    // MARK: - Tags
+    @AppStorage("tagsData") private var tagsData: Data = Data()
+    
+    var tags: [Tag] {
+        get {
+            guard !tagsData.isEmpty else { return [] }
+            return (try? JSONDecoder().decode([Tag].self, from: tagsData)) ?? []
+        }
+        set {
+            if let encoded = try? JSONEncoder().encode(newValue) {
+                tagsData = encoded
+            }
+        }
+    }
+    
+    
     // MARK: - Tutorial Page
     @AppStorage("hasSeenWishTutorial") var hasSeenWishTutorial: Bool = false
     

@@ -26,7 +26,6 @@ struct SubTrackApp: App {
             // Define your schema with all model types
             let schema = Schema([
                 Subscription.self,
-                Category.self,
                 BillingRecord.self,
                 CreditCard.self
                 // Add other model types as needed
@@ -38,6 +37,7 @@ struct SubTrackApp: App {
                 allowsSave: true
             )
             
+//            modelContainer = try ModelContainer(for: schema, migrationPlan: MigrationPlan.self, configurations: config)
             modelContainer = try ModelContainer(for: schema, configurations: config)
         } catch {
             fatalError("Failed to create ModelContainer: \(error)")

@@ -146,6 +146,16 @@
         }
       }
     },
+    "Add a tag" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新增標籤"
+          }
+        }
+      }
+    },
     "Add Card" : {
       "localizations" : {
         "zh-Hant" : {
@@ -256,6 +266,9 @@
         }
       }
     },
+    "Build %@" : {
+
+    },
     "Calendar" : {
       "localizations" : {
         "zh-Hant" : {
@@ -297,6 +310,7 @@
       }
     },
     "Category" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
@@ -1067,6 +1081,16 @@
         }
       }
     },
+    "sorted by" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "排序方式"
+          }
+        }
+      }
+    },
     "Start Tracking" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1228,6 +1252,16 @@
         }
       }
     },
+    "Tags" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "標籤"
+          }
+        }
+      }
+    },
     "Tap on any wish to vote.\nGreen background indicates you've voted for that wish." : {
       "localizations" : {
         "zh-Hant" : {
@@ -1319,8 +1353,31 @@
         }
       }
     },
-    "Version 1.0.0" : {
-      "shouldTranslate" : false
+    "Version %@" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "版本 %@"
+          }
+        }
+      }
+    },
+    "Version %@, Build: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Version %1$@, Build: %2$@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "版本 %1$@, Build: %2$@"
+          }
+        }
+      }
     },
     "Vote for Wishes" : {
       "localizations" : {
