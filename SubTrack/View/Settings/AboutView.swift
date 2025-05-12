@@ -12,16 +12,20 @@ struct AboutView: View {
         List {
             Section {
                 VStack(alignment: .center, spacing: 12) {
-                    Image("AppIcon")
-                        .resizable()
-                        .frame(width: 100, height: 100)
-                        .cornerRadius(20)
+                    Bundle.main.appIcon.flatMap { UIImage(named: $0) }.map { Image(uiImage: $0) }?
+                    .resizable()
+                    .frame(width: 100, height: 100)
+                    .cornerRadius(20)
+                    
                     
                     Text("SubTrack")
                         .font(.title.bold())
                     
-                    Text("Version 1.0.0")
+                    Text("Version \(Bundle.main.versionNumber)")
                         .foregroundColor(.secondary)
+                    
+                    Text("Build \(Bundle.main.buildNumber)")
+                        .font(.caption2)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical)

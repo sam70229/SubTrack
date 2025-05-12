@@ -56,7 +56,7 @@ class SubscriptionFilter {
         case .monthly:
             // All months have the same day
             for m in 1...12 {
-                dates.insert(DateComponents(month: month, day: day))
+                dates.insert(DateComponents(month: m, day: day))
             }
             
         case .quarterly:
@@ -64,7 +64,7 @@ class SubscriptionFilter {
             let startMonth = month
             for offset in stride(from: 0, to: 9, by: 3) {
                 let m = ((startMonth - 1 + offset) % 12) + 1
-                dates.insert(DateComponents(month: month, day: day))
+                dates.insert(DateComponents(month: m, day: day))
             }
             
         case .annually:

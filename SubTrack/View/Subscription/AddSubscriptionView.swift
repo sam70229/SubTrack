@@ -50,6 +50,10 @@ struct AddSubscriptionView: View {
     @State private var recordCreditCard: Bool = false
     @State private var creditCard: CreditCard? = nil
     
+    // Tags Section
+    @State private var showTagsSheet: Bool = false
+    @State private var selectedTags: [Tag] = []
+    
     private let iconOptions: [IconOption] = [
         IconOption(name: "Credit Card", image: "creditcard"),
         IconOption(name: "Music", image: "music.note"),
@@ -74,6 +78,8 @@ struct AddSubscriptionView: View {
                 colorSelectionSection
                 
                 iconSelectionSection
+                
+                tagSelection
                 
                 billingInfoSection
                    
@@ -125,6 +131,12 @@ struct AddSubscriptionView: View {
                             .scaleEffect(1.5)
                             .tint(.white)
                     }
+            }
+        }
+        .sheet(isPresented: $showTagsSheet) {
+            NavigationStack {
+                TagsView(selectedTags: $selectedTags)
+                let _ = print(selectedTags)
             }
         }
         .alert(
@@ -244,6 +256,38 @@ struct AddSubscriptionView: View {
         }
     }
     
+    private var tagSelection: some View {
+        Section {
+            HStack {
+                
+                Image(systemName: "number")
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(.gray)
+                            .padding(-6)
+                    )
+                    .foregroundStyle(.white)
+                
+                Text("Tags")
+                    .padding(.horizontal, 8)
+                
+                Spacer()
+
+                Button{
+                    showTagsSheet = true
+                } label: {
+                    HStack {
+                        if !selectedTags.isEmpty {
+                            Text(selectedTags.map{ $0.name }.joined(separator: ", "))
+                        }
+                        Image(systemName: "chevron.right")
+                            .font(.caption2)
+                    }
+                }.foregroundColor(.secondary)
+            }
+        }
+    }
+    
     private var billingInfoSection: some View {
         Section {
             Picker("Billing Cycle", selection: $billingCycle) {
@@ -274,12 +318,16 @@ struct AddSubscriptionView: View {
                             .frame(width: 300, height: 200)
                     }
                     Spacer()
+
                     Button {
                         showPicker = true
                         pickerDestination = .creditCardPicker
                     } label: {
                         Image(systemName: "chevron.right")
+                            .font(.caption2)
                     }
+                    .foregroundStyle(.secondary)
+                
                 }
                 
                 .alignmentGuide(.top) { dimension in
@@ -330,5 +378,8 @@ struct AddSubscriptionView: View {
 }
 
 #Preview {
-    AddSubscriptionView()
+    NavigationStack {
+        AddSubscriptionView()
+            .environmentObject(AppSettings())
+    }
 }

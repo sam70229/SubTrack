@@ -61,17 +61,6 @@ struct SubscriptionDetailView: View {
         .onAppear {
             subscriptionRepository = SubscriptionRepository(modelContext: modelContext)
             categoryRepository = CategoryRepository(modelContext: modelContext)
-            
-            loadCategoryName()
-        }
-    }
-    
-    private func loadCategoryName() {
-        if let categoryID = subscription.category?.first?.id,
-           let category = categoryRepository?.fetchCategory(withId: categoryID) {
-            self.categoryName = category.name
-        } else {
-            self.categoryName = "None"
         }
     }
 
@@ -107,11 +96,12 @@ struct SubscriptionDetailView: View {
     
     private var subscriptionDetailsInfoSection: some View {
         Section {
-            if subscription.category?.first?.id != nil {
+            let _ = print(subscription.tags)
+            if !subscription.tags.isEmpty {
                 HStack {
-                    Text("Category")
+                    Text("Tags")
                     Spacer()
-                    Text(categoryName)
+                    Text(subscription.tags.prefix(2).map { $0.name }.joined(separator: ", ") + (subscription.tags.count > 2 ? ", ..." : ""))
                 }
             }
 
@@ -418,6 +408,7 @@ enum NotificationDate: Int, CaseIterable, Identifiable {
         price: 10.0,
         billingCycle: .monthly,
         firstBillingDate: Date(),
+        tags: [Tag(name: "#Tag1"), Tag(name: "#Tag2"), Tag(name: "#Tag3")],
         icon: "",
         colorHex: "#000000"
     )

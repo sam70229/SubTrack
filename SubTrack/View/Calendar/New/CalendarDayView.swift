@@ -41,6 +41,8 @@ struct CalendarDayView: View {
                      .foregroundColor(.secondary)
                      .frame(maxWidth: .infinity, alignment: .leading)
              }
+             
+             Spacer()
          }
      }
      
