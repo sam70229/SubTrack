@@ -145,7 +145,7 @@ struct SubscriptionListView: View {
         case .Name:
             return subscriptions.sorted { $0.name < $1.name }
         case .Period:
-            return subscriptions.sorted { $0.billingCycle.rawValue < $1.billingCycle.rawValue }
+            return subscriptions.sorted { $0.period.rawValue < $1.period.rawValue }
         }
     }
 }

@@ -31,8 +31,8 @@ struct SubscriptionItemCard: View {
                     Text(subscription.nextBillingDate.formatted(date: .abbreviated, time: .omitted))
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                case .billingCycle:
-                    Text(subscription.billingCycle.description)
+                case .period:
+                    Text(subscription.period.description)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

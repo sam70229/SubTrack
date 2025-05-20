@@ -112,13 +112,13 @@ class CalendarState: ObservableObject {
         dates = newDates
         
         // If no date is selected, try to select today or the first date of the month
-        if selectedDate == nil {
-            if let todayDate = CalendarDateGenerator.findTodayInDates(newDates) {
-                selectedDate = todayDate
-            } else if let firstDate = newDates.first(where: { $0.isCurrentMonth }) {
-                selectedDate = firstDate
-            }
+        // Change to first date of current month 
+        if let todayDate = CalendarDateGenerator.findTodayInDates(newDates) {
+            selectedDate = todayDate
+        } else if let firstDate = newDates.first(where: { $0.isCurrentMonth }) {
+            selectedDate = firstDate
         }
+        
     }
     
     // Check if a month is already cached

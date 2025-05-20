@@ -31,7 +31,7 @@ struct AddSubscriptionView: View {
     @State private var name: String = ""
     @State private var priceString = ""
     @State private var price: Decimal = 0
-    @State private var billingCycle: BillingCycle = .monthly
+    @State private var period: Period = .monthly
     @State private var firstBillingDate: Date = Date()
     @State private var selectedColorOption: ColorOption = .init(name: "Blue", hex: Color.blue.toHexString())
     @State private var icon: String = "creditcard"
@@ -136,7 +136,6 @@ struct AddSubscriptionView: View {
         .sheet(isPresented: $showTagsSheet) {
             NavigationStack {
                 TagsView(selectedTags: $selectedTags)
-                let _ = print(selectedTags)
             }
         }
         .alert(
@@ -290,8 +289,8 @@ struct AddSubscriptionView: View {
     
     private var billingInfoSection: some View {
         Section {
-            Picker("Billing Cycle", selection: $billingCycle) {
-                ForEach(BillingCycle.allCases) { cycle in
+            Picker("Period", selection: $period) {
+                ForEach(Period.allCases) { cycle in
                     Text(cycle.description).tag(cycle)
                 }
             }
@@ -348,7 +347,7 @@ struct AddSubscriptionView: View {
             name: name,
             price: price,
             currencyCode: selectedCurrency.code,
-            billingCycle: billingCycle,
+            period: period,
             firstBillingDate: firstBillingDate,
             creditCard: creditCard,
             icon: icon,

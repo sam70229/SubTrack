@@ -76,6 +76,36 @@
         }
       }
     },
+    "7 days" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "7天"
+          }
+        }
+      }
+    },
+    "15 days" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "15天"
+          }
+        }
+      }
+    },
+    "30 days" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "30天"
+          }
+        }
+      }
+    },
     "A place where you can share your feature requests and vote for others' wishes." : {
       "localizations" : {
         "zh-Hant" : {
@@ -237,6 +267,7 @@
       }
     },
     "Billing Cycle" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
@@ -267,7 +298,7 @@
       }
     },
     "Build %@" : {
-
+      "shouldTranslate" : false
     },
     "Calendar" : {
       "localizations" : {
@@ -440,12 +471,32 @@
         }
       }
     },
+    "Dashboard" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "儀表板"
+          }
+        }
+      }
+    },
     "Data" : {
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "資料"
+          }
+        }
+      }
+    },
+    "Days" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "天"
           }
         }
       }
@@ -536,6 +587,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "完成"
+          }
+        }
+      }
+    },
+    "Due This Month" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本月到期訂閱"
           }
         }
       }
@@ -767,6 +828,16 @@
         }
       }
     },
+    "No Subscriptions upcoming in %lld days." : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld天內沒有即將扣款的訂閱"
+          }
+        }
+      }
+    },
     "Notification Settings" : {
       "localizations" : {
         "zh-Hant" : {
@@ -816,6 +887,9 @@
           }
         }
       }
+    },
+    "Period" : {
+
     },
     "Pick a card" : {
       "localizations" : {
@@ -1067,6 +1141,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "顯示訂閱圖示"
+          }
+        }
+      }
+    },
+    "Show Upcoming Subscriptions" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示即將到來的訂閱"
           }
         }
       }
@@ -1343,12 +1427,32 @@
         }
       }
     },
+    "Total Subs" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "總訂閱"
+          }
+        }
+      }
+    },
     "UI Options" : {
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "UI選項"
+          }
+        }
+      }
+    },
+    "Upcoming" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "即將到來"
           }
         }
       }
@@ -1415,6 +1519,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "你仍然可以透過設定選單進入被停用的分頁"
+          }
+        }
+      }
+    },
+    "Your Subscription Stats" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您的訂閱統計"
           }
         }
       }

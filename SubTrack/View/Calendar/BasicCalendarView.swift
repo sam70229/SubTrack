@@ -304,7 +304,7 @@ struct BasicCalendarView: View {
                 case .actualBilling:
                     totalCost += convertedPrice
                 case .amortized:
-                    if subscription.billingCycle == .annually {
+                    if subscription.period == .annually {
                         totalCost += convertedPrice / 12
                     } else {
                         totalCost += convertedPrice

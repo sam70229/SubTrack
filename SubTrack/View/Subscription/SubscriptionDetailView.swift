@@ -96,7 +96,6 @@ struct SubscriptionDetailView: View {
     
     private var subscriptionDetailsInfoSection: some View {
         Section {
-            let _ = print(subscription.tags)
             if !subscription.tags.isEmpty {
                 HStack {
                     Text("Tags")
@@ -106,9 +105,9 @@ struct SubscriptionDetailView: View {
             }
 
             HStack {
-                Text("Billing Cycle")
+                Text("Period")
                 Spacer()
-                Text(subscription.billingCycle.description)
+                Text(subscription.period.description)
             }
 
             HStack {
@@ -212,7 +211,7 @@ struct SubscriptionDetailView: View {
     // MARK: - calculations
     
     private var monthlyPrice: Decimal {
-        switch subscription.billingCycle {
+        switch subscription.period {
         case .semimonthly:
             return subscription.price * 2
         case .monthly:
@@ -240,7 +239,7 @@ struct SubscriptionDetailView: View {
             to: appSettings.currencyCode
         ) ?? subscription.price
 
-        switch subscription.billingCycle {
+        switch subscription.period {
         case .semimonthly:
             return convertedPrice * 2
         case .monthly:
@@ -262,7 +261,7 @@ struct SubscriptionDetailView: View {
     }
     
     private var yearlyPrice: Decimal {
-        switch subscription.billingCycle {
+        switch subscription.period {
         case .semimonthly:
             return subscription.price * 24
         case .monthly:
@@ -290,7 +289,7 @@ struct SubscriptionDetailView: View {
             to: appSettings.currencyCode
         ) ?? subscription.price
 
-        switch subscription.billingCycle {
+        switch subscription.period {
         case .semimonthly:
             return convertedPrice * 24
         case .monthly:
@@ -347,7 +346,7 @@ struct SubscriptionDetailView: View {
     
     // Helper properties for calculating billing cycles
     private var billingCycleComponent: Calendar.Component {
-        switch subscription.billingCycle {
+        switch subscription.period {
         case .semimonthly:
             return .day
         case .monthly, .bimonthly, .quarterly, .semiannually:
@@ -360,7 +359,7 @@ struct SubscriptionDetailView: View {
     }
 
     private var billingCycleValue: Int {
-        switch subscription.billingCycle {
+        switch subscription.period {
         case .semimonthly:
             return 15
         case .monthly:
@@ -406,7 +405,7 @@ enum NotificationDate: Int, CaseIterable, Identifiable {
         id: UUID(),
         name: "Test Subscription",
         price: 10.0,
-        billingCycle: .monthly,
+        period: .monthly,
         firstBillingDate: Date(),
         tags: [Tag(name: "#Tag1"), Tag(name: "#Tag2"), Tag(name: "#Tag3")],
         icon: "",

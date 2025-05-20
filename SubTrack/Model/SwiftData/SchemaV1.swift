@@ -25,7 +25,7 @@ extension SchemaV1{
         var subscriptionDescription: String?
         var price: Decimal
         var currencyCode: String // For supporting diff country
-        var billingCycle: BillingCycle
+        var period: Period
         var firstBillingDate: Date
         var tags: [Tag]
         var icon: String
@@ -47,7 +47,7 @@ extension SchemaV1{
             subscriptionDescription: String? = nil,
             price: Decimal,
             currencyCode: String = Locale.current.currency?.identifier ?? "USD",
-            billingCycle: BillingCycle,
+            period: Period,
             firstBillingDate: Date,
             tags: [Tag] = [],
             creditCard: CreditCard? = nil,
@@ -61,7 +61,7 @@ extension SchemaV1{
             self.subscriptionDescription = subscriptionDescription
             self.price = price
             self.currencyCode = currencyCode
-            self.billingCycle = billingCycle
+            self.period = period
             self.firstBillingDate = firstBillingDate
             self.tags = tags
             self.creditCard = creditCard

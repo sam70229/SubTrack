@@ -51,12 +51,15 @@ struct AppearanceSettings: View {
     
     private var themeSection: some View {
         Section(header: Text("Theme")) {
+            Text("App Theme")
+                .listRowSeparator(.hidden)
+
             Picker("App Theme", selection: $appSettings.appTheme) {
                 Text("System").tag(AppTheme.system)
                 Text("Light").tag(AppTheme.light)
                 Text("Dark").tag(AppTheme.dark)
             }
-            .pickerStyle(.navigationLink)
+            .pickerStyle(.segmented)
         }
     }
     
@@ -103,16 +106,33 @@ struct AppearanceSettings: View {
             Toggle("Show Currency Symbols", isOn: $appSettings.showCurrencySymbols)
             
             Toggle("Show Subscription Icons", isOn: $appSettings.showSubscriptionIcons)
+            
+            Group {
+                Text("Show Upcoming Subscriptions")
+                    
+
+                Picker("Upcoming", selection: $appSettings.daysToShowUpcomingSubscriptions) {
+                    Text("7 days")
+                        .tag(7)
+                    Text("15 days")
+                        .tag(15)
+                    Text("30 days")
+                        .tag(30)
+                }
+                .pickerStyle(SegmentedPickerStyle())
+                .listRowSeparator(.hidden)
+            }
         }
     }
     
     private var tabOptionsSection: some View {
         Section {
             Picker("Default Tab", selection: $appSettings.defaultTab) {
-                Text("Calendar").tag(0)
-                Text("Subscriptions").tag(1)
-                Text("Analytics").tag(2)
-                Text("Settings").tag(3)
+                Text("Dashboard").tag(0)
+                Text("Calendar").tag(1)
+                Text("Subscriptions").tag(2)
+                Text("Analytics").tag(3)
+                Text("Settings").tag(4)
             }
             .pickerStyle(.navigationLink)
             
@@ -143,7 +163,7 @@ struct AppearanceSettings: View {
                 Text("4 Tabs").tag(4)
                 Text("5 Tabs").tag(5)
             }
-
+            
             .tint(.secondary)
             
             NavigationLink {
@@ -194,7 +214,7 @@ struct AppearanceSettings: View {
             Group {
                 Text("Subscription Display Style")
                     .listRowSeparator(.hidden)
-
+                
                 Picker(selection: $appSettings.billingInfoDisplay) {
                     ForEach(BillingInfoDisplay.allCases, id: \.self) { style in
                         Text(style.description).tag(style)
@@ -208,7 +228,7 @@ struct AppearanceSettings: View {
             
             Group {
                 Text("Price Display")
-                    
+                
                 Picker(selection: $appSettings.priceDisplayMode) {
                     ForEach(PriceDisplayMode.allCases, id: \.self) { mode in
                         Text(mode.description).tag(mode)
@@ -233,8 +253,8 @@ struct AppearanceSettings: View {
             }
             .pickerStyle(.navigationLink)
             
-//            Toggle("Highlight Today", isOn: $appSettings.highlightToday)
-
+            //            Toggle("Highlight Today", isOn: $appSettings.highlightToday)
+            
         } header: {
             Text("Calendar")
         } footer: {

@@ -32,7 +32,6 @@ struct TagsView: View {
                 .padding(.horizontal, 8)
                 .submitLabel(.return)
                 .onSubmit(of: .text) {
-                    print("submit")
                     if !newTag.hasPrefix("#") {
                         newTag = "#\(newTag)"
                     }

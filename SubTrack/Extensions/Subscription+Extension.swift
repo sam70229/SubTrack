@@ -45,7 +45,7 @@ extension SchemaV1.Subscription {
         let today = Date()
         var nextDate = firstBillingDate
         while nextDate < today {
-            nextDate = billingCycle.calculateNextDate(from: nextDate)
+            nextDate = period.calculateNextDate(from: nextDate)
         }
         return nextDate
     }
@@ -94,7 +94,7 @@ extension SchemaV1.Subscription {
                 billingRecords.append(record)
             }
             
-            currentDate = billingCycle.calculateNextDate(from: currentDate)
+            currentDate = period.calculateNextDate(from: currentDate)
         }
     }
     
