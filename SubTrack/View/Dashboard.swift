@@ -6,6 +6,7 @@
 //
 import SwiftUI
 import SwiftData
+import Charts
 
 
 struct Dashboard: View {
@@ -33,6 +34,8 @@ struct Dashboard: View {
                 upcomingSection
                 
                 metricsSection
+                
+                categoryBreakdownSection
             }
         }
     }
@@ -133,7 +136,6 @@ struct Dashboard: View {
     
     private func calculateMonthlyTotal() -> Double {
         let monthlySubs = subscriptions.filter({ $0.period == .monthly })
-        print("monthlySubs= \(monthlySubs)")
         var processedSubscriptionIds = Set<String>()
         var totalCost: Decimal = 0
         
@@ -163,9 +165,7 @@ struct Dashboard: View {
             //                    }
             //                }
         }
-        
-        print(processedSubscriptionIds)
-        
+
         return NSDecimalNumber(decimal: totalCost).doubleValue
     }
 }
@@ -242,7 +242,7 @@ extension Dashboard {
                 Image(systemName: icon)
                     .foregroundColor(color)
                 
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -339,4 +339,159 @@ extension Dashboard {
 
 extension Dashboard {
     
+    struct TagBreakdownItem {
+        let tag: Tag
+        let totalCost: Decimal
+        let percentage: Decimal
+    }
+
+    private var categoryBreakdownSection: some View {
+        VStack(alignment: .leading) {
+            Text("Tags Breakdown")
+                .bold()
+                .font(.title2)
+            
+            if subscriptions.isEmpty {
+                Text("Add subscriptions with tags to see your tag breakdown")
+                    .foregroundColor(.secondary)
+                    .padding()
+            } else {
+                categoryBreakdownChart
+            }
+        }
+        .padding(.horizontal)
+    }
+    
+    private var categoryBreakdownChart: some View {
+        let tagData = calculateTagBreakdown()
+        
+        return VStack {
+            Chart {
+                ForEach(tagData, id: \.tag) { item in
+                    sectorMarkForItem(item)
+                }
+            }
+            .frame(height: 200)
+            
+            // Legend below the chart
+            categoryLegend(tagData: tagData)
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color(.systemGray6))
+        )
+    }
+    
+    private func sectorMarkForItem(_ item: TagBreakdownItem) -> some ChartContent {
+        SectorMark(
+            angle: .value("Cost", item.totalCost),
+            innerRadius: .ratio(0.5),
+            angularInset: 1.5
+        )
+        .foregroundStyle(by: .value("Category", item.tag.name))
+        .annotation(position: .overlay) {
+            sectorAnnotation(for: item)
+        }
+    }
+    
+    @ViewBuilder
+    private func sectorAnnotation(for item: TagBreakdownItem) -> some View {
+        if item.percentage >= 10 {
+            let percentageInt = NSDecimalNumber(decimal: item.percentage).intValue
+            Text("\(percentageInt)%")
+                .font(.caption)
+                .bold()
+                .foregroundStyle(.white)
+        }
+    }
+    
+    @ViewBuilder
+    private func categoryLegend(tagData: [TagBreakdownItem]) -> some View {
+        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], alignment: .leading, spacing: 8) {
+            ForEach(Array(tagData.enumerated()), id: \.element.tag) { index, item in
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(colorForTag(item.tag, index: index))
+                        .frame(width: 10, height: 10)
+                    
+                    Text(item.tag.name)
+                        .font(.caption)
+                    
+                    Spacer()
+                    
+                    Text(formatCurrency(item.totalCost))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+        .padding(.top, 8)
+    }
+    
+    // Helper function to get color for a tag (you can customize this)
+    private func colorForTag(_ tag: Tag, index: Int) -> Color {
+        // You could use a deterministic color based on the tag name, or add a color property to your Tag model
+        // For now, using a simple hash-based approach
+        let colors: [Color] = [.blue, .green, .orange, .red, .purple, .pink, .yellow, .teal]
+//        let index = abs(tag.name.hashValue) % colors.count
+        return colors[index]
+    }
+    
+    // Calculate data for the chart
+    private func calculateTagBreakdown() -> [TagBreakdownItem] {
+        // Handle subscriptions with no tags by creating a "Uncategorized" tag
+        let uncategorizedTag = Tag(name: "Uncategorized")
+        
+        // Group subscriptions by tag
+        var tagTotals: [Tag: Decimal] = [:]
+        var totalCost: Decimal = 0
+        
+        for subscription in subscriptions where subscription.isActive {
+            let convertedPrice = exchangeRates.convert(
+                subscription.price,
+                from: subscription.currencyCode,
+                to: appSettings.currencyCode
+            ) ?? subscription.price
+            
+            // Normalize to monthly cost
+            let monthlyCost: Decimal
+            switch subscription.period {
+            case .monthly: monthlyCost = convertedPrice
+            case .quarterly: monthlyCost = convertedPrice / 3
+            case .semiannually: monthlyCost = convertedPrice / 6
+            case .annually: monthlyCost = convertedPrice / 12
+            default: monthlyCost = convertedPrice
+            }
+            
+            totalCost += monthlyCost
+            
+            if subscription.tags.isEmpty {
+                tagTotals[uncategorizedTag, default: 0] += monthlyCost
+            } else {
+                for tag in subscription.tags {
+                    tagTotals[tag, default: 0] += monthlyCost
+                }
+            }
+        }
+        
+        // Convert to array and calculate percentages
+        var result = tagTotals.map { tag, cost in
+            let percentage = totalCost > 0 ? (cost / totalCost) * 100 : 0
+            return TagBreakdownItem(tag: tag, totalCost: cost, percentage: percentage)
+        }
+        
+        // Sort by cost (highest first)
+        result.sort { $0.totalCost > $1.totalCost }
+        
+        return result
+    }
+    
+    private func formatCurrency(_ amount: Decimal) -> String {
+        let formatStyle = CurrencyInfo.hasDecimals(appSettings.currencyCode) ?
+            Decimal.FormatStyle.Currency.currency(code: appSettings.currencyCode) :
+            Decimal.FormatStyle.Currency.currency(code: appSettings.currencyCode).precision(.fractionLength(0))
+            
+        return amount.formatted(formatStyle)
+    }
 }

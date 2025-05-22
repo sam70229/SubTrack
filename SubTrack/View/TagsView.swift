@@ -42,7 +42,6 @@ struct TagsView: View {
                     
                     // Clear input
                     newTag = ""
-                    
                 }
             
             Spacer()
@@ -91,7 +90,7 @@ struct TagsView: View {
                     .foregroundStyle(.primary)
                     .background(
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(selectedTags.contains(tag) ? Color.blue : Color(.tertiarySystemFill))
+                            .fill(selectedTags.contains(tag) ? Color.blue : Color.gray)
                     )
                 }
                 

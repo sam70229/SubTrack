@@ -23,6 +23,7 @@ struct SubscriptionDetailView: View {
     @State private var categoryName: String = "None"
     @State private var showDeleteConfirmation: Bool = false
     @State private var errorMessage: String? = nil
+    @State private var showTagsSheet: Bool = false
 
     var body: some View {
         List {
@@ -57,6 +58,16 @@ struct SubscriptionDetailView: View {
                     errorMessage = "Delete failed: \(error.localizedDescription)"
                 }
             }), secondaryButton: .cancel())
+        }
+        .sheet(isPresented: $showTagsSheet) {
+            NavigationStack {
+                TagsView(selectedTags: Binding(
+                    get: {subscription.tags},
+                    set: {newValue in
+                        subscription.tags = newValue
+                    }
+                ))
+            }
         }
         .onAppear {
             subscriptionRepository = SubscriptionRepository(modelContext: modelContext)
@@ -96,13 +107,24 @@ struct SubscriptionDetailView: View {
     
     private var subscriptionDetailsInfoSection: some View {
         Section {
-            if !subscription.tags.isEmpty {
-                HStack {
-                    Text("Tags")
-                    Spacer()
-                    Text(subscription.tags.prefix(2).map { $0.name }.joined(separator: ", ") + (subscription.tags.count > 2 ? ", ..." : ""))
+
+            HStack {
+
+                Text("Tags")
+
+                Spacer()
+
+                Text(subscription.tags.prefix(2).map { $0.name }.joined(separator: ", ") + (subscription.tags.count > 2 ? ", ..." : ""))
+                
+                Button {
+                    showTagsSheet = true
+                } label: {
+                    Image(systemName: "chevron.right")
+                        .font(.caption2)
                 }
+                .foregroundStyle(.secondary)
             }
+            
 
             HStack {
                 Text("Period")
@@ -407,7 +429,7 @@ enum NotificationDate: Int, CaseIterable, Identifiable {
         price: 10.0,
         period: .monthly,
         firstBillingDate: Date(),
-        tags: [Tag(name: "#Tag1"), Tag(name: "#Tag2"), Tag(name: "#Tag3")],
+        tags: [],
         icon: "",
         colorHex: "#000000"
     )

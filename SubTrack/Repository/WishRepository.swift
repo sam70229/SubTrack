@@ -159,4 +159,67 @@ class WishRepository: ObservableObject {
             completion(hasVoted)
         }
     }
+    
+    func deleteWish(wishId: String, completion: @escaping (Error?) -> Void) {
+        // Get references to the wish document and its votes collection
+        let wishRef = db.collection(wishCollection).document(wishId)
+        let votesRef = db.collection(voteCollection).document(wishId)
+        
+        // Use a batch to ensure atomicity
+        let batch = db.batch()
+        
+        // Delete the wish document
+        batch.deleteDocument(wishRef)
+        
+        // Delete the votes document (which contains the voters subcollection)
+        batch.deleteDocument(votesRef)
+        
+        // Commit the batch
+        batch.commit { error in
+            if let error = error {
+                self.errorMessage = "Failed to delete wish: \(error.localizedDescription)"
+            } else {
+                // Remove from local array if successful
+                DispatchQueue.main.async {
+                    self.wishes.removeAll { $0.id == wishId }
+                }
+            }
+            completion(error)
+        }
+        
+        // Note: This doesn't automatically delete subcollections in Firestore
+        // For a production app, consider using Cloud Functions to recursively delete
+        // subcollections or implement a recursive deletion method
+    }
+
+    func updateWish(wishId: String, title: String, content: String, completion: @escaping (Error?) -> Void) {
+        let wishRef = db.collection(wishCollection).document(wishId)
+        
+        let updatedData: [String: Any] = [
+            "title": title,
+            "content": content,
+            "updatedAt": FieldValue.serverTimestamp()
+        ]
+        
+        wishRef.updateData(updatedData) { [weak self] error in
+            guard let self = self else { return }
+            
+            if let error = error {
+                self.errorMessage = "Failed to update wish: \(error.localizedDescription)"
+                completion(error)
+            } else {
+                // Update local array if successful
+                DispatchQueue.main.async {
+                    if let index = self.wishes.firstIndex(where: { $0.id == wishId }) {
+                        var updatedWish = self.wishes[index]
+                        updatedWish.title = title
+                        updatedWish.content = content
+                        // Replace the old wish with the updated one
+                        self.wishes[index] = updatedWish
+                    }
+                }
+                completion(nil)
+            }
+        }
+    }
 }

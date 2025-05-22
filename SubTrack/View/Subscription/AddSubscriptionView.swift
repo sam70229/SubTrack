@@ -34,7 +34,7 @@ struct AddSubscriptionView: View {
     @State private var period: Period = .monthly
     @State private var firstBillingDate: Date = Date()
     @State private var selectedColorOption: ColorOption = .init(name: "Blue", hex: Color.blue.toHexString())
-    @State private var icon: String = "creditcard"
+    @State private var icon: String = "music.note"
     @State private var selectedCurrency: CurrencyInfo = CurrencyInfo(
         id: Locale.current.currency?.identifier ?? "USD",
         code: Locale.current.currency?.identifier ?? "USD",
@@ -54,17 +54,17 @@ struct AddSubscriptionView: View {
     @State private var showTagsSheet: Bool = false
     @State private var selectedTags: [Tag] = []
     
-    private let iconOptions: [IconOption] = [
-        IconOption(name: "Credit Card", image: "creditcard"),
-        IconOption(name: "Music", image: "music.note"),
-        IconOption(name: "Gaming", image: "gamecontroller"),
-        IconOption(name: "Cloud", image: "cloud"),
-        IconOption(name: "Car", image: "car"),
-        IconOption(name: "Streaming", image: "film"),
-        IconOption(name: "Book", image: "book.closed"),
-        IconOption(name: "House", image: "house"),
-        IconOption(name: "News", image: "newspaper"),
-    ]
+//    private let iconOptions: [IconOption] = [
+//        IconOption(name: "Credit Card", image: "creditcard"),
+//        IconOption(name: "Music", image: "music.note"),
+//        IconOption(name: "Gaming", image: "gamecontroller"),
+//        IconOption(name: "Cloud", image: "cloud"),
+//        IconOption(name: "Car", image: "car"),
+//        IconOption(name: "Streaming", image: "film"),
+//        IconOption(name: "Book", image: "book.closed"),
+//        IconOption(name: "House", image: "house"),
+//        IconOption(name: "News", image: "newspaper"),
+//    ]
 
     // Define the color options as a collection of ColorOption objects
     private let colorOptions: [ColorOption] = ColorOption.generateColors()
@@ -169,35 +169,36 @@ struct AddSubscriptionView: View {
     
     private var basicInfoSection: some View {
         Section {
-            VStack {
-                TextField("Name", text: $name)
-                    .autocorrectionDisabled()
-                    .submitLabel(.continue)
 
-                HStack {
-                    let hasDecimal = CurrencyInfo.hasDecimals(selectedCurrency.code)
-                    let formatStyle: Decimal.FormatStyle.Currency = hasDecimal ? .currency(code: selectedCurrency.code) : .currency(code: selectedCurrency.code).precision(.fractionLength(0))
-                    Text(selectedCurrency.symbol)
-                    TextField("Price", text: $priceString)
-                        .keyboardType(hasDecimal ? .decimalPad : .numberPad)
-                        .onChange(of: priceString) { _, newValue in
-                            self.price = (try? Decimal(newValue, format: formatStyle)) ?? 0
-                        }
-                        .keyboardDoneButton()
-
-                    Spacer()
-                    Button {
-                        showPicker = true
-                        pickerDestination = .currencyPicker
-                    } label: {
-                        HStack {
-                            Text("\(selectedCurrency.code)")
-                            Image(systemName: "chevron.right")
-                                .font(.caption2)
-                        }.foregroundColor(.secondary)
+            TextField("Name", text: $name)
+                .autocorrectionDisabled()
+                .submitLabel(.continue)
+            
+            HStack {
+                let hasDecimal = CurrencyInfo.hasDecimals(selectedCurrency.code)
+                let formatStyle: Decimal.FormatStyle.Currency = hasDecimal ? .currency(code: selectedCurrency.code) : .currency(code: selectedCurrency.code).precision(.fractionLength(0))
+                Text(selectedCurrency.symbol)
+                TextField("Price", text: $priceString)
+                    .keyboardType(hasDecimal ? .decimalPad : .numberPad)
+                    .onChange(of: priceString) { _, newValue in
+                        self.price = (try? Decimal(newValue, format: formatStyle)) ?? 0
                     }
-                    .buttonStyle(.plain)
+                    .keyboardDoneButton()
+                
+                Spacer()
+
+                Button {
+                    showPicker = true
+                    pickerDestination = .currencyPicker
+                } label: {
+                    HStack {
+                        Text("\(selectedCurrency.code)")
+                        Image(systemName: "chevron.right")
+                            .font(.caption2)
+                    }.foregroundColor(.secondary)
                 }
+                .buttonStyle(.plain)
+                
             }
         } header: {
             Text("Subscription Info")
@@ -244,7 +245,7 @@ struct AddSubscriptionView: View {
     private var iconSelectionSection: some View {
         Section {
             Picker("icon", selection: $icon) {
-                ForEach(iconOptions, id: \.image) { icon in
+                ForEach(IconOption.defaultIconOptions, id: \.image) { icon in
                     HStack {
                         Text(LocalizedStringKey(icon.name))
                         Spacer()
@@ -349,6 +350,7 @@ struct AddSubscriptionView: View {
             currencyCode: selectedCurrency.code,
             period: period,
             firstBillingDate: firstBillingDate,
+            tags: selectedTags,
             creditCard: creditCard,
             icon: icon,
             colorHex: selectedColorOption.hex,

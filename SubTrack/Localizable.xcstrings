@@ -33,6 +33,16 @@
         }
       }
     },
+    "%lld%%" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld%%"
+          }
+        }
+      }
+    },
     "+%lld" : {
       "shouldTranslate" : false
     },
@@ -216,6 +226,16 @@
         }
       }
     },
+    "Add subscriptions with tags to see your tag breakdown" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新增帶有標籤的訂閱來查看標籤分析"
+          }
+        }
+      }
+    },
     "Analytics" : {
       "localizations" : {
         "zh-Hant" : {
@@ -226,12 +246,33 @@
         }
       }
     },
+    "Annual Cost" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一年費用"
+          }
+        }
+      }
+    },
     "Annually" : {
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "每年"
+          }
+        }
+      }
+    },
+    "Any wishes that needs Internet connections will be considered carefully due to the budget constraints of the project." : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "由於預算限制，任何需要使用網際網路的願望都會謹慎考慮"
           }
         }
       }
@@ -252,6 +293,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "外觀"
+          }
+        }
+      }
+    },
+    "Avg Cost" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "平均費用"
           }
         }
       }
@@ -341,7 +393,6 @@
       }
     },
     "Category" : {
-      "extractionState" : "stale",
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
@@ -410,6 +461,9 @@
           }
         }
       }
+    },
+    "Cost" : {
+
     },
     "Create Wishes" : {
       "localizations" : {
@@ -596,7 +650,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "本月到期訂閱"
+            "value" : "本月訂閱金額"
           }
         }
       }
@@ -650,6 +704,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "隱藏的分頁"
+          }
+        }
+      }
+    },
+    "Highest" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最高"
           }
         }
       }
@@ -744,6 +809,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "每月"
+          }
+        }
+      }
+    },
+    "Most Common" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最常見"
           }
         }
       }
@@ -889,7 +965,14 @@
       }
     },
     "Period" : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "週期"
+          }
+        }
+      }
     },
     "Pick a card" : {
       "localizations" : {
@@ -1346,6 +1429,16 @@
         }
       }
     },
+    "Tags Breakdown" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "標籤分析"
+          }
+        }
+      }
+    },
     "Tap on any wish to vote.\nGreen background indicates you've voted for that wish." : {
       "localizations" : {
         "zh-Hant" : {
@@ -1432,7 +1525,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "總訂閱"
+            "value" : "總訂閱數"
           }
         }
       }

@@ -16,7 +16,10 @@ struct WishListView: View {
     
     var body: some View {
         ScrollView {
-            LazyVStack {
+            LazyVGrid(columns: [
+                GridItem(.flexible(), spacing: 8),
+                GridItem(.flexible(), spacing: 8)
+            ], spacing: 8) {
                 let myWishes = viewModel.wishes.filter { $0.createdBy == appSettings.deviceID}
                 if myWishes.count > 0 {
                     Section {

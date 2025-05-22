@@ -51,15 +51,16 @@ struct AppearanceSettings: View {
     
     private var themeSection: some View {
         Section(header: Text("Theme")) {
-            Text("App Theme")
-                .listRowSeparator(.hidden)
-
-            Picker("App Theme", selection: $appSettings.appTheme) {
-                Text("System").tag(AppTheme.system)
-                Text("Light").tag(AppTheme.light)
-                Text("Dark").tag(AppTheme.dark)
+            VStack(alignment: .leading) {
+                Text("App Theme")
+       
+                Picker("App Theme", selection: $appSettings.appTheme) {
+                    Text("System").tag(AppTheme.system)
+                    Text("Light").tag(AppTheme.light)
+                    Text("Dark").tag(AppTheme.dark)
+                }
+                .pickerStyle(.segmented)
             }
-            .pickerStyle(.segmented)
         }
     }
     
@@ -107,9 +108,8 @@ struct AppearanceSettings: View {
             
             Toggle("Show Subscription Icons", isOn: $appSettings.showSubscriptionIcons)
             
-            Group {
+            VStack(alignment: .leading) {
                 Text("Show Upcoming Subscriptions")
-                    
 
                 Picker("Upcoming", selection: $appSettings.daysToShowUpcomingSubscriptions) {
                     Text("7 days")
@@ -120,7 +120,6 @@ struct AppearanceSettings: View {
                         .tag(30)
                 }
                 .pickerStyle(SegmentedPickerStyle())
-                .listRowSeparator(.hidden)
             }
         }
     }
@@ -211,9 +210,8 @@ struct AppearanceSettings: View {
     
     private var subscriptionDisplayOptionsSection: some View {
         Section {
-            Group {
+            VStack(alignment: .leading) {
                 Text("Subscription Display Style")
-                    .listRowSeparator(.hidden)
                 
                 Picker(selection: $appSettings.billingInfoDisplay) {
                     ForEach(BillingInfoDisplay.allCases, id: \.self) { style in
@@ -226,7 +224,7 @@ struct AppearanceSettings: View {
                 
             }
             
-            Group {
+            VStack(alignment: .leading) {
                 Text("Price Display")
                 
                 Picker(selection: $appSettings.priceDisplayMode) {
@@ -237,7 +235,6 @@ struct AppearanceSettings: View {
                     Text("Price Display")
                 }
                 .pickerStyle(SegmentedPickerStyle())
-                .listRowSeparator(.hidden)
             }
         } header: {
             Text("Subscription Display")
