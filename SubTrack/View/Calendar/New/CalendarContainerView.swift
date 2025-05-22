@@ -15,7 +15,7 @@ struct CalendarContainerView<Content: View>: View {
     
     @State private var displayMonths: [Date] = []
     
-    private let dragThreshold: CGFloat = 50
+    private let dragThreshold: CGFloat = 1000
     
     let content: (Date) -> Content
     
@@ -35,27 +35,48 @@ struct CalendarContainerView<Content: View>: View {
             .simultaneousGesture(
                 DragGesture()
                     .updating($dragOffset) { value, state, _ in
-                        state = value.translation.width    
+                        state = value.translation.width
                     }
                     .onEnded { value in
                         let horizontalDragAmount = value.translation.width
-                        
-                        if horizontalDragAmount > dragThreshold {
-                            calendarState.goToPreviousMonth()
-                        } else if horizontalDragAmount < -dragThreshold {
-                            calendarState.goToNextMonth()
+                        let threshold = geometry.size.width / 2
+    
+                        if abs(horizontalDragAmount) > threshold {
+                            // Determine direction
+                            let movingForward = horizontalDragAmount < 0
+                            
+                            // Prepare the transition
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                activeOffset = movingForward ? -geometry.size.width : geometry.size.width
+                            }
+                            
+                            // Update the calendar state after animation completes
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                if movingForward {
+                                    calendarState.goToNextMonth()
+                                } else {
+                                    calendarState.goToPreviousMonth()
+                                }   
+                                // Reset offset without animation
+                                withTransaction(Transaction(animation: nil)) {
+                                    activeOffset = .zero
+                                }
+                            }
                         } else {
-                            withAnimation {
+                            // Spring back to center if threshold not met
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                 activeOffset = 0
                             }
                         }
                     }
             )
-            .animation(.easeInOut, value: activeOffset)
+            .animation(.smooth, value: activeOffset)
             .contentShape(Rectangle())
             .onChange(of: calendarState.selectedMonth) { _, newMonth in
-                calendarState.previousMonth = Calendar.current.date(byAdding: .month, value: -1, to: newMonth) ?? newMonth
-                calendarState.nextMonth = Calendar.current.date(byAdding: .month, value: 1, to: newMonth) ?? newMonth
+                withAnimation(.none) {
+                    calendarState.previousMonth = Calendar.current.date(byAdding: .month, value: -1, to: newMonth) ?? newMonth
+                    calendarState.nextMonth = Calendar.current.date(byAdding: .month, value: 1, to: newMonth) ?? newMonth
+                }
             }
         }
     }

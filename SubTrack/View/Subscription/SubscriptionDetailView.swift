@@ -23,6 +23,7 @@ struct SubscriptionDetailView: View {
     @State private var categoryName: String = "None"
     @State private var showDeleteConfirmation: Bool = false
     @State private var errorMessage: String? = nil
+    @State private var showTagsSheet: Bool = false
 
     var body: some View {
         List {
@@ -57,6 +58,16 @@ struct SubscriptionDetailView: View {
                     errorMessage = "Delete failed: \(error.localizedDescription)"
                 }
             }), secondaryButton: .cancel())
+        }
+        .sheet(isPresented: $showTagsSheet) {
+            NavigationStack {
+                TagsView(selectedTags: Binding(
+                    get: {subscription.tags},
+                    set: {newValue in
+                        subscription.tags = newValue
+                    }
+                ))
+            }
         }
         .onAppear {
             subscriptionRepository = SubscriptionRepository(modelContext: modelContext)
@@ -96,19 +107,29 @@ struct SubscriptionDetailView: View {
     
     private var subscriptionDetailsInfoSection: some View {
         Section {
-            let _ = print(subscription.tags)
-            if !subscription.tags.isEmpty {
-                HStack {
-                    Text("Tags")
-                    Spacer()
-                    Text(subscription.tags.prefix(2).map { $0.name }.joined(separator: ", ") + (subscription.tags.count > 2 ? ", ..." : ""))
-                }
-            }
 
             HStack {
-                Text("Billing Cycle")
+
+                Text("Tags")
+
                 Spacer()
-                Text(subscription.billingCycle.description)
+
+                Text(subscription.tags.prefix(2).map { $0.name }.joined(separator: ", ") + (subscription.tags.count > 2 ? ", ..." : ""))
+                
+                Button {
+                    showTagsSheet = true
+                } label: {
+                    Image(systemName: "chevron.right")
+                        .font(.caption2)
+                }
+                .foregroundStyle(.secondary)
+            }
+            
+
+            HStack {
+                Text("Period")
+                Spacer()
+                Text(subscription.period.description)
             }
 
             HStack {
@@ -212,7 +233,7 @@ struct SubscriptionDetailView: View {
     // MARK: - calculations
     
     private var monthlyPrice: Decimal {
-        switch subscription.billingCycle {
+        switch subscription.period {
         case .semimonthly:
             return subscription.price * 2
         case .monthly:
@@ -240,7 +261,7 @@ struct SubscriptionDetailView: View {
             to: appSettings.currencyCode
         ) ?? subscription.price
 
-        switch subscription.billingCycle {
+        switch subscription.period {
         case .semimonthly:
             return convertedPrice * 2
         case .monthly:
@@ -262,7 +283,7 @@ struct SubscriptionDetailView: View {
     }
     
     private var yearlyPrice: Decimal {
-        switch subscription.billingCycle {
+        switch subscription.period {
         case .semimonthly:
             return subscription.price * 24
         case .monthly:
@@ -290,7 +311,7 @@ struct SubscriptionDetailView: View {
             to: appSettings.currencyCode
         ) ?? subscription.price
 
-        switch subscription.billingCycle {
+        switch subscription.period {
         case .semimonthly:
             return convertedPrice * 24
         case .monthly:
@@ -347,7 +368,7 @@ struct SubscriptionDetailView: View {
     
     // Helper properties for calculating billing cycles
     private var billingCycleComponent: Calendar.Component {
-        switch subscription.billingCycle {
+        switch subscription.period {
         case .semimonthly:
             return .day
         case .monthly, .bimonthly, .quarterly, .semiannually:
@@ -360,7 +381,7 @@ struct SubscriptionDetailView: View {
     }
 
     private var billingCycleValue: Int {
-        switch subscription.billingCycle {
+        switch subscription.period {
         case .semimonthly:
             return 15
         case .monthly:
@@ -406,9 +427,9 @@ enum NotificationDate: Int, CaseIterable, Identifiable {
         id: UUID(),
         name: "Test Subscription",
         price: 10.0,
-        billingCycle: .monthly,
+        period: .monthly,
         firstBillingDate: Date(),
-        tags: [Tag(name: "#Tag1"), Tag(name: "#Tag2"), Tag(name: "#Tag3")],
+        tags: [],
         icon: "",
         colorHex: "#000000"
     )

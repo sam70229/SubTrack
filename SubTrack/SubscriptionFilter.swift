@@ -51,8 +51,8 @@ class SubscriptionFilter {
         let day = calendar.component(.day, from: firstBillingDate)
         let month = calendar.component(.month, from: firstBillingDate)
         
-        // Calculate based on billing cycle
-        switch subscription.billingCycle {
+        // Calculate based on period
+        switch subscription.period {
         case .monthly:
             // All months have the same day
             for m in 1...12 {
@@ -121,7 +121,7 @@ class SubscriptionFilter {
         
         let subscriptionDay = calendar.component(.day, from: subscription.firstBillingDate)
         
-        switch subscription.billingCycle {
+        switch subscription.period {
         case .semimonthly:
             return currentDay == subscriptionDay || currentDay == min(subscriptionDay + 15, calendar.range(of: .day, in: .month, for: date)?.count ?? 31)
             

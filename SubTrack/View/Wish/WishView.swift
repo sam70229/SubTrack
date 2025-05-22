@@ -14,17 +14,27 @@ struct WishView: View {
         HStack {
             VStack(alignment: .leading) {
                 Text(wish.title)
-                    .font(.largeTitle)
+                    .font(.title2)
                     .fontWeight(.bold)
+
+                Spacer()
+                
                 Text(wish.content ?? "No Content")
                     .font(.caption)
+
+                Spacer()
+
                 Text("Created at: \(wish.createdAt, formatter: dateFormatter)")
-                    .font(.subheadline)
+                    .font(.caption2)
             }
+            
             Spacer()
+
             Text("\(wish.voteCount)")
+                .padding(.bottom, 8)
         }
         .padding()
+        .frame(height: 100)
     }
     
     private var dateFormatter: DateFormatter {

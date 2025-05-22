@@ -20,6 +20,8 @@ struct MainView: View {
     private func viewForTab(_ tab: TabItem) -> some View {
          NavigationStack {
              switch tab.title {
+             case "Dashboard":
+                 Dashboard()
              case "Calendar":
 //                 CalendarView()
                  NewCalendarView()

@@ -33,6 +33,16 @@
         }
       }
     },
+    "%lld%%" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld%%"
+          }
+        }
+      }
+    },
     "+%lld" : {
       "shouldTranslate" : false
     },
@@ -72,6 +82,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "5個分頁"
+          }
+        }
+      }
+    },
+    "7 days" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "7天"
+          }
+        }
+      }
+    },
+    "15 days" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "15天"
+          }
+        }
+      }
+    },
+    "30 days" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "30天"
           }
         }
       }
@@ -186,6 +226,16 @@
         }
       }
     },
+    "Add subscriptions with tags to see your tag breakdown" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新增帶有標籤的訂閱來查看標籤分析"
+          }
+        }
+      }
+    },
     "Analytics" : {
       "localizations" : {
         "zh-Hant" : {
@@ -196,12 +246,33 @@
         }
       }
     },
+    "Annual Cost" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一年費用"
+          }
+        }
+      }
+    },
     "Annually" : {
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "每年"
+          }
+        }
+      }
+    },
+    "Any wishes that needs Internet connections will be considered carefully due to the budget constraints of the project." : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "由於預算限制，任何需要使用網際網路的願望都會謹慎考慮"
           }
         }
       }
@@ -226,6 +297,17 @@
         }
       }
     },
+    "Avg Cost" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "平均費用"
+          }
+        }
+      }
+    },
     "Biennially" : {
       "localizations" : {
         "zh-Hant" : {
@@ -237,6 +319,7 @@
       }
     },
     "Billing Cycle" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
@@ -267,7 +350,7 @@
       }
     },
     "Build %@" : {
-
+      "shouldTranslate" : false
     },
     "Calendar" : {
       "localizations" : {
@@ -310,7 +393,6 @@
       }
     },
     "Category" : {
-      "extractionState" : "stale",
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
@@ -380,6 +462,9 @@
         }
       }
     },
+    "Cost" : {
+
+    },
     "Create Wishes" : {
       "localizations" : {
         "zh-Hant" : {
@@ -440,12 +525,32 @@
         }
       }
     },
+    "Dashboard" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "儀表板"
+          }
+        }
+      }
+    },
     "Data" : {
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "資料"
+          }
+        }
+      }
+    },
+    "Days" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "天"
           }
         }
       }
@@ -540,6 +645,16 @@
         }
       }
     },
+    "Due This Month" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本月訂閱金額"
+          }
+        }
+      }
+    },
     "Error" : {
       "localizations" : {
         "zh-Hant" : {
@@ -589,6 +704,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "隱藏的分頁"
+          }
+        }
+      }
+    },
+    "Highest" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最高"
           }
         }
       }
@@ -687,6 +813,17 @@
         }
       }
     },
+    "Most Common" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最常見"
+          }
+        }
+      }
+    },
     "My Wishes" : {
       "localizations" : {
         "zh-Hant" : {
@@ -767,6 +904,16 @@
         }
       }
     },
+    "No Subscriptions upcoming in %lld days." : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld天內沒有即將扣款的訂閱"
+          }
+        }
+      }
+    },
     "Notification Settings" : {
       "localizations" : {
         "zh-Hant" : {
@@ -813,6 +960,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "付款卡"
+          }
+        }
+      }
+    },
+    "Period" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "週期"
           }
         }
       }
@@ -1071,6 +1228,16 @@
         }
       }
     },
+    "Show Upcoming Subscriptions" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示即將到來的訂閱"
+          }
+        }
+      }
+    },
     "Since First Payment" : {
       "localizations" : {
         "zh-Hant" : {
@@ -1262,6 +1429,16 @@
         }
       }
     },
+    "Tags Breakdown" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "標籤分析"
+          }
+        }
+      }
+    },
     "Tap on any wish to vote.\nGreen background indicates you've voted for that wish." : {
       "localizations" : {
         "zh-Hant" : {
@@ -1343,12 +1520,32 @@
         }
       }
     },
+    "Total Subs" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "總訂閱數"
+          }
+        }
+      }
+    },
     "UI Options" : {
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "UI選項"
+          }
+        }
+      }
+    },
+    "Upcoming" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "即將到來"
           }
         }
       }
@@ -1415,6 +1612,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "你仍然可以透過設定選單進入被停用的分頁"
+          }
+        }
+      }
+    },
+    "Your Subscription Stats" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您的訂閱統計"
           }
         }
       }

@@ -32,7 +32,6 @@ struct TagsView: View {
                 .padding(.horizontal, 8)
                 .submitLabel(.return)
                 .onSubmit(of: .text) {
-                    print("submit")
                     if !newTag.hasPrefix("#") {
                         newTag = "#\(newTag)"
                     }
@@ -43,7 +42,6 @@ struct TagsView: View {
                     
                     // Clear input
                     newTag = ""
-                    
                 }
             
             Spacer()
@@ -92,7 +90,7 @@ struct TagsView: View {
                     .foregroundStyle(.primary)
                     .background(
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(selectedTags.contains(tag) ? Color.blue : Color(.tertiarySystemFill))
+                            .fill(selectedTags.contains(tag) ? Color.blue : Color.gray)
                     )
                 }
                 

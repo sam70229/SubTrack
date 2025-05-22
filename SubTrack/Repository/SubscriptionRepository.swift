@@ -49,11 +49,11 @@ class SubscriptionRepository: ObservableObject {
         if subscriptions.isEmpty {
             return []
         }
-        // Filter subscriptions based on billing cycle and billing day
+        // Filter subscriptions based on period and billing day
         return subscriptions.filter { subscription in
             let subscriptionDay = calendar.component(.day, from: subscription.firstBillingDate)
             
-            switch subscription.billingCycle {
+            switch subscription.period {
                 
             case .semimonthly:
                 // For monthly subscriptions, only check if the day matches 15 days after

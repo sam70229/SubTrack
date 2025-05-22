@@ -15,13 +15,13 @@ enum AppTheme: String, CaseIterable {
 }
 
 enum BillingInfoDisplay: String, CaseIterable {
-    case billingCycle
+    case period
     case nextBillingDate
     
     var description: String {
         switch self {
-        case .billingCycle:
-            return String(localized: "Billing Cycle")
+        case .period:
+            return String(localized: "Period")
         case .nextBillingDate:
             return String(localized: "Next Billing Date")
         }
@@ -48,7 +48,7 @@ class AppSettings: ObservableObject {
     @AppStorage("device_id") var deviceID: String = UUID().uuidString
 
     @AppStorage("showDebugInfo") var showDebugInfo: Bool = false
-    @AppStorage("billingInfoDisplay") var billingInfoDisplay: BillingInfoDisplay = .billingCycle
+    @AppStorage("billingInfoDisplay") var billingInfoDisplay: BillingInfoDisplay = .period
     
     @AppStorage("priceDisplayMode") var priceDisplayMode: PriceDisplayMode = .original
     
@@ -115,6 +115,9 @@ class AppSettings: ObservableObject {
             defaultCalendarViewRaw = newValue.rawValue
         }
     }
+    
+//    @AppStorage("daysToShowUpcomingSubscriptions") var daysToShowUpcomingSubscriptions: Int = 7
+    @AppStorage("daysToShowUpcomingSubscriptions") var daysToShowUpcomingSubscriptions: Int = 7
     
     // MARK: - Family Selection for Analytics
     @AppStorage("appSelection") var appSelection: Data = Data()

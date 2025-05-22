@@ -32,8 +32,8 @@ struct SubscriptionListItemView: View {
                 Text(subscription.name)
                     .font(.headline)
                 
-                if appSettings.billingInfoDisplay == .billingCycle {
-                    Text(subscription.billingCycle.description)
+                if appSettings.billingInfoDisplay == .period {
+                    Text(subscription.period.description)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 } else {

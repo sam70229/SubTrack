@@ -1,5 +1,5 @@
 //
-//  BillingCycle.swift
+//  Period.swift
 //  SubTrack
 //
 //  Created by Sam on 2025/5/6.
@@ -7,7 +7,7 @@
 import SwiftUI
 
 
-enum BillingCycle: Int, Codable, CaseIterable, Identifiable {
+enum Period: Int, Codable, CaseIterable, Identifiable {
     case monthly = 0       // Every 1 month
     case semimonthly = 1   // Twice a month (e.g., 1st and 15th)
     case bimonthly = 2     // Every 2 months

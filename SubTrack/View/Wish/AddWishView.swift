@@ -21,6 +21,8 @@ struct AddWishView: View {
                     .frame(minHeight: 100)
             } header: {
                 Text("Description")
+            } footer: {
+                Text("Any wishes that needs Internet connections will be considered carefully due to the budget constraints of the project.")
             }
         }
         .navigationTitle("Submit a Wish")
