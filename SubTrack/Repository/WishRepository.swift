@@ -31,6 +31,30 @@
 import SwiftUI
 import Firebase
 import FirebaseFirestore
+import FirebaseFunctions
+
+
+struct VoteResult {
+    let hasVoted: Bool
+    let newVoteCount: Int
+}
+
+enum WishError: Error {
+    case unauthorized
+    case notFound
+    case serverError(String)
+    
+    var localizedDescription: String {
+        switch self {
+        case .unauthorized:
+            return "You don't have permission to perform this action"
+        case .notFound:
+            return "The requested wish could not be found"
+        case .serverError(let message):
+            return "Server error: \(message)"
+        }
+    }
+}
 
 
 class WishRepository: ObservableObject {
@@ -38,6 +62,7 @@ class WishRepository: ObservableObject {
     @Published var errorMessage: String?
     
     private let db = Firestore.firestore()
+    private let functions = Functions.functions()
     private let wishCollection = "wishes"
     private let voteCollection = "votes"
     
@@ -51,7 +76,7 @@ class WishRepository: ObservableObject {
                 
                 var newWishes: [Wish] = []
                 let group = DispatchGroup()
-
+                
                 for document in documents {
                     group.enter()
                     let data = document.data()
@@ -96,56 +121,104 @@ class WishRepository: ObservableObject {
         }
     }
     
-    func vote(for wish: Wish, deviceID: String) {
-        let voteRef = db.collection(voteCollection).document(wish.id).collection("voters").document(deviceID)
-        let wishRef = db.collection(wishCollection).document(wish.id)
+    func vote(for wish: Wish, deviceID: String, completion: @escaping(Result<VoteResult, WishError>) -> Void = { _ in}) {
+        let voteFunction = functions.httpsCallable("voteForWish")
         
-        db.runTransaction({ (transaction, errorPointer) -> Any? in
-            let voteSnapshot: DocumentSnapshot
-            let wishSnapshot: DocumentSnapshot
-            do {
-                try voteSnapshot = transaction.getDocument(voteRef)
-                try wishSnapshot = transaction.getDocument(wishRef)
-                
-                if voteSnapshot.exists {
-                    transaction.deleteDocument(voteRef)
-                    
-                    let currentCount = wishSnapshot.data()?["voteCount"] as? Int ?? 0
-                    transaction.updateData(["voteCount": max(0, currentCount - 1)], forDocument: wishRef)
-                    return false
-                } else {
-                    transaction.setData(["createdAt": FieldValue.serverTimestamp()], forDocument: voteRef)
-                    
-                    let currentCount = wishSnapshot.data()?["voteCount"] as? Int ?? 0
-                    transaction.updateData(["voteCount": currentCount + 1], forDocument: wishRef)
-                    
-                    return true
-                }
-            } catch {
-                return nil
-            }
-        }) { [weak self] (result, error) in
+        voteFunction.call(["wishId": wish.id, "deviceId": deviceID]) { [weak self] result, error in
             guard let self = self else { return }
             
-            if let error = error {
-                self.errorMessage = error.localizedDescription
-            } else if let didVote = result as? Bool {
-                // Immediately update the local wish array
-                DispatchQueue.main.async {
-                    if let index = self.wishes.firstIndex(where: { $0.id == wish.id }) {
-                        
-                        var updatedWish = self.wishes[index]
-                        updatedWish.voted = didVote
-                        updatedWish.voteCount = didVote ? 
-                            updatedWish.voteCount + 1 : 
-                            max(0, updatedWish.voteCount - 1)
-                        
-                        // Replace the old wish with the updated one
-                        self.wishes[index] = updatedWish
+            if let error = error as NSError? {
+                let message = error.localizedDescription
+                self.errorMessage = "Failed to vote: \(message)"
+                
+                if error.domain == FunctionsErrorDomain {
+                    switch error.code {
+                    case FunctionsErrorCode.notFound.rawValue:
+                        completion(.failure(.notFound))
+                    case FunctionsErrorCode.permissionDenied.hashValue:
+                        completion(.failure(.unauthorized))
+                    default:
+                        completion(.failure(.serverError(message)))
                     }
+                } else {
+                    completion(.failure(.serverError(message)))
+                }
+                return
+            }
+            
+            guard let data = result?.data as? [String: Any],
+                  let success = data["success"] as? Bool,
+                  success,
+                  let hasVoted = data["hasVoted"] as? Bool,
+                  let newVoteCount = data["newVoteCount"] as? Int else {
+                self.errorMessage = "Invalid response from server"
+                completion(.failure(.serverError("Invalid response from server")))
+                return
+            }
+            
+            // Update local wish array immediately for better UX
+            DispatchQueue.main.async {
+                if let index = self.wishes.firstIndex(where: { $0.id == wish.id }) {
+                    var updatedWish = self.wishes[index]
+                    updatedWish.voted = hasVoted
+                    updatedWish.voteCount = newVoteCount
+                    self.wishes[index] = updatedWish
                 }
             }
+            
+            completion(.success(VoteResult(hasVoted: hasVoted, newVoteCount: newVoteCount)))
         }
+        
+        // OLD ONe
+        //        let voteRef = db.collection(voteCollection).document(wish.id).collection("voters").document(deviceID)
+        //        let wishRef = db.collection(wishCollection).document(wish.id)
+        //
+        //        db.runTransaction({ (transaction, errorPointer) -> Any? in
+        //            let voteSnapshot: DocumentSnapshot
+        //            let wishSnapshot: DocumentSnapshot
+        //            do {
+        //                try voteSnapshot = transaction.getDocument(voteRef)
+        //                try wishSnapshot = transaction.getDocument(wishRef)
+        //
+        //                if voteSnapshot.exists {
+        //                    transaction.deleteDocument(voteRef)
+        //
+        //                    let currentCount = wishSnapshot.data()?["voteCount"] as? Int ?? 0
+        //                    transaction.updateData(["voteCount": max(0, currentCount - 1)], forDocument: wishRef)
+        //                    return false
+        //                } else {
+        //                    transaction.setData(["createdAt": FieldValue.serverTimestamp()], forDocument: voteRef)
+        //
+        //                    let currentCount = wishSnapshot.data()?["voteCount"] as? Int ?? 0
+        //                    transaction.updateData(["voteCount": currentCount + 1], forDocument: wishRef)
+        //
+        //                    return true
+        //                }
+        //            } catch {
+        //                return nil
+        //            }
+        //        }) { [weak self] (result, error) in
+        //            guard let self = self else { return }
+        //
+        //            if let error = error {
+        //                self.errorMessage = error.localizedDescription
+        //            } else if let didVote = result as? Bool {
+        //                // Immediately update the local wish array
+        //                DispatchQueue.main.async {
+        //                    if let index = self.wishes.firstIndex(where: { $0.id == wish.id }) {
+        //
+        //                        var updatedWish = self.wishes[index]
+        //                        updatedWish.voted = didVote
+        //                        updatedWish.voteCount = didVote ?
+        //                            updatedWish.voteCount + 1 :
+        //                            max(0, updatedWish.voteCount - 1)
+        //
+        //                        // Replace the old wish with the updated one
+        //                        self.wishes[index] = updatedWish
+        //                    }
+        //                }
+        //            }
+        //        }
     }
     
     func checkVoted(for wish: Wish, deviceID: String, completion: @escaping(Bool) -> Void) {
@@ -160,66 +233,102 @@ class WishRepository: ObservableObject {
         }
     }
     
-    func deleteWish(wishId: String, completion: @escaping (Error?) -> Void) {
-        // Get references to the wish document and its votes collection
-        let wishRef = db.collection(wishCollection).document(wishId)
-        let votesRef = db.collection(voteCollection).document(wishId)
+    func deleteWish(wishId: String, requestingDeviceId: String, completion: @escaping (Result<Void, WishError>) -> Void) {
+        let deleteFunction = functions.httpsCallable("deleteWish")
         
-        // Use a batch to ensure atomicity
-        let batch = db.batch()
-        
-        // Delete the wish document
-        batch.deleteDocument(wishRef)
-        
-        // Delete the votes document (which contains the voters subcollection)
-        batch.deleteDocument(votesRef)
-        
-        // Commit the batch
-        batch.commit { error in
-            if let error = error {
-                self.errorMessage = "Failed to delete wish: \(error.localizedDescription)"
-            } else {
-                // Remove from local array if successful
-                DispatchQueue.main.async {
-                    self.wishes.removeAll { $0.id == wishId }
-                }
-            }
-            completion(error)
-        }
-        
-        // Note: This doesn't automatically delete subcollections in Firestore
-        // For a production app, consider using Cloud Functions to recursively delete
-        // subcollections or implement a recursive deletion method
-    }
-
-    func updateWish(wishId: String, title: String, content: String, completion: @escaping (Error?) -> Void) {
-        let wishRef = db.collection(wishCollection).document(wishId)
-        
-        let updatedData: [String: Any] = [
-            "title": title,
-            "content": content,
-            "updatedAt": FieldValue.serverTimestamp()
-        ]
-        
-        wishRef.updateData(updatedData) { [weak self] error in
+        deleteFunction.call([
+            "wishId": wishId,
+            "deviceId": requestingDeviceId
+        ]) { [weak self] result, error in
             guard let self = self else { return }
             
-            if let error = error {
-                self.errorMessage = "Failed to update wish: \(error.localizedDescription)"
-                completion(error)
-            } else {
-                // Update local array if successful
-                DispatchQueue.main.async {
-                    if let index = self.wishes.firstIndex(where: { $0.id == wishId }) {
-                        var updatedWish = self.wishes[index]
-                        updatedWish.title = title
-                        updatedWish.content = content
-                        // Replace the old wish with the updated one
-                        self.wishes[index] = updatedWish
+            if let error = error as NSError? {
+                let message = error.localizedDescription
+                self.errorMessage = "Failed to delete wish: \(message)"
+                
+                // Handle specific Firebase Function errors
+                if error.domain == FunctionsErrorDomain {
+                    switch error.code {
+                    case FunctionsErrorCode.notFound.rawValue:
+                        completion(.failure(.notFound))
+                    case FunctionsErrorCode.permissionDenied.rawValue:
+                        completion(.failure(.unauthorized))
+                    default:
+                        completion(.failure(.serverError(message)))
                     }
+                } else {
+                    completion(.failure(.serverError(message)))
                 }
-                completion(nil)
+                return
             }
+            
+            guard let data = result?.data as? [String: Any],
+                  let success = data["success"] as? Bool,
+                  success else {
+                self.errorMessage = "Invalid response from server"
+                completion(.failure(.serverError("Invalid response from server")))
+                return
+            }
+            
+            // Remove from local array if successful
+            DispatchQueue.main.async {
+                self.wishes.removeAll { $0.id == wishId }
+            }
+            
+            completion(.success(()))
+        }
+    }
+    
+    func updateWish(wishId: String, title: String, content: String, requestingDeviceId: String, completion: @escaping (Result<Void, WishError>) -> Void) {
+        let updateFunction = functions.httpsCallable("updateWish")
+        
+        updateFunction.call([
+            "wishId": wishId,
+            "deviceId": requestingDeviceId,
+            "title": title,
+            "content": content
+        ]) { [weak self] result, error in
+            guard let self = self else { return }
+            
+            if let error = error as NSError? {
+                let message = error.localizedDescription
+                self.errorMessage = "Failed to update wish: \(message)"
+                
+                // Handle specific Firebase Function errors
+                if error.domain == FunctionsErrorDomain {
+                    switch error.code {
+                    case FunctionsErrorCode.notFound.rawValue:
+                        completion(.failure(.notFound))
+                    case FunctionsErrorCode.permissionDenied.rawValue:
+                        completion(.failure(.unauthorized))
+                    default:
+                        completion(.failure(.serverError(message)))
+                    }
+                } else {
+                    completion(.failure(.serverError(message)))
+                }
+                return
+            }
+            
+            guard let data = result?.data as? [String: Any],
+                  let success = data["success"] as? Bool,
+                  success else {
+                self.errorMessage = "Invalid response from server"
+                completion(.failure(.serverError("Invalid response from server")))
+                return
+            }
+            
+            // Update local array if successful
+            DispatchQueue.main.async {
+                if let index = self.wishes.firstIndex(where: { $0.id == wishId }) {
+                    var updatedWish = self.wishes[index]
+                    updatedWish.title = title
+                    updatedWish.content = content
+                    self.wishes[index] = updatedWish
+                }
+            }
+            
+            completion(.success(()))
         }
     }
 }

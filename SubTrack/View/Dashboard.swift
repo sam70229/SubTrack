@@ -8,6 +8,22 @@ import SwiftUI
 import SwiftData
 import Charts
 
+struct DashboardMetrics: Equatable {
+    let monthlyTotal: Decimal
+    let yearlyProjection: Decimal
+    let averageMonthlyCost: Decimal
+    let activeSubscriptionCount: Int
+    let mostExpensiveSubscription: Subscription?
+    let mostCommonBillingCycle: Period
+}
+
+struct TagBreakdownItem: Identifiable {
+    let id = UUID()
+    let tag: Tag
+    let totalCost: Decimal
+    let percentage: Decimal
+}
+
 
 struct Dashboard: View {
     @Environment(\.colorScheme) private var colorScheme
@@ -15,19 +31,26 @@ struct Dashboard: View {
     @EnvironmentObject private var appSettings: AppSettings
     @Query private var subscriptions: [Subscription]
     
+    private var metrics: DashboardMetrics {
+        calculateMetrics()
+    }
+    
+    private var upcomingSubscriptions: [Subscription] {
+        subscriptions
+            .filter { Date.getDaysBetween(startDate: Date(), endDate: $0.nextBillingDate) <= appSettings.daysToShowUpcomingSubscriptions }
+            .sorted { $0.nextBillingDate < $1.nextBillingDate }
+    }
+    
+    private var tagBreakdown: [TagBreakdownItem] {
+        calculateTagBreakdown()
+    }
+    
     var body: some View {
         ScrollView {
             
-            VStack(spacing: 8) {
+            VStack(spacing: 20) {
                 
-                HStack {
-                    Text(Date(), format: .dateTime.month(.wide).day())
-                        .font(.title)
-                        .bold()
-                    
-                    Spacer()
-                }
-                .padding(.horizontal)
+                headerSection
                 
                 monthlyTotalCard
                 
@@ -38,138 +61,447 @@ struct Dashboard: View {
                 categoryBreakdownSection
             }
         }
+        .background(Color(.systemGroupedBackground))
     }
     
-    private var monthlyTotalCard: some View {
+    private var headerSection: some View {
         HStack {
-            
-            Spacer()
-            
-            VStack {
-                Text("Due This Month")
-                
-                Text("\(formattedMonthlyTotal(currency: appSettings.currencyCode))")
-                    .bold()
-            }
-            .padding()
-            
-            Spacer()
-            
-            VStack {
-                Text("Total Subs")
-                
-                Text("\(subscriptions.count)")
-                    .bold()
-            }
-            .foregroundStyle(.primary)
-            .padding()
+            Text(Date(), format: .dateTime.month(.wide).day())
+                .font(.title)
+                .bold()
             
             Spacer()
         }
+        .padding(.horizontal)
+    }
+    
+    private var monthlyTotalCard: some View {
+        HStack(spacing: 0) {
+            
+            metricView(title: "Due This Month", value: formatCurrency(metrics.monthlyTotal))
+            
+            Divider()
+                .background(Color.white.opacity(0.3))
+                .frame(height: 50)
+                        
+            metricView(title: "Total Subs", value: "\(metrics.activeSubscriptionCount)")
+        }
+        .foregroundStyle(.primary)
         .frame(maxWidth: .infinity)
+        .padding(.vertical, 20)
         .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(LinearGradient(colors: appSettings.appTheme != .system ? (appSettings.appTheme == .dark ? [
-                    .blue,
-                    .purple
-                ] : [
-                    Color(red: 0.6, green: 0.85, blue: 1.0), // Sky blue
-                    Color(red: 0.7, green: 1.0, blue: 0.8)
-                ]) : colorScheme == .dark ? [.blue, .purple] : [Color(red: 0.6, green: 0.85, blue: 1.0), // Sky blue
-                                                                Color(red: 0.7, green: 1.0, blue: 0.8)], startPoint: .topLeading, endPoint: .bottomTrailing))
+            RoundedRectangle(cornerRadius: 16)
+                .fill(backgroundGradient)
+                .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
         )
         .padding(.horizontal)
     }
     
-    private var upcomingSection: some View {
-        let sortedSubscriptions = subscriptions.sorted { $0.nextBillingDate < $1.nextBillingDate }
-        // Then take the first 7
-        let limitedSubscriptions = sortedSubscriptions.filter { Date.getDaysBetween(startDate: Date(), endDate: $0.nextBillingDate) <= appSettings.daysToShowUpcomingSubscriptions }
-        // Then chunk them into groups of 4
-        let chunkedSubscriptions = Array(limitedSubscriptions).chunked(into: 4)
+    private func metricView(title: String, value: String) -> some View {
+        VStack(spacing: 4) {
+            Text(title)
+                .font(.caption)
+                .opacity(0.9)
+            
+            Text(value)
+                .font(.title2)
+                .fontWeight(.bold)
+        }
+        .frame(maxWidth: .infinity)
+    }
+    
+    private var backgroundGradient: LinearGradient {
+        let isDarkMode = appSettings.appTheme == .dark ||
+        (appSettings.appTheme == .system && colorScheme == .dark)
         
-        return VStack(alignment: .leading, spacing: 0) {
+        let colors = isDarkMode
+        ? [Color.blue, Color.purple]
+        : [Color(red: 0.6, green: 0.85, blue: 1.0),
+           Color(red: 0.7, green: 1.0, blue: 0.8)]
+        
+        return LinearGradient(
+            colors: colors,
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+    
+    private var upcomingSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
             Text("Upcoming")
                 .bold()
                 .font(.title2)
             
-            TabView {
-                if chunkedSubscriptions.isEmpty {
-                    Text("No Subscriptions upcoming in \(appSettings.daysToShowUpcomingSubscriptions) days.")
+            if upcomingSubscriptions.isEmpty {
+                EmptyStateCard(
+                    message: "No subscriptions upcoming in \(appSettings.daysToShowUpcomingSubscriptions) days.",
+                    icon: "calendar.badge.clock"
+                )
+            } else {
+                UpcomingSubscriptionsPager(subscriptions: upcomingSubscriptions)
+            }
+        }
+        .padding(.horizontal)
+    }
+
+    private var metricsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Your Subscription Stats")
+                .bold()
+                .font(.title2)
+            
+            VStack(spacing: 12) {
+                HStack(spacing: 12) {
+                    // Average Monthly Cost
+                    MetricCard(
+                        title: "Avg Cost",
+                        value: formatCurrency(metrics.averageMonthlyCost),
+                        icon: "dollarsign.circle.fill",
+                        color: .green
+                    )
+                    
+                    // Most expensive subscription
+                    if let mostExpensive = getMostExpensiveSubscription() {
+                        MetricCard(
+                            title: "Highest",
+                            value: mostExpensive.name,
+                            details: mostExpensive.formattedPrice(),
+                            icon: "arrow.up.circle.fill",
+                            color: .red
+                        )
+                    }
+                }
+                
+                HStack(spacing: 16) {
+                    // Most common Period
+                    MetricCard(
+                        title: "Most Common",
+                        value: metrics.mostCommonBillingCycle.description,
+                        icon: "calendar.circle.fill",
+                        color: .blue
+                    )
+                    
+                    MetricCard(
+                        title: "Annual Cost",
+                        value: formatCurrency(metrics.yearlyProjection),
+                        icon: "chart.line.uptrend.xyaxis.circle.fill",
+                        color: .purple
+                    )
+                }
+            }
+        }
+        .padding(.horizontal)
+    }
+
+    private var categoryBreakdownSection: some View {
+        VStack(alignment: .leading) {
+            Text("Tags Breakdown")
+                .font(.title2)
+                .fontWeight(.bold)
+            
+            if tagBreakdown.isEmpty {
+                EmptyStateCard(
+                    message: "Add subscriptions with tags to see your tag breakdown",
+                    icon: "tag.circle"
+                )
+            } else {
+                CategoryBreakdownChart(tagData: tagBreakdown)
+                    .environment(\.currencyCode, appSettings.currencyCode)
+            }
+        }
+        .padding(.horizontal)
+    }
+}
+
+
+private extension Dashboard {
+    func calculateMetrics() -> DashboardMetrics {
+            let activeSubscriptions = subscriptions.filter { $0.isActive }
+            let monthlyTotal = calculateMonthlyTotal()
+            
+            return DashboardMetrics(
+                monthlyTotal: monthlyTotal,
+                yearlyProjection: monthlyTotal * 12,
+                averageMonthlyCost: calculateAverageMonthlyCost(),
+                activeSubscriptionCount: activeSubscriptions.count,
+                mostExpensiveSubscription: getMostExpensiveSubscription(),
+                mostCommonBillingCycle: getMostCommonBillingCycle()
+            )
+        }
+        
+        func calculateMonthlyTotal() -> Decimal {
+            subscriptions
+                .filter { $0.isActive && $0.period == .monthly }
+                .reduce(Decimal(0)) { total, subscription in
+                    total + convertToUserCurrency(subscription.price, from: subscription.currencyCode)
+                }
+        }
+        
+        func calculateAverageMonthlyCost() -> Decimal {
+            guard !subscriptions.isEmpty else { return 0 }
+            
+            let totalMonthly = subscriptions.reduce(Decimal(0)) { result, subscription in
+                let convertedPrice = convertToUserCurrency(subscription.price, from: subscription.currencyCode)
+                return result + normalizeToMonthlyCost(convertedPrice, period: subscription.period)
+            }
+            
+            return totalMonthly / Decimal(subscriptions.count)
+        }
+        
+        func getMostExpensiveSubscription() -> Subscription? {
+            subscriptions.max { a, b in
+                convertToUserCurrency(a.price, from: a.currencyCode) <
+                convertToUserCurrency(b.price, from: b.currencyCode)
+            }
+        }
+        
+        func getMostCommonBillingCycle() -> Period {
+            let cycles = subscriptions.map { $0.period }
+            let cycleCount = Dictionary(grouping: cycles) { $0 }.mapValues { $0.count }
+            return cycleCount.max(by: { $0.value < $1.value })?.key ?? .monthly
+        }
+        
+        func calculateTagBreakdown() -> [TagBreakdownItem] {
+            let uncategorizedTag = Tag(name: "Uncategorized")
+            var tagTotals: [Tag: Decimal] = [:]
+            var totalCost: Decimal = 0
+            
+            for subscription in subscriptions where subscription.isActive {
+                let monthlyCost = normalizeToMonthlyCost(
+                    convertToUserCurrency(subscription.price, from: subscription.currencyCode),
+                    period: subscription.period
+                )
+                
+                totalCost += monthlyCost
+                
+                if subscription.tags.isEmpty {
+                    tagTotals[uncategorizedTag, default: 0] += monthlyCost
                 } else {
-                    ForEach(Array(chunkedSubscriptions.enumerated()), id: \.offset) { _, chunk in
-                        LazyVGrid(columns: [
-                            GridItem(.flexible()),
-                            GridItem(.flexible())
-                        ]) {
-                            ForEach(chunk, id: \.self) { subscription in
-                                SubscriptionShortItemView(subscription: subscription)
-                                    .frame(height: 60)
-                            }
+                    for tag in subscription.tags {
+                        tagTotals[tag, default: 0] += monthlyCost
+                    }
+                }
+            }
+            
+            return tagTotals.map { tag, cost in
+                let percentage = totalCost > 0 ? (cost / totalCost) * 100 : 0
+                return TagBreakdownItem(tag: tag, totalCost: cost, percentage: percentage)
+            }
+            .sorted { $0.totalCost > $1.totalCost }
+        }
+        
+        func convertToUserCurrency(_ amount: Decimal, from: String) -> Decimal {
+            exchangeRates.convert(amount, from: from, to: appSettings.currencyCode) ?? amount
+        }
+        
+        func normalizeToMonthlyCost(_ amount: Decimal, period: Period) -> Decimal {
+            switch period {
+            case .monthly: return amount
+            case .quarterly: return amount / 3
+            case .semiannually: return amount / 6
+            case .annually: return amount / 12
+            default: return amount
+            }
+        }
+        
+        func formatCurrency(_ amount: Decimal) -> String {
+            let formatStyle = CurrencyInfo.hasDecimals(appSettings.currencyCode)
+                ? Decimal.FormatStyle.Currency.currency(code: appSettings.currencyCode)
+                : Decimal.FormatStyle.Currency.currency(code: appSettings.currencyCode).precision(.fractionLength(0))
+            
+            return amount.formatted(formatStyle)
+        }
+}
+
+// MARK: - Supporting Views
+
+struct UpcomingSubscriptionsPager: View {
+    let subscriptions: [Subscription]
+    
+    private let columnsPerPage = 4
+    private let columns = [GridItem(.flexible()), GridItem(.flexible())]
+    
+    private var pages: [[Subscription]] {
+        subscriptions.chunked(into: columnsPerPage)
+    }
+    
+    var body: some View {
+        TabView {
+            ForEach(Array(pages.enumerated()), id: \.offset) { _, page in
+                LazyVGrid(columns: columns, spacing: 12) {
+                    ForEach(page, id: \.id) { subscription in
+                        SubscriptionShortItemView(subscription: subscription)
+                            .frame(height: 60)
+                    }
+                }
+            }
+        }
+        .frame(height: 140)
+        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .automatic))
+        .cardBackground(cornerRadius: 16, shadowRadius: 3)
+    }
+}
+
+struct MetricCard: View {
+    @Environment(\.colorScheme) private var colorScheme
+    let title: String
+    let value: String
+    var details: String? = nil
+    let icon: String
+    let color: Color
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                    .foregroundColor(color)
+                    .font(.body)
+                
+                Text(LocalizedStringKey(title))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            
+            Spacer()
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(value)
+                    .font(.headline)
+                    .lineLimit(1)
+                
+                if let details = details {
+                    Text(details)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(height: 80)
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(colorScheme == .dark ? Color(.systemGray6) : Color(.systemBackground))
+                .shadow(
+                    color: colorScheme == .dark ? .white.opacity(0.05) : .black.opacity(0.08),
+                    radius: colorScheme == .dark ? 3 : 5,
+                    x: 0,
+                    y: colorScheme == .dark ? 1 : 2
+                )
+        )
+    }
+}
+
+struct EmptyStateCard: View {
+    @Environment(\.colorScheme) private var colorScheme
+    let message: String
+    let icon: String
+    
+    var body: some View {
+        VStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.largeTitle)
+                .foregroundColor(.secondary)
+            
+            Text(message)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 40)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(colorScheme == .dark ? Color(.systemGray6) : Color(.systemGray5))
+        )
+    }
+}
+
+import Charts
+
+struct CategoryBreakdownChart: View {
+    @Environment(\.currencyCode) private var currencyCode
+    @Environment(\.colorScheme) private var colorScheme
+    let tagData: [TagBreakdownItem]
+    
+    private let chartColors: [Color] = [.blue, .green, .orange, .red, .purple, .pink, .yellow, .teal]
+    
+    var body: some View {
+        VStack(spacing: 16) {
+            Chart {
+                ForEach(Array(tagData.enumerated()), id: \.element.id) { index, item in
+                    SectorMark(
+                        angle: .value("Cost", item.totalCost),
+                        innerRadius: .ratio(0.5),
+                        angularInset: 1.5
+                    )
+                    .foregroundStyle(chartColors[index % chartColors.count])
+                    .annotation(position: .overlay) {
+                        if item.percentage >= 10 {
+                            Text("\(Int(NSDecimalNumber(decimal: item.percentage).intValue))%")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .foregroundStyle(.white)
                         }
                     }
                 }
             }
-            .frame(maxWidth: .infinity)
-            .frame(height: calculateTabViewHeight())
-            .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+            .frame(height: 200)
+            
+            CategoryLegend(tagData: tagData, colors: chartColors)
         }
-        .padding(.horizontal)
-    }
-    
-    private func calculateTabViewHeight() -> CGFloat {
-        // Calculate height based on row count (2 rows in your case)
-        let rowCount = 2
-        let itemHeight: CGFloat = 60
-        let rowSpacing: CGFloat = 10
-        let verticalPadding: CGFloat = 10
-        
-        // Total height = (item height × row count) + spacing between rows + top and bottom padding
-        return (itemHeight * CGFloat(rowCount)) + (rowSpacing * CGFloat(rowCount - 1)) + verticalPadding
-    }
-    
-    private func formattedMonthlyTotal(currency: String) -> String {
-        let total = calculateMonthlyTotal()
-        let formatStyle: Decimal.FormatStyle.Currency = CurrencyInfo.hasDecimals(currency) ? .currency(code: currency) : .currency(code: currency).precision(.fractionLength(0))
-        return Decimal(total).formatted(formatStyle)
-    }
-    
-    private func calculateMonthlyTotal() -> Double {
-        let monthlySubs = subscriptions.filter({ $0.period == .monthly })
-        var processedSubscriptionIds = Set<String>()
-        var totalCost: Decimal = 0
-        
-        for sub in monthlySubs {
-            
-            if processedSubscriptionIds.contains(sub.id.uuidString) {
-                continue
-            }
-            
-            processedSubscriptionIds.insert(sub.id.uuidString)
-            
-            let convertedPrice = exchangeRates.convert(
-                sub.price,
-                from: sub.currencyCode,
-                to: appSettings.currencyCode
-            ) ?? sub.price
-            
-            totalCost += convertedPrice
-            //                switch calculationMethod {
-            //                case .actualBilling:
-            //                    totalCost += convertedPrice
-            //                case .amortized:
-            //                    if subscription.period == .annually {
-            //                        totalCost += convertedPrice / 12
-            //                    } else {
-            //                        totalCost += convertedPrice
-            //                    }
-            //                }
-        }
-
-        return NSDecimalNumber(decimal: totalCost).doubleValue
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(colorScheme == .dark ? Color(.systemGray6) : Color(.systemBackground))
+                .shadow(
+                    color: colorScheme == .dark ? .white.opacity(0.05) : .black.opacity(0.08),
+                    radius: colorScheme == .dark ? 3 : 8,
+                    x: 0,
+                    y: colorScheme == .dark ? 1 : 2
+                )
+        )
     }
 }
 
+struct CategoryLegend: View {
+    @Environment(\.currencyCode) private var currencyCode
+    let tagData: [TagBreakdownItem]
+    let colors: [Color]
+    
+    var body: some View {
+        LazyVGrid(
+            columns: [GridItem(.flexible()), GridItem(.flexible())],
+            alignment: .leading,
+            spacing: 8
+        ) {
+            ForEach(Array(tagData.enumerated()), id: \.element.id) { index, item in
+                HStack(spacing: 8) {
+                    Circle()
+                        .fill(colors[index % colors.count])
+                        .frame(width: 12, height: 12)
+                    
+                    Text(item.tag.name)
+                        .font(.caption)
+                        .lineLimit(1)
+                    
+                    Spacer(minLength: 4)
+                    
+                    Text(formatCurrency(item.totalCost))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+    }
+    
+    private func formatCurrency(_ amount: Decimal) -> String {
+        let formatStyle = CurrencyInfo.hasDecimals(currencyCode)
+            ? Decimal.FormatStyle.Currency.currency(code: currencyCode)
+            : Decimal.FormatStyle.Currency.currency(code: currencyCode).precision(.fractionLength(0))
+        
+        return amount.formatted(formatStyle)
+    }
+}
 
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
@@ -185,313 +517,4 @@ struct Dashboard: View {
         .modelContainer(container)
         .environmentObject(AppSettings())
         .environmentObject(ExchangeRateRepository())
-}
-
-
-extension Dashboard {
-    private var metricsSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Your Subscription Stats")
-                .bold()
-                .font(.title2)
-            
-            HStack(spacing: 16) {
-                // Average Monthly Cost
-                metricCard(
-                    title: "Avg Cost",
-                    value: formattedAverageCost(),
-                    icon: "dollarsign.circle.fill",
-                    color: .green
-                )
-                
-                // Most expensive subscription
-                if let mostExpensive = getMostExpensiveSubscription() {
-                    metricCard(
-                        title: "Highest",
-                        value: mostExpensive.name,
-                        details: mostExpensive.formattedPrice(),
-                        icon: "arrow.up.circle.fill",
-                        color: .red
-                    )
-                }
-            }
-            
-            HStack(spacing: 16) {
-                // Most common Period
-                metricCard(
-                    title: "Most Common",
-                    value: getMostCommonBillingCycle(),
-                    icon: "calendar.circle.fill",
-                    color: .blue
-                )
-                
-                metricCard(
-                    title: "Annual Cost",
-                    value: formattedYearlyTotal(),
-                    icon: "chart.line.uptrend.xyaxis.circle.fill",
-                    color: .purple
-                )
-            }
-        }
-        .padding(.horizontal)
-    }
-    
-    private func metricCard(title: String, value: String, details: String? = nil, icon: String, color: Color) -> some View {
-        VStack(alignment: .leading) {
-            HStack {
-                Image(systemName: icon)
-                    .foregroundColor(color)
-                
-                Text(LocalizedStringKey(title))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            
-            if details == nil {
-                Spacer()
-            }
-            
-            Text(value)
-                .font(.headline)
-                .lineLimit(1)
-            
-            if let details = details {
-                Text(details)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .frame(height: 60)
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color(.systemGray6))
-        )
-    }
-    
-    // Helper methods for metrics
-    private func formattedAverageCost() -> String {
-        guard !subscriptions.isEmpty else { return "N/A" }
-        
-        let totalMonthly = subscriptions.reduce(Decimal(0), { result, subscription in
-            let convertedPrice = exchangeRates.convert(
-                subscription.price,
-                from: subscription.currencyCode,
-                to: appSettings.currencyCode
-            ) ?? subscription.price
-            
-            // Convert to monthly equivalent
-            switch subscription.period {
-            case .monthly:
-                return result + convertedPrice
-            case .quarterly:
-                return result + (convertedPrice / 3)
-            case .semiannually:
-                return result + (convertedPrice / 6)
-            case .annually:
-                return result + (convertedPrice / 12)
-            default:
-                return result + convertedPrice
-            }
-        })
-        
-        let average = totalMonthly / Decimal(subscriptions.count)
-        let formatStyle = CurrencyInfo.hasDecimals(appSettings.currencyCode) ?
-        Decimal.FormatStyle.Currency.currency(code: appSettings.currencyCode) :
-        Decimal.FormatStyle.Currency.currency(code: appSettings.currencyCode).precision(.fractionLength(0))
-        
-        return average.formatted(formatStyle)
-    }
-    
-    private func getMostExpensiveSubscription() -> Subscription? {
-        return subscriptions.max { a, b in
-            let aPrice = exchangeRates.convert(a.price, from: a.currencyCode, to: appSettings.currencyCode) ?? a.price
-            let bPrice = exchangeRates.convert(b.price, from: b.currencyCode, to: appSettings.currencyCode) ?? b.price
-            
-            return aPrice < bPrice
-        }
-    }
-    
-    private func getMostCommonBillingCycle() -> String {
-        let cycles = subscriptions.map { $0.period }
-        let cycleCount = Dictionary(grouping: cycles) { $0 }.mapValues { $0.count }
-        
-        if let mostCommon = cycleCount.max(by: { $0.value < $1.value })?.key {
-            return mostCommon.description
-        }
-        
-        return "Monthly"
-    }
-    
-    private func formattedYearlyTotal() -> String {
-        // Get current monthly total and multiply by 12 for yearly projection
-        let monthlyTotal = Decimal(calculateMonthlyTotal())
-        let yearlyProjection = monthlyTotal * 12
-        
-        let formatStyle = CurrencyInfo.hasDecimals(appSettings.currencyCode) ?
-        Decimal.FormatStyle.Currency.currency(code: appSettings.currencyCode) :
-        Decimal.FormatStyle.Currency.currency(code: appSettings.currencyCode).precision(.fractionLength(0))
-        
-        return yearlyProjection.formatted(formatStyle)
-    }
-}
-
-extension Dashboard {
-    
-    struct TagBreakdownItem {
-        let tag: Tag
-        let totalCost: Decimal
-        let percentage: Decimal
-    }
-
-    private var categoryBreakdownSection: some View {
-        VStack(alignment: .leading) {
-            Text("Tags Breakdown")
-                .bold()
-                .font(.title2)
-            
-            if subscriptions.isEmpty {
-                Text("Add subscriptions with tags to see your tag breakdown")
-                    .foregroundColor(.secondary)
-                    .padding()
-            } else {
-                categoryBreakdownChart
-            }
-        }
-        .padding(.horizontal)
-    }
-    
-    private var categoryBreakdownChart: some View {
-        let tagData = calculateTagBreakdown()
-        
-        return VStack {
-            Chart {
-                ForEach(tagData, id: \.tag) { item in
-                    sectorMarkForItem(item)
-                }
-            }
-            .frame(height: 200)
-            
-            // Legend below the chart
-            categoryLegend(tagData: tagData)
-        }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color(.systemGray6))
-        )
-    }
-    
-    private func sectorMarkForItem(_ item: TagBreakdownItem) -> some ChartContent {
-        SectorMark(
-            angle: .value("Cost", item.totalCost),
-            innerRadius: .ratio(0.5),
-            angularInset: 1.5
-        )
-        .foregroundStyle(by: .value("Category", item.tag.name))
-        .annotation(position: .overlay) {
-            sectorAnnotation(for: item)
-        }
-    }
-    
-    @ViewBuilder
-    private func sectorAnnotation(for item: TagBreakdownItem) -> some View {
-        if item.percentage >= 10 {
-            let percentageInt = NSDecimalNumber(decimal: item.percentage).intValue
-            Text("\(percentageInt)%")
-                .font(.caption)
-                .bold()
-                .foregroundStyle(.white)
-        }
-    }
-    
-    @ViewBuilder
-    private func categoryLegend(tagData: [TagBreakdownItem]) -> some View {
-        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], alignment: .leading, spacing: 8) {
-            ForEach(Array(tagData.enumerated()), id: \.element.tag) { index, item in
-                HStack(spacing: 4) {
-                    Circle()
-                        .fill(colorForTag(item.tag, index: index))
-                        .frame(width: 10, height: 10)
-                    
-                    Text(item.tag.name)
-                        .font(.caption)
-                    
-                    Spacer()
-                    
-                    Text(formatCurrency(item.totalCost))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-            }
-        }
-        .padding(.top, 8)
-    }
-    
-    // Helper function to get color for a tag (you can customize this)
-    private func colorForTag(_ tag: Tag, index: Int) -> Color {
-        // You could use a deterministic color based on the tag name, or add a color property to your Tag model
-        // For now, using a simple hash-based approach
-        let colors: [Color] = [.blue, .green, .orange, .red, .purple, .pink, .yellow, .teal]
-//        let index = abs(tag.name.hashValue) % colors.count
-        return colors[index]
-    }
-    
-    // Calculate data for the chart
-    private func calculateTagBreakdown() -> [TagBreakdownItem] {
-        // Handle subscriptions with no tags by creating a "Uncategorized" tag
-        let uncategorizedTag = Tag(name: "Uncategorized")
-        
-        // Group subscriptions by tag
-        var tagTotals: [Tag: Decimal] = [:]
-        var totalCost: Decimal = 0
-        
-        for subscription in subscriptions where subscription.isActive {
-            let convertedPrice = exchangeRates.convert(
-                subscription.price,
-                from: subscription.currencyCode,
-                to: appSettings.currencyCode
-            ) ?? subscription.price
-            
-            // Normalize to monthly cost
-            let monthlyCost: Decimal
-            switch subscription.period {
-            case .monthly: monthlyCost = convertedPrice
-            case .quarterly: monthlyCost = convertedPrice / 3
-            case .semiannually: monthlyCost = convertedPrice / 6
-            case .annually: monthlyCost = convertedPrice / 12
-            default: monthlyCost = convertedPrice
-            }
-            
-            totalCost += monthlyCost
-            
-            if subscription.tags.isEmpty {
-                tagTotals[uncategorizedTag, default: 0] += monthlyCost
-            } else {
-                for tag in subscription.tags {
-                    tagTotals[tag, default: 0] += monthlyCost
-                }
-            }
-        }
-        
-        // Convert to array and calculate percentages
-        var result = tagTotals.map { tag, cost in
-            let percentage = totalCost > 0 ? (cost / totalCost) * 100 : 0
-            return TagBreakdownItem(tag: tag, totalCost: cost, percentage: percentage)
-        }
-        
-        // Sort by cost (highest first)
-        result.sort { $0.totalCost > $1.totalCost }
-        
-        return result
-    }
-    
-    private func formatCurrency(_ amount: Decimal) -> String {
-        let formatStyle = CurrencyInfo.hasDecimals(appSettings.currencyCode) ?
-            Decimal.FormatStyle.Currency.currency(code: appSettings.currencyCode) :
-            Decimal.FormatStyle.Currency.currency(code: appSettings.currencyCode).precision(.fractionLength(0))
-            
-        return amount.formatted(formatStyle)
-    }
 }
