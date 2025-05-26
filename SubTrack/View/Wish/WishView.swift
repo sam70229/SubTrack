@@ -35,6 +35,9 @@ struct WishView: View {
         }
         .padding()
         .frame(height: 100)
+        .background(wish.voted ? Color.green : Color.gray)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .foregroundStyle(.primary)
     }
     
     private var dateFormatter: DateFormatter {

@@ -12,3 +12,16 @@ extension Array {
         }
     }
 }
+
+extension Array where Element == IconOption {
+    func search(query: String) -> [IconOption] {
+        guard !query.isEmpty else {
+            return self
+        }
+        
+        return self.filter { option in
+            option.name.localizedCaseInsensitiveContains(query)
+        }
+    }
+}
+

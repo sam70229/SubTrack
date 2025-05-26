@@ -8,6 +8,7 @@ import SwiftUI
 
 enum PickerDestination {
     case currencyPicker
+    case iconPicker
     case creditCardPicker
 }
 
@@ -34,7 +35,7 @@ struct AddSubscriptionView: View {
     @State private var period: Period = .monthly
     @State private var firstBillingDate: Date = Date()
     @State private var selectedColorOption: ColorOption = .init(name: "Blue", hex: Color.blue.toHexString())
-    @State private var icon: String = "music.note"
+    @State private var selectedIcon: IconOption = IconOption.defaultIconOptions[0]
     @State private var selectedCurrency: CurrencyInfo = CurrencyInfo(
         id: Locale.current.currency?.identifier ?? "USD",
         code: Locale.current.currency?.identifier ?? "USD",
@@ -53,18 +54,6 @@ struct AddSubscriptionView: View {
     // Tags Section
     @State private var showTagsSheet: Bool = false
     @State private var selectedTags: [Tag] = []
-    
-//    private let iconOptions: [IconOption] = [
-//        IconOption(name: "Credit Card", image: "creditcard"),
-//        IconOption(name: "Music", image: "music.note"),
-//        IconOption(name: "Gaming", image: "gamecontroller"),
-//        IconOption(name: "Cloud", image: "cloud"),
-//        IconOption(name: "Car", image: "car"),
-//        IconOption(name: "Streaming", image: "film"),
-//        IconOption(name: "Book", image: "book.closed"),
-//        IconOption(name: "House", image: "house"),
-//        IconOption(name: "News", image: "newspaper"),
-//    ]
 
     // Define the color options as a collection of ColorOption objects
     private let colorOptions: [ColorOption] = ColorOption.generateColors()
@@ -96,7 +85,8 @@ struct AddSubscriptionView: View {
                 CurrencyPickerView(currencies: $currencies, onSelect: { currency in
                     selectedCurrency = currency
                 })
-                
+            case .iconPicker:
+                IconPickerView(selectedIcon: $selectedIcon)
             case .creditCardPicker:
                 CreditCardListView { card in
                     creditCard = card
@@ -244,15 +234,28 @@ struct AddSubscriptionView: View {
     
     private var iconSelectionSection: some View {
         Section {
-            Picker("icon", selection: $icon) {
-                ForEach(IconOption.defaultIconOptions, id: \.image) { icon in
-                    HStack {
-                        Text(LocalizedStringKey(icon.name))
-                        Spacer()
-                        Image(systemName: icon.image).tag(icon.name)
-                    }
-                }
+            Button {
+                showPicker = true
+                pickerDestination = .iconPicker
+            } label: {
+                HStack {
+                    Text("Icon")
+                    Spacer()
+                    Text("\(selectedIcon.name)")
+                    Image(systemName: "chevron.right")
+                        .font(.caption2)
+                }.foregroundColor(.secondary)
             }
+            .buttonStyle(.plain)
+//            Picker("icon", selection: $icon) {
+//                ForEach(IconOption.defaultIconOptions, id: \.image) { icon in
+//                    HStack {
+//                        Text(LocalizedStringKey(icon.name))
+//                        Spacer()
+//                        Image(systemName: icon.image).tag(icon.name)
+//                    }
+//                }
+//            }
         }
     }
     
@@ -352,7 +355,7 @@ struct AddSubscriptionView: View {
             firstBillingDate: firstBillingDate,
             tags: selectedTags,
             creditCard: creditCard,
-            icon: icon,
+            icon: selectedIcon.image,
             colorHex: selectedColorOption.hex,
         )
         

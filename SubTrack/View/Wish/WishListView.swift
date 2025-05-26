@@ -24,13 +24,13 @@ struct WishListView: View {
                 if myWishes.count > 0 {
                     Section {
                         ForEach(myWishes) { wish in
-                            WishView(wish: wish)
-                                .background(wish.voted ? Color.green : Color.gray)
-                                .clipShape(RoundedRectangle(cornerRadius: 10))
-                                .padding(8)
-                                .onTapGesture { gesture in
-                                    viewModel.vote(for: wish, deviceID: appSettings.deviceID)
-                                }
+                            NavigationLink {
+                                WishDetailView(wish: wish, viewModel: viewModel)
+                            } label: {
+                                WishView(wish: wish)
+                                    .padding()
+                            }
+                            .buttonStyle(PlainButtonStyle())
                         }
                     } header: {
                         Text("My Wishes")
@@ -40,19 +40,18 @@ struct WishListView: View {
                 
                 Section {
                     ForEach(viewModel.wishes.filter { $0.createdBy != appSettings.deviceID }) { wish in
-                        WishView(wish: wish)
-                            .background(wish.voted ? Color.green : Color.gray)
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                            .padding(8)
-                            .onTapGesture { gesture in
-                                viewModel.vote(for: wish, deviceID: appSettings.deviceID)
-                            }
+                        NavigationLink {
+                            WishDetailView(wish: wish, viewModel: viewModel)
+                        } label: {
+                            WishView(wish: wish)
+                                .padding(8)
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
                 } header: {
                     Text("Other Wishes")
                         .font(.subheadline)
                 }
-                
             }
         }
         .refreshable {

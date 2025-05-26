@@ -150,7 +150,7 @@ struct NewCalendarView: View {
     
     private var monthGridContainer: some View {
         GeometryReader { geometry in
-            CalendarContainerView(calendarState: calendarState) { monthDate in
+            CalendarContainerView(selectedMonth: $calendarState.selectedMonth) { monthDate in
                 monthView(for: monthDate, geometry: geometry)
                     .transition(.slide)
             }
