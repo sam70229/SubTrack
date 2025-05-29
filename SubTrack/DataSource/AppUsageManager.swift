@@ -19,8 +19,7 @@ class AppUsageManager: ObservableObject {
     private let center = DeviceActivityCenter()
     
     init() {
-        // TODO: WAIT FOR APPLE APPROVAL
-//        requestAuthorization()
+        requestAuthorization()
     }
     
     func requestAuthorization() {

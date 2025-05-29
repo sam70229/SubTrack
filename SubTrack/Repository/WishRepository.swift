@@ -209,7 +209,9 @@ class WishRepository: ObservableObject {
         realtimeChannel = supabase.realtimeV2.channel("supabase_realtime")
         
         let wishStream = realtimeChannel?.postgresChange(AnyAction.self, schema: "public", table: "wishes")
-        let voteStream = realtimeChannel?.postgresChange(AnyAction.self, schema: "public", table: "votes")
+
+        // TODO: - Make sure we need this in future
+//        let voteStream = realtimeChannel?.postgresChange(AnyAction.self, schema: "public", table: "votes")
         
         await realtimeChannel?.subscribe()
         
@@ -268,14 +270,15 @@ class WishRepository: ObservableObject {
                     }
                 }
             }
-            
-            for await change in voteStream! {
-                switch change {
-                case .delete(let action): print("Deleted vote: \(action.oldRecord)")
-                case .insert(let action): print("Inserted vote: \(action.record)")
-                case .update(let action): print("Updated vote: \(action.oldRecord) with \(action.record)")
-                }
-            }
+  
+            // TODO: - Make sure we need this in future
+//            for await change in voteStream! {
+//                switch change {
+//                case .delete(let action): print("Deleted vote: \(action.oldRecord)")
+//                case .insert(let action): print("Inserted vote: \(action.record)")
+//                case .update(let action): print("Updated vote: \(action.oldRecord) with \(action.record)")
+//                }
+//            }
         }
     }
     
