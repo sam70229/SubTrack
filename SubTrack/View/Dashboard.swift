@@ -403,7 +403,7 @@ struct EmptyStateCard: View {
                 .font(.largeTitle)
                 .foregroundColor(.secondary)
             
-            Text(message)
+            Text(LocalizedStringKey(message))
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
         }

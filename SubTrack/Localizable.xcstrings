@@ -227,7 +227,7 @@
       }
     },
     "Add subscriptions with tags to see your tag breakdown" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
@@ -336,17 +336,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "每兩年"
-          }
-        }
-      }
-    },
-    "Billing Cycle" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "帳單週期"
           }
         }
       }
@@ -1510,7 +1499,7 @@
       }
     },
     "Subscriptions will appear here if the payment due date is reached." : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
