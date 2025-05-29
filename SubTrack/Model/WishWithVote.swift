@@ -1,20 +1,20 @@
 //
-//  Wish.swift
+//  WishWithVote.swift
 //  SubTrack
 //
-//  Created by Sam on 2025/4/8.
+//  Created by Sam on 2025/5/27.
 //
 import Foundation
 
-struct Wish: Identifiable, Codable {
-    var id: UUID
-    var title: String
-    var content: String?
-    var createdAt: Date
-    var voteCount: Int
-    
-    var voted: Bool = false
-    var createdBy: String
+
+struct WishWithVote: Codable {
+    let id: UUID
+    let title: String
+    let content: String?
+    let createdAt: Date
+    let createdBy: String
+    let voteCount: Int
+    let voted: Bool?
     
     enum CodingKeys: String, CodingKey {
         case id
@@ -23,5 +23,6 @@ struct Wish: Identifiable, Codable {
         case createdAt = "created_at"
         case createdBy = "created_by"
         case voteCount = "vote_count"
+        case voted
     }
 }

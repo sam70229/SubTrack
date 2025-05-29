@@ -268,6 +268,17 @@
         }
       }
     },
+    "Anonymous User" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "匿名"
+          }
+        }
+      }
+    },
     "Any wishes that needs Internet connections will be considered carefully due to the budget constraints of the project." : {
       "localizations" : {
         "zh-Hant" : {
@@ -299,7 +310,14 @@
       }
     },
     "Are you sure you want to delete this wish? This action cannot be undone." : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "確定要刪除這個願望嗎？此動作不能被復原"
+          }
+        }
+      }
     },
     "Avg Cost" : {
       "extractionState" : "manual",
@@ -408,7 +426,14 @@
       }
     },
     "Choose Icon" : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選擇圖示"
+          }
+        }
+      }
     },
     "Clear All Data" : {
       "localizations" : {
@@ -494,7 +519,36 @@
       }
     },
     "Created by You" : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "由您建立"
+          }
+        }
+      }
+    },
+    "Created Time" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "建立時間"
+          }
+        }
+      }
+    },
+    "Creator" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "建立者"
+          }
+        }
+      }
     },
     "Currency" : {
       "localizations" : {
@@ -617,7 +671,14 @@
       }
     },
     "Delete Wish" : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "刪除願望"
+          }
+        }
+      }
     },
     "Description" : {
       "localizations" : {
@@ -660,18 +721,25 @@
       }
     },
     "Due This Month" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "本月訂閱金額"
           }
         }
       }
     },
     "Edit Wish" : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "編輯願望"
+          }
+        }
+      }
     },
     "Error" : {
       "localizations" : {
@@ -749,7 +817,14 @@
       }
     },
     "Icon" : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "圖示"
+          }
+        }
+      }
     },
     "Import/Export" : {
       "extractionState" : "stale",
@@ -763,7 +838,14 @@
       }
     },
     "Information" : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "資訊"
+          }
+        }
+      }
     },
     "last 4 digits" : {
       "localizations" : {
@@ -1145,7 +1227,14 @@
       }
     },
     "Save" : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "儲存"
+          }
+        }
+      }
     },
     "Search currencies" : {
       "localizations" : {
@@ -1158,7 +1247,14 @@
       }
     },
     "Search icons" : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜尋圖示"
+          }
+        }
+      }
     },
     "Select apps to view their activity." : {
       "localizations" : {
@@ -1353,6 +1449,7 @@
       }
     },
     "Subscription Calendar" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
@@ -1413,6 +1510,7 @@
       }
     },
     "Subscriptions will appear here if the payment due date is reached." : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
@@ -1553,7 +1651,7 @@
       }
     },
     "Total Subs" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
@@ -1610,7 +1708,14 @@
       }
     },
     "Vote" : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "投票"
+          }
+        }
+      }
     },
     "Vote for Wishes" : {
       "localizations" : {
@@ -1623,10 +1728,24 @@
       }
     },
     "Voted" : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已投票"
+          }
+        }
+      }
     },
     "Votes" : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "投票"
+          }
+        }
+      }
     },
     "Welcome to Wish Wall" : {
       "localizations" : {
@@ -1639,7 +1758,14 @@
       }
     },
     "Wish title" : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "願望標題"
+          }
+        }
+      }
     },
     "Wish Wall" : {
       "localizations" : {
@@ -1652,7 +1778,25 @@
       }
     },
     "Wishes requiring Internet connections will be considered based on budget constraints" : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "任何需要網路連線的願望，將會根據預算限制來考量"
+          }
+        }
+      }
+    },
+    "You" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你"
+          }
+        }
+      }
     },
     "You can access disabled tabs from settings menu" : {
       "localizations" : {

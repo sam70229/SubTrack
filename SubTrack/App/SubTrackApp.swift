@@ -7,13 +7,14 @@
 
 import SwiftUI
 import SwiftData
-
+import Supabase
 
 @main
 struct SubTrackApp: App {
     @StateObject private var appSettings = AppSettings()
     @StateObject private var appUsageManager = AppUsageManager()
     @StateObject private var exchangeRates = ExchangeRateRepository()
+//    @StateObject private var notificationService: NotificationService()
     
     // Firebase
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate

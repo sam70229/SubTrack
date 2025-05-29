@@ -21,11 +21,11 @@ struct InfoRow: View {
                 .frame(width: 24)
             
             VStack(alignment: .leading, spacing: 2) {
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(.caption)
                     .foregroundColor(.secondary)
                 
-                Text(value)
+                Text(LocalizedStringKey(value))
                     .font(.callout)
                     .foregroundColor(.primary)
             }
@@ -68,21 +68,22 @@ struct WishDetailView: View {
     }
     
     var body: some View {
-        
-        VStack(alignment: .leading) {
-            
-            headerCard
-            
-            contentCard
-            
-            informationCard
-            
-            if (wish.createdBy == appSettings.deviceID) {
-                actionSection
+        ScrollView{
+            VStack(alignment: .leading) {
+                
+                headerCard
+                
+                contentCard
+                
+                informationCard
+                
+                if (wish.createdBy == appSettings.deviceID) {
+                    actionSection
+                }
+                
+                Spacer()
+                
             }
-            
-            Spacer()
-            
         }
         .padding()
         .background(Color(.systemGroupedBackground))
@@ -273,7 +274,7 @@ struct WishDetailView: View {
             VStack(spacing: 12) {
                 InfoRow(
                     icon: "calendar",
-                    title: "Created",
+                    title: "Created Time",
                     value: wish.createdAt.formatted(date: .abbreviated, time: .shortened),
                     tintColor: .blue
                 )
@@ -421,7 +422,7 @@ struct WishDetailView: View {
 
 #Preview {
     NavigationStack {
-        WishDetailView(wish: Wish(id: UUID().uuidString, title: "TEst", createdAt: Date(), voteCount: 0, createdBy: UUID().uuidString),
+        WishDetailView(wish: Wish(id: UUID(), title: "TEst", createdAt: Date(), voteCount: 0, createdBy: UUID().uuidString),
                        viewModel: WishViewModel())
         .environmentObject(AppSettings())
     }

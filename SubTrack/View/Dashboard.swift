@@ -99,7 +99,7 @@ struct Dashboard: View {
     
     private func metricView(title: String, value: String) -> some View {
         VStack(spacing: 4) {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(.caption)
                 .opacity(0.9)
             
