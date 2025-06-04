@@ -46,6 +46,12 @@ struct SettingsView: View {
                 } label: {
                     Label("Manage Credit Cards", systemImage: "creditcard")
                 }
+                
+                NavigationLink {
+                    NotificationSettingsView()
+                } label: {
+                    Label("Notifications", systemImage: "bell.badge")
+                }
             }
             
             Section {

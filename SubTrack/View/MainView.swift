@@ -53,6 +53,13 @@ struct MainView: View {
                 self.calendarViewType = appSettings.defaultCalendarView
                 self.tabSelection = appSettings.defaultTab
             }
+            .onReceive(NotificationCenter.default.publisher(for: .openSubscriptionDetail)) { notification in
+                if let subscriptionId = notification.userInfo?["subscriptionId"] as? String,
+                   let uuid = UUID(uuidString: subscriptionId) {
+                    // Navigate to subscription detail
+                    // You'll need to implement navigation logic based on your app structure
+                }
+            }
         }
     }
 }

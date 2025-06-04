@@ -330,8 +330,13 @@ struct UpcomingSubscriptionsPager: View {
             ForEach(Array(pages.enumerated()), id: \.offset) { _, page in
                 LazyVGrid(columns: columns, spacing: 12) {
                     ForEach(page, id: \.id) { subscription in
-                        SubscriptionShortItemView(subscription: subscription)
-                            .frame(height: 60)
+                        NavigationLink {
+                            SubscriptionDetailView(subscription: subscription)
+                        } label: {
+                            SubscriptionShortItemView(subscription: subscription)
+                                .frame(height: 60)
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
                 }
             }

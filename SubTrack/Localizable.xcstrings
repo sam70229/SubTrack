@@ -33,6 +33,22 @@
         }
       }
     },
+    "%lld subscription%@ with notifications enabled" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld subscription%2$@ with notifications enabled"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld 項訂閱已啟用通知"
+          }
+        }
+      }
+    },
     "%lld%%" : {
       "localizations" : {
         "zh-Hant" : {
@@ -46,12 +62,35 @@
     "+%lld" : {
       "shouldTranslate" : false
     },
-    "3 days" : {
+    "1 day before" : {
+      "extractionState" : "manual",
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@天前"
+            "value" : "1天前"
+          }
+        }
+      }
+    },
+    "1 week before" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1週前"
+          }
+        }
+      }
+    },
+    "3 days before" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3天前"
           }
         }
       }
@@ -162,6 +201,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "感謝"
+          }
+        }
+      }
+    },
+    "Active Reminders" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "啟用提醒"
           }
         }
       }
@@ -315,6 +364,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "確定要刪除這個願望嗎？此動作不能被復原"
+          }
+        }
+      }
+    },
+    "Available Subscriptions" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可設定的訂閱"
           }
         }
       }
@@ -689,6 +748,16 @@
         }
       }
     },
+    "Disable All Reminders" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取消所有提醒"
+          }
+        }
+      }
+    },
     "Do u really wanna clear all data?" : {
       "localizations" : {
         "zh-Hant" : {
@@ -726,6 +795,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "編輯願望"
+          }
+        }
+      }
+    },
+    "Enable" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "啟用"
+          }
+        }
+      }
+    },
+    "Enable All Reminders" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開啟全部提醒"
+          }
+        }
+      }
+    },
+    "Enable Notifications" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開啟通知"
+          }
+        }
+      }
+    },
+    "Enable notifications in Settings to receive payment reminders" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請在設定中開啟通知，以接收付款提醒"
           }
         }
       }
@@ -960,6 +1069,16 @@
         }
       }
     },
+    "Next: %@" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下一次: %@"
+          }
+        }
+      }
+    },
     "No apps selected" : {
       "localizations" : {
         "zh-Hant" : {
@@ -1021,12 +1140,62 @@
         }
       }
     },
+    "Notification Status" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知狀態"
+          }
+        }
+      }
+    },
+    "Notifications" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知"
+          }
+        }
+      }
+    },
+    "Notifications are disabled." : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知已關閉"
+          }
+        }
+      }
+    },
+    "Notifications are enabled." : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知已開啟"
+          }
+        }
+      }
+    },
     "OK" : {
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "好"
+          }
+        }
+      }
+    },
+    "Open Settings" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開啟設定"
           }
         }
       }
@@ -1155,6 +1324,16 @@
         }
       }
     },
+    "Quick Actions" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "快速操作"
+          }
+        }
+      }
+    },
     "Ready to Start!" : {
       "localizations" : {
         "zh-Hant" : {
@@ -1171,6 +1350,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "記錄信用卡資訊"
+          }
+        }
+      }
+    },
+    "Remind me" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知我"
           }
         }
       }
@@ -1221,6 +1410,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "儲存"
+          }
+        }
+      }
+    },
+    "Scheduled Reminders" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已排程的提醒\n"
           }
         }
       }
@@ -1291,6 +1490,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "每半個月"
+          }
+        }
+      }
+    },
+    "Send Test Notification" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "發送測試通知"
           }
         }
       }
@@ -1793,6 +2002,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "你仍然可以透過設定選單進入被停用的分頁"
+          }
+        }
+      }
+    },
+    "You will receive a notification %@ before the next payment date." : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你將會在下次付款日 %@ 收到提醒通知。"
           }
         }
       }
