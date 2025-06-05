@@ -27,7 +27,7 @@ struct SubscriptionDetailView: View {
     @State private var subscriptionRepository: SubscriptionRepository?
     @State private var categoryRepository: CategoryRepository?
     
-    @State private var isEnabledNotification: Bool = false
+    @State private var isNotificationEnabled: Bool = false
     @State private var selectedReminder: NotificationDate = .one_day_before
     @State private var categoryName: String = "None"
     @State private var showDeleteConfirmation: Bool = false
@@ -80,7 +80,7 @@ struct SubscriptionDetailView: View {
         .onAppear {
             subscriptionRepository = SubscriptionRepository(modelContext: modelContext)
             categoryRepository = CategoryRepository(modelContext: modelContext)
-            
+            isNotificationEnabled = subscription.isNotificationEnabled
             // Load notification count
             Task {
                 let count = await NotificationService.shared.getScheduledNotificationsCount(for: subscription)
@@ -197,8 +197,8 @@ struct SubscriptionDetailView: View {
                 Text("Since First Payment")
                 Spacer()
                 VStack(alignment: .trailing) {
-                    Text(subscription.totalAmountTillToday(), format: .currency(code: subscription.currencyCode))
-                    Text(exchangeRates.convert(subscription.totalAmountTillToday(), from: subscription.currencyCode, to: appSettings.currencyCode) ?? subscription.totalAmountTillToday(), format: .currency(code: appSettings.currencyCode))
+                    Text(totalPaidSinceStart, format: .currency(code: subscription.currencyCode))
+                    Text(exchangeRates.convert(totalPaidSinceStart, from: subscription.currencyCode, to: appSettings.currencyCode) ?? subscription.totalAmountTillToday(), format: .currency(code: appSettings.currencyCode))
                 }
             }
             
@@ -216,48 +216,67 @@ struct SubscriptionDetailView: View {
             Toggle(isOn: Binding(
                 get: { subscription.isNotificationEnabled },
                 set: { newValue in
-                    subscription.isNotificationEnabled = newValue
-                    Task {
-                        await subscription.scheduleNotifications()
+                    withAnimation {
+                        isNotificationEnabled = newValue
+                        subscription.isNotificationEnabled = newValue
                     }
                 }
             )) {
                 Text("Reminder Notifications")
             }
-
-           if subscription.isNotificationEnabled {
-                HStack {
-                    Text("Next Payment")
-                    Spacer()
-                    Text("\(daysUntilNextPayment) days")
-                        .foregroundStyle(.secondary)
-                }
-    
-                Picker(selection: $selectedReminder) {
-                    ForEach(NotificationDate.allCases) { option in
-                        Text(LocalizedStringKey(option.description)).tag(option)
+            .onChange(of: subscription.isNotificationEnabled) { _, newValue in
+                Task {
+                    if newValue {
+                        await subscription.scheduleNotifications()
+                        let count = await NotificationService.shared.getScheduledNotificationsCount(for: subscription)
+                        scheduledNotificationsCount = count
+                    } else {
+                        await NotificationService.shared.cancelNotifications(for: subscription)
                     }
-                } label: {
-                    Text("Reminds me")
-                } currentValueLabel: {
-                    Text(LocalizedStringKey(selectedReminder.description))
                 }
-                .pickerStyle(.navigationLink)
-                
-               // Show scheduled notifications count
-               HStack {
-                   Text("Scheduled Reminders")
+            }
 
-                   Spacer()
-
-                   if let count = scheduledNotificationsCount {
-                       Text("\(count)")
-                           .foregroundColor(.secondary)
-                   } else {
-                       ProgressView()
-                           .scaleEffect(0.7)
+           if isNotificationEnabled {
+               Group {
+                   HStack {
+                       Text("Next Payment")
+                       Spacer()
+                       Text("\(daysUntilNextPayment) days")
+                           .foregroundStyle(.secondary)
                    }
+                   
+                   Picker(selection: $selectedReminder) {
+                       ForEach(NotificationDate.allCases) { option in
+                           Text(LocalizedStringKey(option.description)).tag(option)
+                       }
+                   } label: {
+                       Text("Reminds me")
+                   } currentValueLabel: {
+                       Text(LocalizedStringKey(selectedReminder.description))
+                   }
+                   .pickerStyle(.navigationLink)
+                   
+                   // Show scheduled notifications count
+                   NavigationLink {
+                       NotificationListView(subscription: subscription)
+                   } label: {
+                       HStack {
+                           Text("Scheduled Reminders")
+                           
+                           Spacer()
+                           
+                           if let count = scheduledNotificationsCount {
+                               Text("\(count)")
+                                   .foregroundColor(.secondary)
+                           } else {
+                               ProgressView()
+                                   .scaleEffect(0.7)
+                           }
+                       }
+                   }
+                   .buttonStyle(.plain)
                }
+               .transition(.slide)
             }
         } header: {
             Text("Notification Settings")
@@ -382,22 +401,22 @@ struct SubscriptionDetailView: View {
         
         // Calculate the number of complete billing cycles
         var cycles = 1
-        var currentDate = subscription.firstBillingDate
+        var billingDate = subscription.firstBillingDate
         
-        while currentDate <= today {
+        while billingDate <= today {
             cycles += 1
             
             // Get next billing date
-            guard let nextDate = calendar.date(byAdding: billingCycleComponent, value: billingCycleValue, to: currentDate) else {
+            guard let nextDate = calendar.date(byAdding: billingCycleComponent, value: billingCycleValue, to: billingDate) else {
                 break
             }
             
-            currentDate = nextDate
+            billingDate = nextDate
         }
         
         // If we're calculating from the start date and it's not
         // exactly aligned with billing cycles, subtract 1
-        if cycles > 0 && currentDate > today {
+        if cycles > 0 && billingDate > today {
             cycles -= 1
         }
         

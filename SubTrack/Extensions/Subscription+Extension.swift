@@ -116,7 +116,7 @@ extension SchemaV1.Subscription {
     }
     
     // MARK: - Notification Management
-    @Transient var isNotificationEnabled: Bool {
+    var isNotificationEnabled: Bool {
         get {
             UserDefaults.standard.bool(forKey: "notification_\(id.uuidString)")
         }
@@ -125,7 +125,7 @@ extension SchemaV1.Subscription {
         }
     }
     
-    @Transient var notificationTiming: NotificationDate {
+    var notificationTiming: NotificationDate {
         get {
             let rawValue = UserDefaults.standard.integer(forKey: "notification_timing_\(id.uuidString)")
             return NotificationDate(rawValue: rawValue) ?? .three_day_before

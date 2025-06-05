@@ -47,13 +47,13 @@ class NotificationService: ObservableObject {
         }
         
         await cancelNotifications(for: subscription)
-        
+
         let notificationDates = calculateNotificationDates(
             for: subscription,
             reminderOption: reminderOption,
             numberOfCycles: 3 // Schedule for the next 3 cycles
         )
-        
+
         for (index, date) in notificationDates.enumerated() {
             let content = UNMutableNotificationContent()
             content.title = "Subscription Reminder"
@@ -122,7 +122,6 @@ class NotificationService: ObservableObject {
         for _ in 0..<numberOfCycles {
             // Calculate reminder date based on option
             let reminderDate: Date
-            
             switch reminderOption {
             case .one_day_before:
                 reminderDate = calendar.date(byAdding: .day, value: -1, to: nextBillingDate) ?? nextBillingDate
@@ -131,13 +130,12 @@ class NotificationService: ObservableObject {
             case .one_week_before:
                 reminderDate = calendar.date(byAdding: .day, value: -7, to: nextBillingDate) ?? nextBillingDate
             }
-            
+
             // Set notification time to 10 AM
-            if let adjustedDate = calendar.dateComponents([.year, .month, .day], from: reminderDate).date,
-               let finalDate = calendar.date(bySettingHour: 10, minute: 0, second: 0, of: adjustedDate) {
+            if let finalDate = calendar.date(bySettingHour: 10, minute: 0, second: 0, of: reminderDate) {
                 dates.append(finalDate)
             }
-            
+
             // Calculate next billing date
             nextBillingDate = subscription.period.calculateNextDate(from: nextBillingDate)
         }
@@ -156,6 +154,11 @@ class NotificationService: ObservableObject {
     
     func getScheduledNotifications() async -> [UNNotificationRequest] {
         await notificationCenter.pendingNotificationRequests()
+    }
+    
+    func getScheduledNotifications(for subscription: Subscription) async -> [UNNotificationRequest] {
+        let pending = await notificationCenter.pendingNotificationRequests()
+        return pending.filter { $0.identifier.starts(with: subscription.id.uuidString) }
     }
     
     func getScheduledNotificationsCount(for subscription: Subscription) async -> Int {

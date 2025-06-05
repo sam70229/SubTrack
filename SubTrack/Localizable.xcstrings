@@ -1099,6 +1099,9 @@
         }
       }
     },
+    "No scheduled notifications" : {
+
+    },
     "No Subscriptions" : {
       "localizations" : {
         "zh-Hant" : {
@@ -1419,7 +1422,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已排程的提醒\n"
+            "value" : "已排程的提醒"
           }
         }
       }
@@ -1569,7 +1572,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "自首次付款以來"
+            "value" : "從第一次付款開始"
           }
         }
       }
@@ -1865,6 +1868,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "UI選項"
+          }
+        }
+      }
+    },
+    "Uncategorized" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未分類"
           }
         }
       }

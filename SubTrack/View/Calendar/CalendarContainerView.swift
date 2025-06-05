@@ -17,65 +17,17 @@ struct CalendarContainerView<Content: View>: View {
     @Binding var selectedMonth: Date
     let content: (Date) -> Content
     
-    @State private var dragState = DragState()
+    @GestureState private var dragTranslation: CGFloat = 0
     @State private var pageOffset: Int = 0
-    
-    private let animationDuration: Double = 0.3
+    @State private var isAnimating: Bool = false
+
     private let swipeThresholdFactor: Double = 0.5
     
     var body: some View {
         GeometryReader { geometry in
             calendarPages(in: geometry)
-            .offset(x: calculateOffset(for: geometry))
+            .offset(x: calculateOffset(for: geometry) + dragTranslation)
             .gesture(swipeGesture(for: geometry))
-            .animation(.interactiveSpring(response: animationDuration), value: dragState.translation)
-            .animation(.interactiveSpring(response: animationDuration), value: pageOffset)
-//            .simultaneousGesture(
-//                DragGesture()
-//                    .updating($dragOffset) { value, state, _ in
-//                        state = value.translation.width
-//                    }
-//                    .onEnded { value in
-//                        let horizontalDragAmount = value.translation.width
-//                        let threshold = geometry.size.width / 2
-//    
-//                        if abs(horizontalDragAmount) > threshold {
-//                            // Determine direction
-//                            let movingForward = horizontalDragAmount < 0
-//                            
-//                            // Prepare the transition
-//                            withAnimation(.easeInOut(duration: 0.3)) {
-//                                activeOffset = movingForward ? -geometry.size.width : geometry.size.width
-//                            }
-//                            
-//                            // Update the calendar state after animation completes
-//                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-//                                if movingForward {
-//                                    calendarState.goToNextMonth()
-//                                } else {
-//                                    calendarState.goToPreviousMonth()
-//                                }   
-//                                // Reset offset without animation
-//                                withTransaction(Transaction(animation: nil)) {
-//                                    activeOffset = .zero
-//                                }
-//                            }
-//                        } else {
-//                            // Spring back to center if threshold not met
-//                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-//                                activeOffset = 0
-//                            }
-//                        }
-//                    }
-//            )
-//            .animation(.smooth, value: activeOffset)
-//            .contentShape(Rectangle())
-//            .onChange(of: calendarState.selectedMonth) { _, newMonth in
-//                withAnimation(.none) {
-//                    calendarState.previousMonth = Calendar.current.date(byAdding: .month, value: -1, to: newMonth) ?? newMonth
-//                    calendarState.nextMonth = Calendar.current.date(byAdding: .month, value: 1, to: newMonth) ?? newMonth
-//                }
-//            }
         }
     }
     
@@ -84,6 +36,7 @@ struct CalendarContainerView<Content: View>: View {
             ForEach(displayedMonths, id: \.self) { month in
                 content(month)
                     .frame(width: geometry.size.width)
+                    .transition(.slide)
             }
         }
     }
@@ -106,21 +59,18 @@ struct CalendarContainerView<Content: View>: View {
     
     private func calculateOffset(for geometry: GeometryProxy) -> CGFloat {
         let baseOffset = -geometry.size.width // Center on middle page
-        let dragOffset = dragState.isDragging ? dragState.translation : 0
+//        let dragOffset = dragState.isDragging ? dragState.translation : 0
         let pageTransition = CGFloat(pageOffset) * geometry.size.width
         
-        return baseOffset + dragOffset + pageTransition
+        return baseOffset + pageTransition
     }
     
     // MARK: - Gestures
        
        private func swipeGesture(for geometry: GeometryProxy) -> some Gesture {
            DragGesture()
-               .onChanged { value in
-                   dragState = DragState(
-                       isDragging: true,
-                       translation: value.translation.width
-                   )
+               .updating($dragTranslation) { value, state, _ in
+                   state = value.translation.width
                }
                .onEnded { value in
                    handleSwipeEnd(value: value, geometry: geometry)
@@ -128,25 +78,25 @@ struct CalendarContainerView<Content: View>: View {
        }
        
        private func handleSwipeEnd(value: DragGesture.Value, geometry: GeometryProxy) {
+           guard !isAnimating else { return }
+           isAnimating = true
            let threshold = geometry.size.width * swipeThresholdFactor
            let shouldChangePage = abs(value.translation.width) > threshold
            
-           withAnimation(.interactiveSpring(response: animationDuration)) {
+           withAnimation {
                if shouldChangePage {
                    let direction = value.translation.width > 0 ? -1 : 1
-                   pageOffset = direction
-                   
-                   // Update the selected month after a slight delay
-                   // This is cleaner than DispatchQueue
-                   Task { @MainActor in
-                       try? await Task.sleep(nanoseconds: UInt64(animationDuration * 1_000_000_000))
-                       updateSelectedMonth(direction: direction)
-                       pageOffset = 0
-                   }
+                   updateSelectedMonth(direction: direction)
                }
-               
-               dragState = DragState()
            }
+
+//           dragState = DragState()
+           pageOffset = 0
+
+           DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+               isAnimating = false
+           }
+           
        }
        
        private func updateSelectedMonth(direction: Int) {
