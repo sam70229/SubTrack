@@ -49,16 +49,6 @@
         }
       }
     },
-    "%lld%%" : {
-      "localizations" : {
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld%%"
-          }
-        }
-      }
-    },
     "+%lld" : {
       "shouldTranslate" : false
     },
@@ -210,7 +200,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "啟用提醒"
+            "value" : "已啟用提醒"
           }
         }
       }
@@ -783,7 +773,7 @@
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "本月訂閱金額"
           }
         }
@@ -1059,22 +1049,22 @@
         }
       }
     },
+    "Next Billing Date: %@" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下一次扣款日: %@"
+          }
+        }
+      }
+    },
     "Next Payment" : {
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "下一次付款"
-          }
-        }
-      }
-    },
-    "Next: %@" : {
-      "localizations" : {
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "下一次: %@"
           }
         }
       }
@@ -1100,7 +1090,14 @@
       }
     },
     "No scheduled notifications" : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前沒有排程通知"
+          }
+        }
+      }
     },
     "No Subscriptions" : {
       "localizations" : {

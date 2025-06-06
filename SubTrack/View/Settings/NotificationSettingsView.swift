@@ -205,7 +205,7 @@ struct NotificationRow: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(subscription.name)
                         .font(.body)
-                    Text("Next: \(subscription.nextBillingDate.formatted(date: .abbreviated, time: .omitted))")
+                    Text("Next Billing Date: \(subscription.nextBillingDate.formatted(date: .abbreviated, time: .omitted))")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }

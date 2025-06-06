@@ -442,7 +442,7 @@ struct CategoryBreakdownChart: View {
                     .foregroundStyle(chartColors[index % chartColors.count])
                     .annotation(position: .overlay) {
                         if item.percentage >= 10 {
-                            Text("\(Int(NSDecimalNumber(decimal: item.percentage).intValue))%")
+                            Text("\(item.percentage.rounding(to: 0, mode: .plain))%")
                                 .font(.caption)
                                 .fontWeight(.bold)
                                 .foregroundStyle(.white)
