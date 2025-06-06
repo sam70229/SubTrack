@@ -247,6 +247,7 @@ struct AddSubscriptionView: View {
                 }.foregroundColor(.secondary)
             }
             .buttonStyle(.plain)
+
 //            Picker("icon", selection: $icon) {
 //                ForEach(IconOption.defaultIconOptions, id: \.image) { icon in
 //                    HStack {
@@ -361,6 +362,15 @@ struct AddSubscriptionView: View {
         
         do {
             try repository?.addSubscription(subscription)
+            
+            // Notification
+            if subscription.isNotificationEnabled {
+                Task {
+                    
+                    await subscription.scheduleNotifications()
+                }
+            }
+            
             isLoading = false
             dismiss()
         } catch {

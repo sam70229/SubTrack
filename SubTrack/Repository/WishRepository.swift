@@ -2,333 +2,366 @@
 //  WishRepository.swift
 //  SubTrack
 //
-//  Created by Sam on 2025/4/9.
-//
-//
-//  Data will be like
-//
-//      {
-//          deviceID: {
-//              "createdAt":
-//          }
-//          wishes:
-//              {WishID}
-//                  title:
-//                  cotent:
-//                  createdAt:
-//                  voteCount:
-//          votes:
-//              {WishID}:
-//                  voters:
-//                      {DeviceID}:
-//                          createdAt:
-//              {WishID}:
-//                  voters:
-//                      {DeviceID}:
-//                          createdAt
-//      }
+//  Created by Sam on 2025/5/27.
 //
 import SwiftUI
-import Firebase
-import FirebaseFirestore
-import FirebaseFunctions
-
-
-struct VoteResult {
-    let hasVoted: Bool
-    let newVoteCount: Int
-}
-
-enum WishError: Error {
-    case unauthorized
-    case notFound
-    case serverError(String)
-    
-    var localizedDescription: String {
-        switch self {
-        case .unauthorized:
-            return "You don't have permission to perform this action"
-        case .notFound:
-            return "The requested wish could not be found"
-        case .serverError(let message):
-            return "Server error: \(message)"
-        }
-    }
-}
-
+import Supabase
+import Realtime
 
 class WishRepository: ObservableObject {
     @Published var wishes: [Wish] = []
     @Published var errorMessage: String?
+    @Published var isLoading: Bool = false
     
-    private let db = Firestore.firestore()
-    private let functions = Functions.functions()
-    private let wishCollection = "wishes"
-    private let voteCollection = "votes"
+    private let supabase = SupabaseService.shared.client
+    private var realtimeChannel: RealtimeChannelV2?
+    private var currentDeviceId: String = ""
     
+    deinit {
+        unsubscribeFromRealtime()
+    }
+    
+    // MARK: - Fetch Wishes
     func fetchWishes(deviceID: String) {
-        db.collection(wishCollection)
-            .order(by: "createdAt", descending: true)
-            .addSnapshotListener { [weak self] snapshot, error in
-                guard let self = self, let documents = snapshot?.documents else {
-                    return
-                }
-                
-                var newWishes: [Wish] = []
-                let group = DispatchGroup()
-                
-                for document in documents {
-                    group.enter()
-                    let data = document.data()
-                    let wishId = document.documentID
-                    
-                    let title = data["title"] as? String ?? "Untitled"
-                    let createdAt = data["createdAt"] as? Date ?? Date()
-                    let content = data["content"] as? String ?? "no content"
-                    let voteCount = data["voteCount"] as? Int ?? 0
-                    let createdBy = data["createdBy"] as? String ?? "Anonymous"
-                    
-                    var wish = Wish(id: wishId, title: title, content: content, createdAt: createdAt, voteCount: voteCount, createdBy: createdBy)
-                    
-                    // Check if this device has voted for this wish
-                    self.checkVoted(for: wish, deviceID: deviceID) { hasVoted in
-                        wish.voted = hasVoted
-                        newWishes.append(wish)
-                        group.leave()
-                    }
-                }
-                
-                group.notify(queue: .main) {
-                    newWishes.sort { $0.createdAt.timeIntervalSince1970 < $1.createdAt.timeIntervalSince1970 }
-                    self.wishes = newWishes
-                }
-            }
+        currentDeviceId = deviceID
+
+        Task {
+            await fetchWishesAsync(deviceID: deviceID)
+            await subscribeToRealtime(deviceID: deviceID)
+            
+        }
     }
     
+    @MainActor
+    private func fetchWishesAsync(deviceID: String) async {
+        isLoading = true
+        defer { isLoading = false }
+        
+        do {
+            // Fetch wishes with vote status for current device
+            let wishes: [Wish] = try await supabase
+                .from("wishes")
+                .select("*")
+                .order("created_at", ascending: false)
+                .execute()
+                .value
+            
+            let votes: [Vote] = try await supabase
+                .from("votes")
+                .select("*")
+                .eq("device_id", value: deviceID)
+                .execute()
+                .value
+            
+            let votedWishIds = Set(votes.map { $0.wishId })
+            
+            // Convert to your Wish model
+            self.wishes = wishes.map { wish in
+                Wish(
+                    id: wish.id,
+                    title: wish.title,
+                    content: wish.content,
+                    createdAt: wish.createdAt,
+                    voteCount: wish.voteCount,
+                    voted: votedWishIds.contains(wish.id),
+                    createdBy: wish.createdBy
+                )
+            }
+        } catch {
+            self.errorMessage = "Failed to fetch wishes: \(error.localizedDescription)"
+        }
+    }
+    
+    // MARK: - Add Wish
     func addWish(title: String, content: String?, deviceId: String) {
-        let newWish: [String: Any] = [
-            "title": title,
-            "content": content ?? "",
-            "createdAt": FieldValue.serverTimestamp(),
-            "voteCount": 0,
-            "createdBy": deviceId,
-        ]
-        
-        db.collection(wishCollection).addDocument(data: newWish) { error in
-            if let error = error {
-                self.errorMessage = "Failed to add wish: \(error.localizedDescription)"
-            }
+        Task {
+            await addWishAsync(title: title, content: content, deviceId: deviceId)
         }
     }
     
-    func vote(for wish: Wish, deviceID: String, completion: @escaping(Result<VoteResult, WishError>) -> Void = { _ in}) {
-        let voteFunction = functions.httpsCallable("voteForWish")
-        
-        voteFunction.call(["wishId": wish.id, "deviceId": deviceID]) { [weak self] result, error in
-            guard let self = self else { return }
+    @MainActor
+    private func addWishAsync(title: String, content: String?, deviceId: String) async {
+        do {
+            let newWish = [
+                "title": title,
+                "content": content ?? "",
+                "created_by": deviceId
+            ]
             
-            if let error = error as NSError? {
-                let message = error.localizedDescription
-                self.errorMessage = "Failed to vote: \(message)"
+            let response: Wish = try await supabase
+                .from("wishes")
+                .insert(newWish)
+                .select()
+                .single()
+                .execute()
+                .value
+            
+            // Add to local array immediately
+            let wish = Wish(
+                id: response.id,
+                title: response.title,
+                content: response.content,
+                createdAt: response.createdAt,
+                voteCount: response.voteCount,
+                createdBy: response.createdBy
+            )
+            
+            wishes.insert(wish, at: 0)
+        } catch {
+            self.errorMessage = "Failed to add wish: \(error.localizedDescription)"
+        }
+    }
+    
+    // MARK: - Vote
+    func vote(for wish: Wish, deviceID: String) {
+        Task {
+            await voteAsync(for: wish, deviceID: deviceID)
+        }
+    }
+    
+    @MainActor
+    private func voteAsync(for wish: Wish, deviceID: String) async {
+        do {
+            // Call the toggle_vote function
+            let _ = try await supabase
+                .rpc("toggle_vote", params: [
+                    "p_wish_id": wish.id.uuidString,
+                    "p_device_id": deviceID
+                ])
+                .execute()
+            
+            // Update local state immediately
+            if let index = wishes.firstIndex(where: { $0.id == wish.id }) {
+                var updatedWish = wishes[index]
+                updatedWish.voted.toggle()
+                updatedWish.voteCount = updatedWish.voted ?
+                updatedWish.voteCount + 1 :
+                max(0, updatedWish.voteCount - 1)
+                wishes[index] = updatedWish
+            }
+        } catch {
+            self.errorMessage = "Failed to vote: \(error.localizedDescription)"
+        }
+    }
+    
+    // MARK: - Delete Wish
+    func deleteWish(wishId: String, completion: @escaping (Error?) -> Void) {
+        Task {
+            do {
+                try await supabase
+                    .from("wishes")
+                    .delete()
+                    .eq("id", value: wishId)
+                    .execute()
                 
-                if error.domain == FunctionsErrorDomain {
-                    switch error.code {
-                    case FunctionsErrorCode.notFound.rawValue:
-                        completion(.failure(.notFound))
-                    case FunctionsErrorCode.permissionDenied.hashValue:
-                        completion(.failure(.unauthorized))
-                    default:
-                        completion(.failure(.serverError(message)))
-                    }
-                } else {
-                    completion(.failure(.serverError(message)))
+                // Remove from local array
+                await MainActor.run {
+                    wishes.removeAll { $0.id.uuidString == wishId }
+                    completion(nil)
                 }
-                return
-            }
-            
-            guard let data = result?.data as? [String: Any],
-                  let success = data["success"] as? Bool,
-                  success,
-                  let hasVoted = data["hasVoted"] as? Bool,
-                  let newVoteCount = data["newVoteCount"] as? Int else {
-                self.errorMessage = "Invalid response from server"
-                completion(.failure(.serverError("Invalid response from server")))
-                return
-            }
-            
-            // Update local wish array immediately for better UX
-            DispatchQueue.main.async {
-                if let index = self.wishes.firstIndex(where: { $0.id == wish.id }) {
-                    var updatedWish = self.wishes[index]
-                    updatedWish.voted = hasVoted
-                    updatedWish.voteCount = newVoteCount
-                    self.wishes[index] = updatedWish
+            } catch {
+                await MainActor.run {
+                    self.errorMessage = "Failed to delete wish: \(error.localizedDescription)"
+                    completion(error)
                 }
             }
-            
-            completion(.success(VoteResult(hasVoted: hasVoted, newVoteCount: newVoteCount)))
-        }
-        
-        // OLD ONe
-        //        let voteRef = db.collection(voteCollection).document(wish.id).collection("voters").document(deviceID)
-        //        let wishRef = db.collection(wishCollection).document(wish.id)
-        //
-        //        db.runTransaction({ (transaction, errorPointer) -> Any? in
-        //            let voteSnapshot: DocumentSnapshot
-        //            let wishSnapshot: DocumentSnapshot
-        //            do {
-        //                try voteSnapshot = transaction.getDocument(voteRef)
-        //                try wishSnapshot = transaction.getDocument(wishRef)
-        //
-        //                if voteSnapshot.exists {
-        //                    transaction.deleteDocument(voteRef)
-        //
-        //                    let currentCount = wishSnapshot.data()?["voteCount"] as? Int ?? 0
-        //                    transaction.updateData(["voteCount": max(0, currentCount - 1)], forDocument: wishRef)
-        //                    return false
-        //                } else {
-        //                    transaction.setData(["createdAt": FieldValue.serverTimestamp()], forDocument: voteRef)
-        //
-        //                    let currentCount = wishSnapshot.data()?["voteCount"] as? Int ?? 0
-        //                    transaction.updateData(["voteCount": currentCount + 1], forDocument: wishRef)
-        //
-        //                    return true
-        //                }
-        //            } catch {
-        //                return nil
-        //            }
-        //        }) { [weak self] (result, error) in
-        //            guard let self = self else { return }
-        //
-        //            if let error = error {
-        //                self.errorMessage = error.localizedDescription
-        //            } else if let didVote = result as? Bool {
-        //                // Immediately update the local wish array
-        //                DispatchQueue.main.async {
-        //                    if let index = self.wishes.firstIndex(where: { $0.id == wish.id }) {
-        //
-        //                        var updatedWish = self.wishes[index]
-        //                        updatedWish.voted = didVote
-        //                        updatedWish.voteCount = didVote ?
-        //                            updatedWish.voteCount + 1 :
-        //                            max(0, updatedWish.voteCount - 1)
-        //
-        //                        // Replace the old wish with the updated one
-        //                        self.wishes[index] = updatedWish
-        //                    }
-        //                }
-        //            }
-        //        }
-    }
-    
-    func checkVoted(for wish: Wish, deviceID: String, completion: @escaping(Bool) -> Void) {
-        let voteRef = db.collection(voteCollection)
-            .document(wish.id)
-            .collection("voters")
-            .document(deviceID)
-        
-        voteRef.getDocument { (document, error) in
-            let hasVoted = document?.exists ?? false
-            completion(hasVoted)
         }
     }
     
-    func deleteWish(wishId: String, requestingDeviceId: String, completion: @escaping (Result<Void, WishError>) -> Void) {
-        let deleteFunction = functions.httpsCallable("deleteWish")
-        
-        deleteFunction.call([
-            "wishId": wishId,
-            "deviceId": requestingDeviceId
-        ]) { [weak self] result, error in
-            guard let self = self else { return }
-            
-            if let error = error as NSError? {
-                let message = error.localizedDescription
-                self.errorMessage = "Failed to delete wish: \(message)"
+    // MARK: - Update Wish
+    func updateWish(wishId: String, title: String, content: String, completion: @escaping (Error?) -> Void) {
+        Task {
+            do {
+                let updates = [
+                    "title": title,
+                    "content": content
+                ]
                 
-                // Handle specific Firebase Function errors
-                if error.domain == FunctionsErrorDomain {
-                    switch error.code {
-                    case FunctionsErrorCode.notFound.rawValue:
-                        completion(.failure(.notFound))
-                    case FunctionsErrorCode.permissionDenied.rawValue:
-                        completion(.failure(.unauthorized))
-                    default:
-                        completion(.failure(.serverError(message)))
+                try await supabase
+                    .from("wishes")
+                    .update(updates)
+                    .eq("id", value: wishId)
+                    .execute()
+                
+                // Update local array
+                await MainActor.run {
+                    if let index = self.wishes.firstIndex(where: { $0.id.uuidString == wishId }) {
+                        var updatedWish = self.wishes[index]
+                        updatedWish.title = title
+                        updatedWish.content = content
+                        self.wishes[index] = updatedWish
                     }
-                } else {
-                    completion(.failure(.serverError(message)))
+                    completion(nil)
                 }
-                return
+            } catch {
+                await MainActor.run {
+                    self.errorMessage = "Failed to update wish: \(error.localizedDescription)"
+                    completion(error)
+                }
             }
-            
-            guard let data = result?.data as? [String: Any],
-                  let success = data["success"] as? Bool,
-                  success else {
-                self.errorMessage = "Invalid response from server"
-                completion(.failure(.serverError("Invalid response from server")))
-                return
-            }
-            
-            // Remove from local array if successful
-            DispatchQueue.main.async {
-                self.wishes.removeAll { $0.id == wishId }
-            }
-            
-            completion(.success(()))
         }
     }
     
-    func updateWish(wishId: String, title: String, content: String, requestingDeviceId: String, completion: @escaping (Result<Void, WishError>) -> Void) {
-        let updateFunction = functions.httpsCallable("updateWish")
+    // MARK: - Realtime Subscription
+    private func subscribeToRealtime(deviceID: String) async {
+        guard realtimeChannel == nil else { return }
         
-        updateFunction.call([
-            "wishId": wishId,
-            "deviceId": requestingDeviceId,
-            "title": title,
-            "content": content
-        ]) { [weak self] result, error in
-            guard let self = self else { return }
-            
-            if let error = error as NSError? {
-                let message = error.localizedDescription
-                self.errorMessage = "Failed to update wish: \(message)"
-                
-                // Handle specific Firebase Function errors
-                if error.domain == FunctionsErrorDomain {
-                    switch error.code {
-                    case FunctionsErrorCode.notFound.rawValue:
-                        completion(.failure(.notFound))
-                    case FunctionsErrorCode.permissionDenied.rawValue:
-                        completion(.failure(.unauthorized))
-                    default:
-                        completion(.failure(.serverError(message)))
+        realtimeChannel = supabase.realtimeV2.channel("supabase_realtime")
+        
+        let wishStream = realtimeChannel?.postgresChange(AnyAction.self, schema: "public", table: "wishes")
+
+        // TODO: - Make sure we need this in future
+//        let voteStream = realtimeChannel?.postgresChange(AnyAction.self, schema: "public", table: "votes")
+        
+        await realtimeChannel?.subscribe()
+        
+        for await change in wishStream! {
+            switch change {
+            case .delete(let action):
+                Task {
+                    if let id = action.oldRecord["id"]?.value as? String {
+                        wishes.removeAll(where: { $0.id.uuidString == id.uppercased() })
                     }
-                } else {
-                    completion(.failure(.serverError(message)))
                 }
-                return
-            }
-            
-            guard let data = result?.data as? [String: Any],
-                  let success = data["success"] as? Bool,
-                  success else {
-                self.errorMessage = "Invalid response from server"
-                completion(.failure(.serverError("Invalid response from server")))
-                return
-            }
-            
-            // Update local array if successful
-            DispatchQueue.main.async {
-                if let index = self.wishes.firstIndex(where: { $0.id == wishId }) {
-                    var updatedWish = self.wishes[index]
-                    updatedWish.title = title
-                    updatedWish.content = content
-                    self.wishes[index] = updatedWish
+            case .insert(let action):
+                Task {
+                    if let id = action.record["id"]?.value as? String,
+                       let title = action.record["title"]?.value as? String,
+                       let content = action.record["content"]?.value as? String,
+                       let vote_count = action.record["vote_count"]?.value as? Int,
+                       let created_by = action.record["created_by"]?.value as? String,
+                       let created_at = action.record["created_at"]?.value as? String {
+                        let formatter = ISO8601DateFormatter()
+                        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+                        
+                        let wish = Wish(
+                            id: UUID(uuidString: id)!,
+                            title: title,
+                            content: content,
+                            createdAt: formatter.date(from: created_at)!,
+                            voteCount: vote_count,
+                            createdBy: created_by
+                        )
+                        
+                        await handleNewWish(wish, deviceID: deviceID)
+                    }
+                }
+            case .update(let action):
+                Task {
+                    if let id = action.record["id"]?.value as? String,
+                       let title = action.record["title"]?.value as? String,
+                       let content = action.record["content"]?.value as? String,
+                       let vote_count = action.record["vote_count"]?.value as? Int,
+                       let created_by = action.record["created_by"]?.value as? String,
+                       let created_at = action.record["created_at"]?.value as? String {
+                        let formatter = ISO8601DateFormatter()
+                        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+                        
+                        let wish = Wish(
+                            id: UUID(uuidString: id)!,
+                            title: title,
+                            content: content,
+                            createdAt: formatter.date(from: created_at)!,
+                            voteCount: vote_count,
+                            createdBy: created_by
+                        )
+                        
+                        await handleUpdatedWish(wish, deviceID: deviceID)
+                    }
                 }
             }
+  
+            // TODO: - Make sure we need this in future
+//            for await change in voteStream! {
+//                switch change {
+//                case .delete(let action): print("Deleted vote: \(action.oldRecord)")
+//                case .insert(let action): print("Inserted vote: \(action.record)")
+//                case .update(let action): print("Updated vote: \(action.oldRecord) with \(action.record)")
+//                }
+//            }
+        }
+    }
+    
+    @MainActor
+    private func handleNewWish(_ wish: Wish, deviceID: String) async {
+        // Check if wish already exists locally
+        guard !wishes.contains(where: { $0.id == wish.id }) else { return }
+        
+        // Check if user has voted
+        let hasVoted = await checkIfVoted(wishId: wish.id, deviceID: deviceID)
+        
+        let wish = Wish(
+            id: wish.id,
+            title: wish.title,
+            content: wish.content,
+            createdAt: wish.createdAt,
+            voteCount: wish.voteCount,
+            voted: hasVoted,
+            createdBy: wish.createdBy
+        )
+        
+        wishes.insert(wish, at: 0)
+    }
+    
+    @MainActor
+    private func handleUpdatedWish(_ wish: Wish, deviceID: String) async {
+        guard let index = wishes.firstIndex(where: { $0.id == wish.id }) else { return }
+        
+        var updatedWish = wishes[index]
+        updatedWish.title = wish.title
+        updatedWish.content = wish.content
+        updatedWish.voteCount = wish.voteCount
+        
+        wishes[index] = updatedWish
+    }
+    
+    private func checkIfVoted(wishId: UUID, deviceID: String) async -> Bool {
+        do {
+            let response: [Vote] = try await supabase
+                .from("votes")
+                .select()
+                .eq("wish_id", value: wishId.uuidString)
+                .eq("device_id", value: deviceID)
+                .execute()
+                .value
             
-            completion(.success(()))
+            return !response.isEmpty
+        } catch {
+            return false
+        }
+    }
+    
+    private func unsubscribeFromRealtime() {        
+        guard realtimeChannel != nil else { return }
+        Task {
+            await realtimeChannel?.unsubscribe()
+            realtimeChannel = nil
+        }
+    }
+    
+    // Helper methods for vote changes
+    @MainActor
+    private func handleVoteAdded(_ vote: Vote, deviceID: String) async {
+        if let index = wishes.firstIndex(where: { $0.id == vote.wishId }) {
+            var updatedWish = wishes[index]
+            updatedWish.voteCount += 1
+            if vote.deviceId == deviceID {
+                updatedWish.voted = true
+            }
+            wishes[index] = updatedWish
+        }
+    }
+    
+    @MainActor
+    private func handleVoteRemoved(_ vote: Vote, deviceID: String) async {
+        if let index = wishes.firstIndex(where: { $0.id == vote.wishId }) {
+            var updatedWish = wishes[index]
+            updatedWish.voteCount = max(0, updatedWish.voteCount - 1)
+            if vote.deviceId == deviceID {
+                updatedWish.voted = false
+            }
+            wishes[index] = updatedWish
         }
     }
 }
+

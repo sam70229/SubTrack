@@ -27,6 +27,11 @@ class WishViewModel: ObservableObject {
         repository.$errorMessage
             .receive(on: RunLoop.main)
             .assign(to: &$errorMessage)
+        
+        // Bind repository loading state
+        repository.$isLoading
+            .receive(on: RunLoop.main)
+            .assign(to: &$isLoading)
     }
     
     func fetchWishes(deviceID: String) {
@@ -45,34 +50,26 @@ class WishViewModel: ObservableObject {
     }
     
     func vote(for wish: Wish, deviceID: String) {
-        isLoading = true
-        repository.vote(for: wish, deviceID: deviceID) { [weak self] result in
-            DispatchQueue.main.async {
-                self?.isLoading = false
-                switch result {
-                case .success(let voteResult):
-                    self?.errorMessage = nil
-                case .failure(let error):
-                    self?.errorMessage = error.localizedDescription
-                }
-            }
-        }
+        repository.vote(for: wish, deviceID: deviceID)
     }
     
     func deleteWish(_ wish: Wish, completion: @escaping (Bool) -> Void) {
-        isLoading = true
-        repository.deleteWish(wishId: wish.id, requestingDeviceId: deviceId) { [weak self] result in
+        guard canModify(wish) else {
+            errorMessage = "You can only delete your own wishes"
+            completion(false)
+            return
+        }
+        
+        repository.deleteWish(wishId: wish.id.uuidString, completion: { [weak self] error in
             DispatchQueue.main.async {
-                self?.isLoading = false
-                switch result {
-                case .success:
-                    completion(true)
-                case .failure(let error):
+                if let error = error {
                     self?.errorMessage = error.localizedDescription
                     completion(false)
+                } else {
+                    completion(true)
                 }
             }
-        }
+        })
     }
     
     func updateWish(_ wish: Wish, title: String, content: String, completion: @escaping (Bool) -> Void) {
@@ -82,24 +79,27 @@ class WishViewModel: ObservableObject {
             return
         }
         
-        isLoading = true
+        guard canModify(wish) else {
+            errorMessage = "You can only update your own wishes"
+            completion(false)
+            return
+        }
+        
         repository.updateWish(
-            wishId: wish.id,
+            wishId: wish.id.uuidString,
             title: title,
             content: content,
-            requestingDeviceId: deviceId
-        ) { [weak self] result in
-            DispatchQueue.main.async {
-                self?.isLoading = false
-                switch result {
-                case .success:
-                    completion(true)
-                case .failure(let error):
-                    self?.errorMessage = error.localizedDescription
-                    completion(false)
+            completion: { [weak self] error in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        self?.errorMessage = error.localizedDescription
+                        completion(false)
+                    } else {
+                        completion(true)
+                    }
                 }
             }
-        }
+        )
     }
     
     func setDeviceId(_ deviceId: String) {

@@ -25,10 +25,6 @@ struct NewCalendarView: View {
     @State private var previousMonth: Date = Date()
     @State private var nextMonth: Date = Date()
     
-    
-    // Add state to control animation of header components
-    @State private var isTransitioning = false
-    
     var body: some View {
         ZStack(alignment: .top) {
             VStack(spacing: 0) {
@@ -48,11 +44,6 @@ struct NewCalendarView: View {
                 
                 ZStack {
                     monthGridContainer
-//                    if calendarState.isLoading {
-//                        ProgressView()
-//                    } else {
-//                        monthGridContainer
-//                    }
                 }
                 .frame(maxHeight: .infinity)
             }
@@ -63,7 +54,9 @@ struct NewCalendarView: View {
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
                 Button {
-                    calendarState.toggleViewType()
+                    withAnimation {
+                        calendarState.toggleViewType()
+                    }
                 } label: {
                     Image(systemName: calendarState.viewType == .standard ? "list.bullet.below.rectangle" : "list.dash.header.rectangle")
                 }
@@ -95,25 +88,12 @@ struct NewCalendarView: View {
                 await calendarState.loadCalendarDates(with: subscriptions)
             }
         }
-        // Synchronize header animations with month changes
-        .onChange(of: calendarState.selectedMonth) { _, _ in
-            withAnimation(.easeInOut(duration: 0.3)) {
-                isTransitioning = true
-            }
-            
-            // After a short delay, complete the transition
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    isTransitioning = false
-                }
-            }
-        }
     }
     
     private var monthSelectorView: some View {
         HStack {
             Button{
-                withAnimation(.easeInOut(duration: 0.3)) {
+                withAnimation {
                     calendarState.goToPreviousMonth()
                 }
             } label: {
@@ -128,7 +108,7 @@ struct NewCalendarView: View {
             Spacer()
             
             Button {
-                withAnimation(.easeInOut(duration: 0.3)) {
+                withAnimation {
                     calendarState.goToNextMonth()
                 }
             } label: {
@@ -152,9 +132,7 @@ struct NewCalendarView: View {
         GeometryReader { geometry in
             CalendarContainerView(selectedMonth: $calendarState.selectedMonth) { monthDate in
                 monthView(for: monthDate, geometry: geometry)
-                    .transition(.slide)
             }
-            .animation(.easeInOut, value: calendarState.viewType)
         }
         .frame(maxHeight: .infinity)
     }
@@ -170,8 +148,6 @@ struct NewCalendarView: View {
                     dates: monthDates,
                     onDateTap: calendarState.selectDate
                 )
-                .transition(.opacity) // Add a fade transition
-                
             } else {
                 CompactCalendarGrid(
                     selectedDate: $calendarState.selectedDate,
@@ -179,9 +155,9 @@ struct NewCalendarView: View {
                     dates: monthDates,
                     onDateTap: calendarState.selectDate,
                 )
-                .transition(.opacity) // Add a fade transition
             }
         }
+        .transition(.opacity)
         .padding(.horizontal)
         .frame(height: geometry.size.height)
     }

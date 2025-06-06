@@ -50,7 +50,7 @@ struct WishView: View {
 
 
 #Preview {
-    let uuid = UUID().uuidString
-    let wish = Wish(id: uuid, title: "Test Wish", content: "Test Content", createdAt: Date(), voteCount: 0, createdBy: uuid)
+    let uuid = UUID()
+    let wish = Wish(id: uuid, title: "Test Wish", content: "Test Content", createdAt: Date(), voteCount: 0, createdBy: uuid.uuidString)
     WishView(wish: wish)
 }

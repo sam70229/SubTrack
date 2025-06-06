@@ -5,6 +5,7 @@
 //  Created by Sam on 2025/5/9.
 //
 import Foundation
+import SwiftData
 
 extension SchemaV1.Subscription {
     // Format price with the subscription's own currency
@@ -113,4 +114,42 @@ extension SchemaV1.Subscription {
         // Generate any new billing records with the updated price
         generateBillingHistory()
     }
+    
+    // MARK: - Notification Management
+    var isNotificationEnabled: Bool {
+        get {
+            UserDefaults.standard.bool(forKey: "notification_\(id.uuidString)")
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "notification_\(id.uuidString)")
+        }
+    }
+    
+    var notificationTiming: NotificationDate {
+        get {
+            let rawValue = UserDefaults.standard.integer(forKey: "notification_timing_\(id.uuidString)")
+            return NotificationDate(rawValue: rawValue) ?? .three_day_before
+        }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: "notification_timing_\(id.uuidString)")
+        }
+    }
+    
+    // Helper method to schedule notifications
+       func scheduleNotifications() async {
+           guard isNotificationEnabled else {
+               // Cancel any existing notifications if disabled
+               await NotificationService.shared.cancelNotifications(for: self)
+               return
+           }
+           
+           do {
+               try await NotificationService.shared.scheduleNotification(
+                   for: self,
+                   reminderOption: notificationTiming
+               )
+           } catch {
+               print("Failed to schedule notification for \(name): \(error)")
+           }
+       }
 }

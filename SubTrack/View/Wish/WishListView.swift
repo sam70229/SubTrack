@@ -21,37 +21,14 @@ struct WishListView: View {
                 GridItem(.flexible(), spacing: 8)
             ], spacing: 8) {
                 let myWishes = viewModel.wishes.filter { $0.createdBy == appSettings.deviceID}
+                let otherWishes = viewModel.wishes.filter { $0.createdBy != appSettings.deviceID}
+
                 if myWishes.count > 0 {
-                    Section {
-                        ForEach(myWishes) { wish in
-                            NavigationLink {
-                                WishDetailView(wish: wish, viewModel: viewModel)
-                            } label: {
-                                WishView(wish: wish)
-                                    .padding()
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                        }
-                    } header: {
-                        Text("My Wishes")
-                            .font(.subheadline)
-                    }
+                    myWishList(wishList: myWishes)
                 }
-                
-                Section {
-                    ForEach(viewModel.wishes.filter { $0.createdBy != appSettings.deviceID }) { wish in
-                        NavigationLink {
-                            WishDetailView(wish: wish, viewModel: viewModel)
-                        } label: {
-                            WishView(wish: wish)
-                                .padding(8)
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                    }
-                } header: {
-                    Text("Other Wishes")
-                        .font(.subheadline)
-                }
+
+                othersWishList(wishList: otherWishes)
+
             }
         }
         .refreshable {
@@ -75,6 +52,28 @@ struct WishListView: View {
         .sheet(isPresented: $showTutorial) {
             WishListTutorialView()
         }
+        .alert("Error", isPresented: Binding<Bool>(
+            get: { viewModel.errorMessage != nil },
+            set: { _ in viewModel.clearError() }
+        )) {
+            Button("OK") {
+                viewModel.clearError()
+            }
+        } message: {
+            Text(viewModel.errorMessage ?? "An unknown error occurred")
+        }
+        // Add loading overlay
+        .overlay {
+            if viewModel.isLoading {
+                Color.black.opacity(0.3)
+                    .ignoresSafeArea()
+                    .overlay {
+                        ProgressView()
+                            .scaleEffect(1.5)
+                            .tint(.white)
+                    }
+            }
+        }
         .onAppear {
             viewModel.fetchWishes(deviceID: appSettings.deviceID)
             
@@ -83,6 +82,40 @@ struct WishListView: View {
                 showTutorial = true
                 appSettings.hasSeenWishTutorial = true
             }
+        }
+    }
+    
+    private func myWishList(wishList: [Wish]) -> some View {
+        Section {
+            ForEach(wishList) { wish in
+                NavigationLink {
+                    WishDetailView(wish: wish, viewModel: viewModel)
+                } label: {
+                    WishView(wish: wish)
+                        .padding(8)
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+        } header: {
+            Text("My Wishes")
+                .font(.subheadline)
+        }
+    }
+    
+    private func othersWishList(wishList: [Wish]) -> some View {
+        Section {
+            ForEach(wishList) { wish in
+                NavigationLink {
+                    WishDetailView(wish: wish, viewModel: viewModel)
+                } label: {
+                    WishView(wish: wish)
+                        .padding(8)
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+        } header: {
+            Text("Other Wishes")
+                .font(.subheadline)
         }
     }
 }

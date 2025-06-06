@@ -41,7 +41,6 @@ struct MainView: View {
     
     var body: some View {
         Group {
-            let _ = print("DeviceID = \(appSettings.deviceID)")
             TabView(selection: $tabSelection) {
                 ForEach(appSettings.enabledTabs.filter(\.isEnabled)) { tab in
                     Tab(LocalizedStringKey(tab.title), systemImage: tab.icon, value: tab.id) {
@@ -53,6 +52,13 @@ struct MainView: View {
             .onAppear {
                 self.calendarViewType = appSettings.defaultCalendarView
                 self.tabSelection = appSettings.defaultTab
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .openSubscriptionDetail)) { notification in
+                if let subscriptionId = notification.userInfo?["subscriptionId"] as? String,
+                   let uuid = UUID(uuidString: subscriptionId) {
+                    // Navigate to subscription detail
+                    // You'll need to implement navigation logic based on your app structure
+                }
             }
         }
     }

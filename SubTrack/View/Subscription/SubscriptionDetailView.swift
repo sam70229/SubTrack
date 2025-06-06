@@ -15,10 +15,19 @@ struct SubscriptionDetailView: View {
     @Environment(\.presentationMode) var presentationMode
     
     var subscription: Subscription
+    
+    // Add these computed properties to SubscriptionDetailView:
+    private var daysUntilNextPayment: Int {
+        Calendar.current.dateComponents([.day], from: Date(), to: subscription.nextBillingDate).day ?? 0
+    }
+
+    // Add this @State property at the top of SubscriptionDetailView:
+    @State private var scheduledNotificationsCount: Int?
+    
     @State private var subscriptionRepository: SubscriptionRepository?
     @State private var categoryRepository: CategoryRepository?
     
-    @State private var isEnabledNotification: Bool = false
+    @State private var isNotificationEnabled: Bool = false
     @State private var selectedReminder: NotificationDate = .one_day_before
     @State private var categoryName: String = "None"
     @State private var showDeleteConfirmation: Bool = false
@@ -32,8 +41,7 @@ struct SubscriptionDetailView: View {
 
             subscriptionDetailsInfoSection
 
-            // TODO: - Support notifications before payment day
-//            notificationSettingsSection
+            notificationSettingsSection
             
             priceInfoSection
             
@@ -72,6 +80,12 @@ struct SubscriptionDetailView: View {
         .onAppear {
             subscriptionRepository = SubscriptionRepository(modelContext: modelContext)
             categoryRepository = CategoryRepository(modelContext: modelContext)
+            isNotificationEnabled = subscription.isNotificationEnabled
+            // Load notification count
+            Task {
+                let count = await NotificationService.shared.getScheduledNotificationsCount(for: subscription)
+                scheduledNotificationsCount = count
+            }
         }
     }
 
@@ -183,8 +197,8 @@ struct SubscriptionDetailView: View {
                 Text("Since First Payment")
                 Spacer()
                 VStack(alignment: .trailing) {
-                    Text(subscription.totalAmountTillToday(), format: .currency(code: subscription.currencyCode))
-                    Text(exchangeRates.convert(subscription.totalAmountTillToday(), from: subscription.currencyCode, to: appSettings.currencyCode) ?? subscription.totalAmountTillToday(), format: .currency(code: appSettings.currencyCode))
+                    Text(totalPaidSinceStart, format: .currency(code: subscription.currencyCode))
+                    Text(exchangeRates.convert(totalPaidSinceStart, from: subscription.currencyCode, to: appSettings.currencyCode) ?? subscription.totalAmountTillToday(), format: .currency(code: appSettings.currencyCode))
                 }
             }
             
@@ -199,34 +213,77 @@ struct SubscriptionDetailView: View {
 
     private var notificationSettingsSection: some View {
         Section {
-            Toggle(isOn: $isEnabledNotification) {
+            Toggle(isOn: Binding(
+                get: { subscription.isNotificationEnabled },
+                set: { newValue in
+                    withAnimation {
+                        isNotificationEnabled = newValue
+                        subscription.isNotificationEnabled = newValue
+                    }
+                }
+            )) {
                 Text("Reminder Notifications")
             }
-            if isEnabledNotification {
-                HStack {
-                    Text("Next Payment")
-                    Spacer()
-                    Text("3 days")
-                }
-                HStack {
-                    Picker(selection: $selectedReminder) {
-                        ForEach(NotificationDate.allCases) { option in
-                            Text(option.description).tag(option)
-                        }
-                    } label: {
-                        Text("Reminds me")
-                    } currentValueLabel: {
-                        Text("\(selectedReminder.description)")
-                    }
-                    .onChange(of: selectedReminder) { oldValue, newValue in
-                        // TODO: IMPLEMENT NOTIFICATION
-                        print(oldValue, newValue)
+            .onChange(of: subscription.isNotificationEnabled) { _, newValue in
+                Task {
+                    if newValue {
+                        await subscription.scheduleNotifications()
+                        let count = await NotificationService.shared.getScheduledNotificationsCount(for: subscription)
+                        scheduledNotificationsCount = count
+                    } else {
+                        await NotificationService.shared.cancelNotifications(for: subscription)
                     }
                 }
-                
+            }
+
+           if isNotificationEnabled {
+               Group {
+                   HStack {
+                       Text("Next Payment")
+                       Spacer()
+                       Text("\(daysUntilNextPayment) days")
+                           .foregroundStyle(.secondary)
+                   }
+                   
+                   Picker(selection: $selectedReminder) {
+                       ForEach(NotificationDate.allCases) { option in
+                           Text(LocalizedStringKey(option.description)).tag(option)
+                       }
+                   } label: {
+                       Text("Reminds me")
+                   } currentValueLabel: {
+                       Text(LocalizedStringKey(selectedReminder.description))
+                   }
+                   .pickerStyle(.navigationLink)
+                   
+                   // Show scheduled notifications count
+                   NavigationLink {
+                       NotificationListView(subscription: subscription)
+                   } label: {
+                       HStack {
+                           Text("Scheduled Reminders")
+                           
+                           Spacer()
+                           
+                           if let count = scheduledNotificationsCount {
+                               Text("\(count)")
+                                   .foregroundColor(.secondary)
+                           } else {
+                               ProgressView()
+                                   .scaleEffect(0.7)
+                           }
+                       }
+                   }
+                   .buttonStyle(.plain)
+               }
+               .transition(.slide)
             }
         } header: {
             Text("Notification Settings")
+        } footer: {
+            if subscription.isNotificationEnabled {
+                Text("You will receive a notification \(selectedReminder.description) before the next payment date.")
+            }
         }
     }
 
@@ -344,22 +401,22 @@ struct SubscriptionDetailView: View {
         
         // Calculate the number of complete billing cycles
         var cycles = 1
-        var currentDate = subscription.firstBillingDate
+        var billingDate = subscription.firstBillingDate
         
-        while currentDate <= today {
+        while billingDate <= today {
             cycles += 1
             
             // Get next billing date
-            guard let nextDate = calendar.date(byAdding: billingCycleComponent, value: billingCycleValue, to: currentDate) else {
+            guard let nextDate = calendar.date(byAdding: billingCycleComponent, value: billingCycleValue, to: billingDate) else {
                 break
             }
             
-            currentDate = nextDate
+            billingDate = nextDate
         }
         
         // If we're calculating from the start date and it's not
         // exactly aligned with billing cycles, subtract 1
-        if cycles > 0 && currentDate > today {
+        if cycles > 0 && billingDate > today {
             cycles -= 1
         }
         
@@ -412,11 +469,11 @@ enum NotificationDate: Int, CaseIterable, Identifiable {
     var description: String {
         switch self {
         case .one_day_before:
-            return "1 day before"
+            return String(localized: "1 day before")
         case .three_day_before:
-            return "3 days before"
+            return String(localized: "3 days before")
         case .one_week_before:
-            return "1 week before"
+            return String(localized: "1 week before")
         }
     }
 }

@@ -46,6 +46,12 @@ struct SettingsView: View {
                 } label: {
                     Label("Manage Credit Cards", systemImage: "creditcard")
                 }
+                
+                NavigationLink {
+                    NotificationSettingsView()
+                } label: {
+                    Label("Notifications", systemImage: "bell.badge")
+                }
             }
             
             Section {
@@ -134,6 +140,8 @@ struct SettingsView: View {
                 do {
                     try modelContext.delete(model: Subscription.self)
                     try modelContext.delete(model: Category.self)
+                    try modelContext.delete(model: BillingRecord.self)
+                    try modelContext.delete(model: CreditCard.self)
                 } catch {
                     showSystemAlert = true
                     errorMessage = "Failed to clear data: \(error)"

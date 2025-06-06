@@ -51,13 +51,11 @@ class CalendarState: ObservableObject {
     }
     
     func toggleViewType() {
-        withAnimation(.easeInOut) {
-            switch viewType {
-            case .standard:
-                viewType = .listBullet
-            case .listBullet:
-                viewType = .standard
-            }
+        switch viewType {
+        case .standard:
+            viewType = .listBullet
+        case .listBullet:
+            viewType = .standard
         }
     }
     
@@ -77,9 +75,7 @@ class CalendarState: ObservableObject {
     }
     
     func selectDate(_ date: CalendarDate) {
-        withAnimation {
-            selectedDate = date
-        }
+        selectedDate = date
     }
     
     // MARK: - Data Loading

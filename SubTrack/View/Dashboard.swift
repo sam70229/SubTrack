@@ -50,8 +50,6 @@ struct Dashboard: View {
             
             VStack(spacing: 20) {
                 
-                headerSection
-                
                 monthlyTotalCard
                 
                 upcomingSection
@@ -62,17 +60,7 @@ struct Dashboard: View {
             }
         }
         .background(Color(.systemGroupedBackground))
-    }
-    
-    private var headerSection: some View {
-        HStack {
-            Text(Date(), format: .dateTime.month(.wide).day())
-                .font(.title)
-                .bold()
-            
-            Spacer()
-        }
-        .padding(.horizontal)
+        .navigationTitle("\(Date(), format: .dateTime.month(.wide).day())")
     }
     
     private var monthlyTotalCard: some View {
@@ -99,7 +87,7 @@ struct Dashboard: View {
     
     private func metricView(title: String, value: String) -> some View {
         VStack(spacing: 4) {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(.caption)
                 .opacity(0.9)
             
@@ -262,7 +250,7 @@ private extension Dashboard {
         }
         
         func calculateTagBreakdown() -> [TagBreakdownItem] {
-            let uncategorizedTag = Tag(name: "Uncategorized")
+            let uncategorizedTag = Tag(name: String(localized: "Uncategorized"))
             var tagTotals: [Tag: Decimal] = [:]
             var totalCost: Decimal = 0
             
@@ -319,6 +307,7 @@ struct UpcomingSubscriptionsPager: View {
     let subscriptions: [Subscription]
     
     private let columnsPerPage = 4
+    private let rowsPerPage = 2
     private let columns = [GridItem(.flexible()), GridItem(.flexible())]
     
     private var pages: [[Subscription]] {
@@ -328,16 +317,32 @@ struct UpcomingSubscriptionsPager: View {
     var body: some View {
         TabView {
             ForEach(Array(pages.enumerated()), id: \.offset) { _, page in
-                LazyVGrid(columns: columns, spacing: 12) {
-                    ForEach(page, id: \.id) { subscription in
-                        SubscriptionShortItemView(subscription: subscription)
-                            .frame(height: 60)
+                VStack(spacing: 12) {
+                    ForEach(0..<rowsPerPage, id: \.self) { row in
+                        HStack(spacing: 12) {
+                            ForEach(0..<2, id: \.self) { col in
+                                let index = row * 2 + col
+                                if index < page.count {
+                                    NavigationLink {
+                                        SubscriptionDetailView(subscription: page[index])
+                                    } label: {
+                                        SubscriptionShortItemView(subscription: page[index])
+                                            .frame(height: 60)
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
+                                } else {
+                                    // Empty space to maintain alignment
+                                    Color.clear
+                                        .frame(height: 60)
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
         .frame(height: 140)
-        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .automatic))
+        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
         .cardBackground(cornerRadius: 16, shadowRadius: 3)
     }
 }
@@ -403,7 +408,7 @@ struct EmptyStateCard: View {
                 .font(.largeTitle)
                 .foregroundColor(.secondary)
             
-            Text(message)
+            Text(LocalizedStringKey(message))
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
         }
@@ -437,7 +442,7 @@ struct CategoryBreakdownChart: View {
                     .foregroundStyle(chartColors[index % chartColors.count])
                     .annotation(position: .overlay) {
                         if item.percentage >= 10 {
-                            Text("\(Int(NSDecimalNumber(decimal: item.percentage).intValue))%")
+                            Text("\(item.percentage.rounding(to: 0, mode: .plain))%")
                                 .font(.caption)
                                 .fontWeight(.bold)
                                 .foregroundStyle(.white)
