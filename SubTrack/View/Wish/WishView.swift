@@ -35,7 +35,7 @@ struct WishView: View {
         }
         .padding()
         .frame(height: 100)
-        .background(wish.voted ? Color.green : Color.gray)
+        .background(wish.voted ? Color.green.opacity(0.5) : Color.clear)
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .foregroundStyle(.primary)
     }
@@ -51,6 +51,6 @@ struct WishView: View {
 
 #Preview {
     let uuid = UUID()
-    let wish = Wish(id: uuid, title: "Test Wish", content: "Test Content", createdAt: Date(), voteCount: 0, createdBy: uuid.uuidString)
+    let wish = Wish(id: uuid, title: "Test Wish", content: "Test Content", createdAt: Date(), voteCount: 0, voted: true, createdBy: uuid.uuidString)
     WishView(wish: wish)
 }

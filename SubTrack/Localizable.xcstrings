@@ -1211,6 +1211,7 @@
       }
     },
     "Other Wishes" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {

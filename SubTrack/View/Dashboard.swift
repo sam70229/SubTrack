@@ -31,6 +31,8 @@ struct Dashboard: View {
     @EnvironmentObject private var appSettings: AppSettings
     @Query private var subscriptions: [Subscription]
     
+    @State private var showAddSubscription: Bool = false
+    
     private var metrics: DashboardMetrics {
         calculateMetrics()
     }
@@ -61,6 +63,19 @@ struct Dashboard: View {
         }
         .background(Color(.systemGroupedBackground))
         .navigationTitle("\(Date(), format: .dateTime.month(.wide).day())")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showAddSubscription = true
+                } label: {
+                    Image(systemName: "plus")
+                }
+            }
+        }
+        .sheet(isPresented: $showAddSubscription) { NavigationStack {
+                AddSubscriptionView()
+            }
+        }
     }
     
     private var monthlyTotalCard: some View {
