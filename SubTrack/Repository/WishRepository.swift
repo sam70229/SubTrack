@@ -8,32 +8,29 @@ import SwiftUI
 import Supabase
 import Realtime
 
+
 class WishRepository: ObservableObject {
+    static let shared = WishRepository()
+    
     @Published var wishes: [Wish] = []
     @Published var errorMessage: String?
     @Published var isLoading: Bool = false
     
     private let supabase = SupabaseService.shared.client
-    private var realtimeChannel: RealtimeChannelV2?
     private var currentDeviceId: String = ""
-    
-    deinit {
-        unsubscribeFromRealtime()
-    }
     
     // MARK: - Fetch Wishes
     func fetchWishes(deviceID: String) {
         currentDeviceId = deviceID
 
         Task {
-            await fetchWishesAsync(deviceID: deviceID)
+            wishes = await fetchWishes(deviceID: deviceID)
             await subscribeToRealtime(deviceID: deviceID)
-            
         }
     }
     
     @MainActor
-    private func fetchWishesAsync(deviceID: String) async {
+    private func fetchWishes(deviceID: String) async -> [Wish] {
         isLoading = true
         defer { isLoading = false }
         
@@ -56,7 +53,7 @@ class WishRepository: ObservableObject {
             let votedWishIds = Set(votes.map { $0.wishId })
             
             // Convert to your Wish model
-            self.wishes = wishes.map { wish in
+            return wishes.map { wish in
                 Wish(
                     id: wish.id,
                     title: wish.title,
@@ -69,6 +66,7 @@ class WishRepository: ObservableObject {
             }
         } catch {
             self.errorMessage = "Failed to fetch wishes: \(error.localizedDescription)"
+            return []
         }
     }
     
@@ -204,86 +202,82 @@ class WishRepository: ObservableObject {
     
     // MARK: - Realtime Subscription
     private func subscribeToRealtime(deviceID: String) async {
-        guard realtimeChannel == nil else { return }
+//        let realtimeChannel = supabase.realtimeV2.channel("supabase_realtime")
+//        let wishStream = realtimeChannel.postgresChange(AnyAction.self, schema: "public", table: "wishes")
         
-        realtimeChannel = supabase.realtimeV2.channel("supabase_realtime")
-        
-        let wishStream = realtimeChannel?.postgresChange(AnyAction.self, schema: "public", table: "wishes")
+        let channel = supabase.channel("public:wishes")
+        let insertions = channel.postgresChange(InsertAction.self, table: "wishes")
+        let updates = channel.postgresChange(UpdateAction.self, table: "wishes")
+        let deletions = channel.postgresChange(DeleteAction.self, table: "wishes")
 
         // TODO: - Make sure we need this in future
 //        let voteStream = realtimeChannel?.postgresChange(AnyAction.self, schema: "public", table: "votes")
         
-        await realtimeChannel?.subscribe()
+        await channel.subscribe()
         
-        for await change in wishStream! {
-            switch change {
-            case .delete(let action):
-                Task {
-                    if let id = action.oldRecord["id"]?.value as? String {
-                        wishes.removeAll(where: { $0.id.uuidString == id.uppercased() })
-                    }
-                }
-            case .insert(let action):
-                Task {
-                    if let id = action.record["id"]?.value as? String,
-                       let title = action.record["title"]?.value as? String,
-                       let content = action.record["content"]?.value as? String,
-                       let vote_count = action.record["vote_count"]?.value as? Int,
-                       let created_by = action.record["created_by"]?.value as? String,
-                       let created_at = action.record["created_at"]?.value as? String {
-                        let formatter = ISO8601DateFormatter()
-                        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-                        
-                        let wish = Wish(
-                            id: UUID(uuidString: id)!,
-                            title: title,
-                            content: content,
-                            createdAt: formatter.date(from: created_at)!,
-                            voteCount: vote_count,
-                            createdBy: created_by
-                        )
-                        
-                        await handleNewWish(wish, deviceID: deviceID)
-                    }
-                }
-            case .update(let action):
-                Task {
-                    if let id = action.record["id"]?.value as? String,
-                       let title = action.record["title"]?.value as? String,
-                       let content = action.record["content"]?.value as? String,
-                       let vote_count = action.record["vote_count"]?.value as? Int,
-                       let created_by = action.record["created_by"]?.value as? String,
-                       let created_at = action.record["created_at"]?.value as? String {
-                        let formatter = ISO8601DateFormatter()
-                        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-                        
-                        let wish = Wish(
-                            id: UUID(uuidString: id)!,
-                            title: title,
-                            content: content,
-                            createdAt: formatter.date(from: created_at)!,
-                            voteCount: vote_count,
-                            createdBy: created_by
-                        )
-                        
-                        await handleUpdatedWish(wish, deviceID: deviceID)
-                    }
+        Task {
+            for await insertion in insertions {
+                if let wish = decodeWish(from: insertion.record) {
+                    await handleInsertNewWish(wish, deviceID: deviceID)
                 }
             }
-  
-            // TODO: - Make sure we need this in future
-//            for await change in voteStream! {
-//                switch change {
-//                case .delete(let action): print("Deleted vote: \(action.oldRecord)")
-//                case .insert(let action): print("Inserted vote: \(action.record)")
-//                case .update(let action): print("Updated vote: \(action.oldRecord) with \(action.record)")
-//                }
-//            }
         }
+        
+        Task {
+            for await update in updates {
+                if let wish = decodeWish(from: update.record) {
+                    await handleUpdatedWish(wish, deviceID: deviceID)
+                }
+            }
+        }
+         
+        Task {
+            for await delete in deletions {
+                if let id = delete.oldRecord["id"]?.value as? String {
+                    wishes.removeAll(where: { $0.id.uuidString == id.uppercased() })
+                }
+            }
+        }
+                
+        // TODO: - Make sure we need this in future
+        //            for await change in voteStream! {
+        //                switch change {
+        //                case .delete(let action): print("Deleted vote: \(action.oldRecord)")
+        //                case .insert(let action): print("Inserted vote: \(action.record)")
+        //                case .update(let action): print("Updated vote: \(action.oldRecord) with \(action.record)")
+        //                }
+        //            }
+    }
+    
+    private func decodeWish(from record: [String: AnyJSON]) -> Wish? {
+        guard let id = record["id"]?.stringValue,
+              let title = record["title"]?.stringValue,
+              let content = record["content"]?.stringValue,
+              let vote_count = record["vote_count"]?.intValue,
+              let created_by = record["created_by"]?.stringValue,
+              let created_at = record["created_at"]?.stringValue else {
+            return nil
+        }
+        
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        
+        guard let date = formatter.date(from: created_at) else {
+            return nil
+        }
+        
+        return Wish(
+            id: UUID(uuidString: id)!,
+            title: title,
+            content: content,
+            createdAt: date,
+            voteCount: vote_count,
+            createdBy: created_by
+        )
     }
     
     @MainActor
-    private func handleNewWish(_ wish: Wish, deviceID: String) async {
+    private func handleInsertNewWish(_ wish: Wish, deviceID: String) async {
         // Check if wish already exists locally
         guard !wishes.contains(where: { $0.id == wish.id }) else { return }
         
@@ -331,13 +325,13 @@ class WishRepository: ObservableObject {
         }
     }
     
-    private func unsubscribeFromRealtime() {        
-        guard realtimeChannel != nil else { return }
-        Task {
-            await realtimeChannel?.unsubscribe()
-            realtimeChannel = nil
-        }
-    }
+//    private func unsubscribeFromRealtime() {        
+//        guard realtimeChannel != nil else { return }
+//        Task {
+//            await realtimeChannel?.unsubscribe()
+//            realtimeChannel = nil
+//        }
+//    }
     
     // Helper methods for vote changes
     @MainActor

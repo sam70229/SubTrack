@@ -52,6 +52,12 @@ struct SettingsView: View {
                 } label: {
                     Label("Notifications", systemImage: "bell.badge")
                 }
+                
+                NavigationLink {
+                    TagListView()
+                } label: {
+                    Label("Tags", systemImage: "number")
+                }
             }
             
             Section {

@@ -60,7 +60,7 @@ struct CurrencyPickerView: View {
             }
             .navigationTitle("Select Currency")
             .navigationBarTitleDisplayMode(.inline)
-            .searchable(text: $searchText, prompt: "Search currencies")
+            .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search currencies")
         }
     }
 }

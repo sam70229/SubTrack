@@ -263,7 +263,6 @@ struct AddSubscriptionView: View {
     private var tagSelection: some View {
         Section {
             HStack {
-                
                 Image(systemName: "number")
                     .background(
                         RoundedRectangle(cornerRadius: 8)
