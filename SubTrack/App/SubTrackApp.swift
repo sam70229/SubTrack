@@ -14,7 +14,7 @@ struct SubTrackApp: App {
     @StateObject private var appSettings = AppSettings()
     @StateObject private var appUsageManager = AppUsageManager()
     @StateObject private var exchangeRates = ExchangeRateRepository()
-//    @StateObject private var notificationService: NotificationService()
+    @StateObject private var notificationService = NotificationService()
     
     // Firebase
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
@@ -35,7 +35,8 @@ struct SubTrackApp: App {
             let config = ModelConfiguration(
                 schema: schema,
                 isStoredInMemoryOnly: false,
-                allowsSave: true
+                allowsSave: true,
+                cloudKitDatabase: .automatic
             )
             
 //            modelContainer = try ModelContainer(for: schema, migrationPlan: MigrationPlan.self, configurations: config)
@@ -51,9 +52,9 @@ struct SubTrackApp: App {
                 .environmentObject(appSettings)
                 .environmentObject(appUsageManager)
                 .environmentObject(exchangeRates)
+                .environmentObject(notificationService)
                 .modelContainer(modelContainer)  // Inject the model container into the SwiftUI environment
                 .preferredColorScheme(appSettings.colorScheme)
-                
         }
     }
 }

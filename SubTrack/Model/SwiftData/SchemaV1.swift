@@ -20,7 +20,7 @@ enum SchemaV1: VersionedSchema {
 extension SchemaV1{
     @Model
     final class Subscription {
-        var id: UUID
+        @Attribute(.unique) var id: UUID
         var name: String
         var subscriptionDescription: String?
         var price: Decimal
@@ -78,7 +78,7 @@ extension SchemaV1{
     
     @Model
     final class CreditCard {
-        var id: UUID
+        @Attribute(.unique) var id: UUID
         var name: String
         var last4Digits: String
         var colors: [ColorOption]
@@ -108,7 +108,7 @@ extension SchemaV1{
     
     @Model
     final class BillingRecord {
-        var id: UUID
+        @Attribute(.unique) var id: UUID
         var subscriptionId: UUID
         var billingDate: Date
         var amount: Decimal
@@ -130,7 +130,7 @@ extension SchemaV1{
     
     @Model
     class Category {
-        var id: UUID
+        @Attribute(.unique) var id: UUID
         var name: String
         var colorHex: String
         
