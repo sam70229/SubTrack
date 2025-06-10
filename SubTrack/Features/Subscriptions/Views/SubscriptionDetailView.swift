@@ -20,7 +20,7 @@ struct SubscriptionDetailView: View {
     private var daysUntilNextPayment: Int {
         Calendar.current.dateComponents([.day], from: Date(), to: subscription.nextBillingDate).day ?? 0
     }
-
+    
     // Add this @State property at the top of SubscriptionDetailView:
     @State private var scheduledNotificationsCount: Int?
     
@@ -33,14 +33,14 @@ struct SubscriptionDetailView: View {
     @State private var showDeleteConfirmation: Bool = false
     @State private var errorMessage: String? = nil
     @State private var showTagsSheet: Bool = false
-
+    
     var body: some View {
         List {
-
+            
             subscriptionBasicInfoSection
-
+            
             subscriptionDetailsInfoSection
-
+            
             notificationSettingsSection
             
             priceInfoSection
@@ -88,9 +88,9 @@ struct SubscriptionDetailView: View {
             }
         }
     }
-
+    
     // MARK: - Subscription info
-
+    
     private var subscriptionBasicInfoSection: some View {
         Section {
             HStack {
@@ -104,7 +104,7 @@ struct SubscriptionDetailView: View {
                 Spacer()
                 Text(subscription.price, format: .currency(code: subscription.currencyCode))
             }
-
+            
             if subscription.currencyCode != appSettings.currencyCode {
                 HStack {
                     let convertedPrice = exchangeRates.convert(subscription.price, from: subscription.currencyCode, to: appSettings.currencyCode) ?? subscription.price
@@ -121,13 +121,13 @@ struct SubscriptionDetailView: View {
     
     private var subscriptionDetailsInfoSection: some View {
         Section {
-
+            
             HStack {
-
+                
                 Text("Tags")
-
+                
                 Spacer()
-
+                
                 Text(subscription.tags.prefix(2).map { $0.name }.joined(separator: ", ") + (subscription.tags.count > 2 ? ", ..." : ""))
                 
                 Button {
@@ -139,13 +139,13 @@ struct SubscriptionDetailView: View {
                 .foregroundStyle(.secondary)
             }
             
-
+            
             HStack {
                 Text("Period")
                 Spacer()
                 Text(subscription.period.description)
             }
-
+            
             HStack {
                 Text("Starting Date")
                 Spacer()
@@ -165,14 +165,14 @@ struct SubscriptionDetailView: View {
                         .frame(height: 200)
                 }
             }
-
+            
         } header: {
             Text("Subscription Details")
         }
     }
-
+    
     // MARK: - Price info
-
+    
     private var priceInfoSection: some View {
         Section {
             HStack {
@@ -208,9 +208,9 @@ struct SubscriptionDetailView: View {
             Text("Exchange Rates updates every day")
         }
     }
-
+    
     // MARK: - Notification Settings
-
+    
     private var notificationSettingsSection: some View {
         Section {
             Toggle(isOn: Binding(
@@ -235,48 +235,62 @@ struct SubscriptionDetailView: View {
                     }
                 }
             }
-
-           if isNotificationEnabled {
-               Group {
-                   HStack {
-                       Text("Next Payment")
-                       Spacer()
-                       Text("\(daysUntilNextPayment) days")
-                           .foregroundStyle(.secondary)
-                   }
-                   
-                   Picker(selection: $selectedReminder) {
-                       ForEach(NotificationDate.allCases) { option in
-                           Text(LocalizedStringKey(option.description)).tag(option)
-                       }
-                   } label: {
-                       Text("Reminds me")
-                   } currentValueLabel: {
-                       Text(LocalizedStringKey(selectedReminder.description))
-                   }
-                   .pickerStyle(.navigationLink)
-                   
-                   // Show scheduled notifications count
-                   NavigationLink {
-                       NotificationListView(subscription: subscription)
-                   } label: {
-                       HStack {
-                           Text("Scheduled Reminders")
-                           
-                           Spacer()
-                           
-                           if let count = scheduledNotificationsCount {
-                               Text("\(count)")
-                                   .foregroundColor(.secondary)
-                           } else {
-                               ProgressView()
-                                   .scaleEffect(0.7)
-                           }
-                       }
-                   }
-                   .buttonStyle(.plain)
-               }
-               .transition(.slide)
+            .onChange(of: subscription.notificationTiming) { _, newValue in
+                Task {
+                    await NotificationService.shared.cancelNotifications(for: subscription)
+                    await subscription.scheduleNotifications()
+                    let count = await NotificationService.shared.getScheduledNotificationsCount(for: subscription)
+                    scheduledNotificationsCount = count
+                }
+            }
+            
+            if isNotificationEnabled {
+                Group {
+                    HStack {
+                        Text("Next Payment")
+                        Spacer()
+                        Text("\(daysUntilNextPayment) days")
+                            .foregroundStyle(.secondary)
+                    }
+                    
+                    Picker(selection: Binding(
+                        get: { subscription.notificationTiming },
+                        set: { newValue in
+                            selectedReminder = newValue
+                            subscription.notificationTiming = newValue
+                        }
+                    )) {
+                        ForEach(NotificationDate.allCases) { option in
+                            Text(LocalizedStringKey(option.description)).tag(option)
+                        }
+                    } label: {
+                        Text("Reminds me")
+                    } currentValueLabel: {
+                        Text(LocalizedStringKey(selectedReminder.description))
+                    }
+                    .pickerStyle(.navigationLink)
+                    
+                    // Show scheduled notifications count
+                    NavigationLink {
+                        NotificationListView(subscription: subscription)
+                    } label: {
+                        HStack {
+                            Text("Scheduled Reminders")
+                            
+                            Spacer()
+                            
+                            if let count = scheduledNotificationsCount {
+                                Text("\(count)")
+                                    .foregroundColor(.secondary)
+                            } else {
+                                ProgressView()
+                                    .scaleEffect(0.7)
+                            }
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
+                .transition(.slide)
             }
         } header: {
             Text("Notification Settings")
@@ -286,7 +300,7 @@ struct SubscriptionDetailView: View {
             }
         }
     }
-
+    
     // MARK: - calculations
     
     private var monthlyPrice: Decimal {
@@ -317,7 +331,7 @@ struct SubscriptionDetailView: View {
             from: subscription.currencyCode,
             to: appSettings.currencyCode
         ) ?? subscription.price
-
+        
         switch subscription.period {
         case .semimonthly:
             return convertedPrice * 2
@@ -367,7 +381,7 @@ struct SubscriptionDetailView: View {
             from: subscription.currencyCode,
             to: appSettings.currencyCode
         ) ?? subscription.price
-
+        
         switch subscription.period {
         case .semimonthly:
             return convertedPrice * 24
@@ -436,7 +450,7 @@ struct SubscriptionDetailView: View {
             return .month // Default
         }
     }
-
+    
     private var billingCycleValue: Int {
         switch subscription.period {
         case .semimonthly:

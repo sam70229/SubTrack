@@ -5,6 +5,15 @@
 //  Created by Sam on 2025/3/16.
 //
 
+
+// Without CloudKit:
+// User → SwiftData → Local SQLite Database
+//
+// With CloudKit:
+// User → SwiftData → Local SQLite Database → CloudKit Sync → iCloud
+//                            ↑                                  ↓
+//                            ←──────── Sync Changes ────────────
+
 import SwiftUI
 import SwiftData
 import Supabase

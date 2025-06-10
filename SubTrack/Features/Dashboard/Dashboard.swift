@@ -450,7 +450,7 @@ struct CategoryBreakdownChart: View {
             Chart {
                 ForEach(Array(tagData.enumerated()), id: \.element.id) { index, item in
                     SectorMark(
-                        angle: .value("Cost", item.totalCost),
+                        angle: .value("", item.totalCost),
                         innerRadius: .ratio(0.5),
                         angularInset: 1.5
                     )

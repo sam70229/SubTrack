@@ -154,6 +154,16 @@ class AppSettings: ObservableObject {
         }
     }
     
+    // MARK: - iCloud Sync
+    @AppStorage("iCloudSyncEnabled") var iCloudSyncEnabled: Bool = true {
+        didSet {
+            // Post notification when sync preference changes
+            NotificationCenter.default.post(
+                name: .iCloudSyncPreferenceChanged,
+                object: nil
+            )
+        }
+    }
     
     // MARK: - Tutorial Page
     @AppStorage("hasSeenWishTutorial") var hasSeenWishTutorial: Bool = false

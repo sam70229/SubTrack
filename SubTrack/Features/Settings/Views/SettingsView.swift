@@ -40,7 +40,7 @@ struct SettingsView: View {
                 } label: {
                     Label("Appearance", systemImage: "paintbrush")
                 }
-
+                
                 NavigationLink {
                     CreditCardListView()
                 } label: {
@@ -60,56 +60,13 @@ struct SettingsView: View {
                 }
             }
             
-            Section {
-                ForEach(appSettings.enabledTabs.filter { !$0.isEnabled }) { tab in
-                    switch tab.title {
-                    case "Analytics":
-                        NavigationLink {
-                            AnalyticsView()
-                        } label: {
-                            Label(LocalizedStringKey(tab.title), systemImage: tab.icon)
-                        }
-                    case "Wish Wall":
-                        NavigationLink {
-                            WishListView(viewModel: wishListViewModel)
-                        } label: {
-                            Label(LocalizedStringKey(tab.title), systemImage: tab.icon)
-                        }
-                    default:
-                        EmptyView()
-                    }
-                }
-            } header: {
-                Text("Hidden Tabs")
-            }
-
+            hiddenTabsSection
 
             // Data management section
             dataManageSection
             
             // About section
-            Section(header: Text("About")) {
-                NavigationLink {
-                    AboutView()
-                } label: {
-                    Label("About SubTrack", systemImage: "info.circle")
-                }
-                
-                // TODO: MAYBE NEEDED, BUT CAN WAIT
-//                Link(destination: URL(string: "https://example.com/privacy")!) {
-//                    Label("Privacy Policy", systemImage: "hand.raised")
-//                }
-//                
-//                Link(destination: URL(string: "https://example.com/terms")!) {
-//                    Label("Terms of Service", systemImage: "doc.text")
-//                }
-            }
-            
-            Section {
-                
-            } footer: {
-                Text("Version \(Bundle.main.versionNumber), Build: \(Bundle.main.buildNumber)")
-            }
+            aboutSection
         }
         .navigationTitle("Settings")
         .onAppear {
@@ -124,22 +81,85 @@ struct SettingsView: View {
         }
     }
     
+    private var hiddenTabsSection: some View {
+        Section {
+            ForEach(appSettings.enabledTabs.filter { !$0.isEnabled }) { tab in
+                switch tab.title {
+                case "Analytics":
+                    NavigationLink {
+                        AnalyticsView()
+                    } label: {
+                        Label(LocalizedStringKey(tab.title), systemImage: tab.icon)
+                    }
+                case "Wish Wall":
+                    NavigationLink {
+                        WishListView(viewModel: wishListViewModel)
+                    } label: {
+                        Label(LocalizedStringKey(tab.title), systemImage: tab.icon)
+                    }
+                default:
+                    EmptyView()
+                }
+            }
+        } header: {
+            Text("Hidden Tabs")
+        }
+    }
+    
     private var dataManageSection: some View {
         Section(header: Text("Data")) {
+            
+            NavigationLink {
+                iCloudSettingsView()
+            } label: {
+                HStack {
+                    
+                    Label("", systemImage: "icloud")
+                    
+                    VStack(alignment: .leading) {
+                        Text("iCloud Sync")
+                        
+                        if appSettings.iCloudSyncEnabled {
+                            HStack {
+                                Image(systemName: "checkmark.circle.fill")
+                                
+                                Text("Syncing with iCloud")
+                                
+                            }
+                            .foregroundStyle(.green)
+                            .font(.caption)
+                        }
+                    }
+
+                    Spacer()
+
+                    if appSettings.iCloudSyncEnabled {
+                        Text("On")
+                            .foregroundColor(.secondary)
+                    } else {
+                        Text("Off")
+                            .foregroundColor(.secondary)
+                    }
+                }
+                
+                
+            }
+            
+            
             Button(role: .destructive) {
                 // Show confirmation dialog
                 showClearDataAlert = true
             } label: {
-                Label("Clear All Data", systemImage: "trash")
+                Label("Clear All Local Data", systemImage: "trash")
             }
             
             // TODO: Support import/export, but i dunno why we need this
-//                NavigationLink {
-//                    Text("Import/Export")
-//                        .navigationTitle("Import/Export")
-//                } label: {
-//                    Label("Import/Export", systemImage: "square.and.arrow.up.on.square")
-//                }
+            //                NavigationLink {
+            //                    Text("Import/Export")
+            //                        .navigationTitle("Import/Export")
+            //                } label: {
+            //                    Label("Import/Export", systemImage: "square.and.arrow.up.on.square")
+            //                }
         }
         .alert(isPresented: $showClearDataAlert) {
             Alert(title: Text("Do u really wanna clear all data?"), primaryButton: .destructive(Text("Confirm"), action: {
@@ -153,6 +173,29 @@ struct SettingsView: View {
                     errorMessage = "Failed to clear data: \(error)"
                 }
             }), secondaryButton: .cancel())
+        }
+    }
+    
+    private var aboutSection: some View {
+        Section {
+            NavigationLink {
+                AboutView()
+            } label: {
+                Label("About SubTrack", systemImage: "info.circle")
+            }
+            
+            // TODO: MAYBE NEEDED, BUT CAN WAIT
+            //                Link(destination: URL(string: "https://example.com/privacy")!) {
+            //                    Label("Privacy Policy", systemImage: "hand.raised")
+            //                }
+            //
+            //                Link(destination: URL(string: "https://example.com/terms")!) {
+            //                    Label("Terms of Service", systemImage: "doc.text")
+            //                }
+        } header: {
+            Text("About")
+        } footer: {
+            Text("Version \(Bundle.main.versionNumber), Build: \(Bundle.main.buildNumber)")
         }
     }
 }

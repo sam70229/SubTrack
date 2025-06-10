@@ -10,6 +10,9 @@
     "%@" : {
       "shouldTranslate" : false
     },
+    "%@%%" : {
+
+    },
     "%lld" : {
       "shouldTranslate" : false
     },
@@ -48,6 +51,9 @@
           }
         }
       }
+    },
+    "%lld%%" : {
+
     },
     "+%lld" : {
       "shouldTranslate" : false
@@ -473,12 +479,12 @@
         }
       }
     },
-    "Clear All Data" : {
+    "Clear All Local Data" : {
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "清除所有資料"
+            "value" : "清除所有本機資料"
           }
         }
       }
@@ -532,9 +538,6 @@
           }
         }
       }
-    },
-    "Cost" : {
-
     },
     "Create Wishes" : {
       "localizations" : {
@@ -648,6 +651,16 @@
         }
       }
     },
+    "Data is stored locally on this device only" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "資料僅儲存在此裝置上"
+          }
+        }
+      }
+    },
     "Days" : {
       "localizations" : {
         "zh-Hant" : {
@@ -738,12 +751,32 @@
         }
       }
     },
+    "Disable" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "關閉"
+          }
+        }
+      }
+    },
     "Disable All Reminders" : {
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "取消所有提醒"
+          }
+        }
+      }
+    },
+    "Disable iCloud Sync?" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "關閉iCloud同步？"
           }
         }
       }
@@ -805,6 +838,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "開啟全部提醒"
+          }
+        }
+      }
+    },
+    "Enable iCloud Sync?" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打開iCloud同步？"
           }
         }
       }
@@ -893,6 +936,26 @@
         }
       }
     },
+    "iCloud Sync" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud備份"
+          }
+        }
+      }
+    },
+    "iCloud Sync Status" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud同步狀態"
+          }
+        }
+      }
+    },
     "icon" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -931,6 +994,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "資訊"
+          }
+        }
+      }
+    },
+    "Just now" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "剛剛"
           }
         }
       }
@@ -994,6 +1067,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "最大分頁數"
+          }
+        }
+      }
+    },
+    "Migrating to iCloud..." : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在轉移至iCloud"
           }
         }
       }
@@ -1180,12 +1263,32 @@
         }
       }
     },
+    "Off" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "關"
+          }
+        }
+      }
+    },
     "OK" : {
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "好"
+          }
+        }
+      }
+    },
+    "On" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開"
           }
         }
       }
@@ -1303,6 +1406,16 @@
     },
     "PRICE VIEW" : {
 
+    },
+    "Privacy Note" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隱私備註"
+          }
+        }
+      }
     },
     "Privacy Policy" : {
       "extractionState" : "stale",
@@ -1728,6 +1841,36 @@
     "SwiftUI" : {
       "shouldTranslate" : false
     },
+    "Sync Information" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同步資訊"
+          }
+        }
+      }
+    },
+    "Sync with iCloud" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "與iCloud同步"
+          }
+        }
+      }
+    },
+    "Syncing with iCloud" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "與iCloud同步中"
+          }
+        }
+      }
+    },
     "System" : {
       "localizations" : {
         "zh-Hant" : {
@@ -1967,6 +2110,16 @@
         }
       }
     },
+    "When enabled, your subscriptions will sync across all devices signed into the same iCloud account." : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "啟用後，您的訂閱資料將會在所有使用相同 iCloud 帳號登入的裝置之間同步。"
+          }
+        }
+      }
+    },
     "Wish title" : {
       "localizations" : {
         "zh-Hant" : {
@@ -2024,6 +2177,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "你將會在下次付款日 %@ 收到提醒通知。"
+          }
+        }
+      }
+    },
+    "Your data is synced across all your devices" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您的資料已在所有裝置間同步"
+          }
+        }
+      }
+    },
+    "Your data will remain on iCloud but this device will use local storage only. You can re-enable sync anytime to access your iCloud data." : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您的資料仍會保留在 iCloud 上，但此裝置將僅使用本機儲存。您隨時可以重新啟用同步以存取 iCloud 資料。"
+          }
+        }
+      }
+    },
+    "Your local data will be uploaded to iCloud and synced across all your devices. This may take a few moments." : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您的本機資料將會上傳至 iCloud，並在所有裝置間同步。這可能需要一些時間。"
+          }
+        }
+      }
+    },
+    "Your subscription data is private and encrypted. Only you can access your data through your iCloud account." : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您的訂閱資料是私密且加密的，只有您可以透過自己的 iCloud 帳號存取。"
           }
         }
       }

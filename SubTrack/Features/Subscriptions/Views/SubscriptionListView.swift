@@ -34,13 +34,26 @@ struct SubscriptionListView: View {
     @State private var showSortPicker: Bool = false
     @State private var sortedMethod: SortedMethod = .Price
     
+    // Search
+    @State private var searchText: String = ""
+    
+    var filteredSubscriptions: [Subscription] {
+        guard !searchText.isEmpty else {
+            return sortedSubscriptions()
+        }
+        
+        return sortedSubscriptions().filter {
+            $0.name.localizedCaseInsensitiveContains(searchText) || $0.tags.contains { $0.name.localizedCaseInsensitiveContains(searchText) }
+        }
+    }
+    
     var body: some View {
         VStack {
             if sorted {
                 sortHeader
             }
 
-            List(sortedSubscriptions()) { subscription in
+            List(filteredSubscriptions) { subscription in
                 Button {
                     selectedSubscription = subscription
                 } label: {
@@ -106,6 +119,7 @@ struct SubscriptionListView: View {
         .navigationDestination(item: $selectedSubscription) { subscription in
             SubscriptionDetailView(subscription: subscription)
         }
+        .searchable(text: $searchText, placement: .toolbar)
     }
     
     func swipeToDelete(_ subscription: Subscription) {
@@ -133,6 +147,7 @@ struct SubscriptionListView: View {
         if !sorted {
             return subscriptions
         }
+
         switch sortedMethod {
         case .Price:
             return subscriptions.sorted { exchangeRates.convert(

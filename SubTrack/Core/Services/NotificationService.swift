@@ -131,6 +131,7 @@ class NotificationService: ObservableObject {
                 reminderDate = calendar.date(byAdding: .day, value: -7, to: nextBillingDate) ?? nextBillingDate
             }
 
+            print("reminderDate: \(reminderDate)")
             // Set notification time to 10 AM
             if let finalDate = calendar.date(bySettingHour: 10, minute: 0, second: 0, of: reminderDate) {
                 dates.append(finalDate)
