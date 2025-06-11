@@ -9,4 +9,5 @@ import Foundation
 extension Notification.Name {
     static let openSubscriptionDetail = Notification.Name("openSubscriptionDetail")
     static let iCloudSyncPreferenceChanged = Notification.Name("iCloudSyncPreferenceChanged")
+    static let modelContainerRecreated = Notification.Name("modelContainerRecreated")
 }

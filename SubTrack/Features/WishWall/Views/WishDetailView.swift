@@ -285,6 +285,13 @@ struct WishDetailView: View {
                     value: wish.createdBy == appSettings.deviceID ? "You" : "Anonymous User",
                     tintColor: wish.createdBy == appSettings.deviceID ? .purple : .gray
                 )
+                
+                InfoRow(
+                    icon: "circle.fill",
+                    title: "Status",
+                    value: wish.status,
+                    tintColor: .gray
+                )
             }
         }
         .padding(20)
@@ -422,7 +429,7 @@ struct WishDetailView: View {
 
 #Preview {
     NavigationStack {
-        WishDetailView(wish: Wish(id: UUID(), title: "TEst", createdAt: Date(), voteCount: 0, createdBy: UUID().uuidString),
+        WishDetailView(wish: Wish(id: UUID(), title: "TEst", createdAt: Date(), voteCount: 0, status: "Open", createdBy: UUID().uuidString),
                        viewModel: WishViewModel())
         .environmentObject(AppSettings())
     }

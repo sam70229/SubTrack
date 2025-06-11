@@ -60,6 +60,7 @@ class WishRepository: ObservableObject {
                     content: wish.content,
                     createdAt: wish.createdAt,
                     voteCount: wish.voteCount,
+                    status: wish.status,
                     voted: votedWishIds.contains(wish.id),
                     createdBy: wish.createdBy
                 )
@@ -101,6 +102,7 @@ class WishRepository: ObservableObject {
                 content: response.content,
                 createdAt: response.createdAt,
                 voteCount: response.voteCount,
+                status: response.status,
                 createdBy: response.createdBy
             )
             
@@ -253,6 +255,7 @@ class WishRepository: ObservableObject {
         guard let id = record["id"]?.stringValue,
               let title = record["title"]?.stringValue,
               let content = record["content"]?.stringValue,
+              let status = record["status"]?.stringValue,
               let vote_count = record["vote_count"]?.intValue,
               let created_by = record["created_by"]?.stringValue,
               let created_at = record["created_at"]?.stringValue else {
@@ -272,6 +275,7 @@ class WishRepository: ObservableObject {
             content: content,
             createdAt: date,
             voteCount: vote_count,
+            status: status,
             createdBy: created_by
         )
     }
@@ -290,6 +294,7 @@ class WishRepository: ObservableObject {
             content: wish.content,
             createdAt: wish.createdAt,
             voteCount: wish.voteCount,
+            status: wish.status,
             voted: hasVoted,
             createdBy: wish.createdBy
         )

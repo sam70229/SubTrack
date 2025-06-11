@@ -509,6 +509,9 @@
         }
       }
     },
+    "Coming soon..." : {
+
+    },
     "Confirm" : {
       "localizations" : {
         "zh-Hant" : {
@@ -988,6 +991,9 @@
         }
       }
     },
+    "In Development" : {
+
+    },
     "Information" : {
       "localizations" : {
         "zh-Hant" : {
@@ -1102,7 +1108,19 @@
         }
       }
     },
+    "Most Recent" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近新增"
+          }
+        }
+      }
+    },
     "My Wishes" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
@@ -1978,6 +1996,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "標題"
+          }
+        }
+      }
+    },
+    "Top Voted" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最高投票數"
           }
         }
       }

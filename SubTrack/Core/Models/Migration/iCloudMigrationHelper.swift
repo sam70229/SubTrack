@@ -23,7 +23,7 @@
 // │  ✓ Works offline                                            │
 // │  ✗ No sync between devices                                  │
 // └─────────────────────────────────────────────────────────────┘
-// 
+//
 // ┌─────────────────────────────────────────────────────────────-┐
 // │                      iCLOUD SYNC MODE                        │
 // ├─────────────────────────────────────────────────────────────-┤
@@ -49,7 +49,30 @@ class iCloudMigrationHelper {
         let destinationContext = ModelContext(destinationContainer)
         
         let subscriptions = try await fetchAllSubscriptions(from: sourceContext)
+        var subscriptionMapping: [UUID: Subscription] = [:]
         
+        for subscription in subscriptions {
+            let newSubscription = Subscription(
+                id: subscription.id,
+                name: subscription.name,
+                subscriptionDescription: subscription.subscriptionDescription,
+                price: subscription.price,
+                currencyCode: subscription.currencyCode,
+                period: subscription.period,
+                firstBillingDate: subscription.firstBillingDate,
+                tags: subscription.tags,
+                creditCard: nil, // We'll set this after migrating credit cards
+                icon: subscription.icon,
+                colorHex: subscription.colorHex,
+                isActive: subscription.isActive,
+                createdAt: subscription.createdAt
+            )
+            destinationContext.insert(newSubscription)
+            subscriptionMapping[subscription.id] = newSubscription
+        }
+        
+        // Migrate Credit Cards
+//        let creditCards = try await
     }
     
     private static func fetchAllSubscriptions(from content: ModelContext) async throws -> [Subscription] {
@@ -67,5 +90,23 @@ class iCloudMigrationHelper {
         return try content.fetch(descriptor)
     }
     
+    // Safe cleanup - only removes the OLD storage mode's data after successful migration
+    static func cleanupAfterMigration(oldStorageMode: ModelContainerManager.StorageMode) async throws {
+        // IMPORTANT: This only cleans up the storage mode you're migrating FROM
+        // The new storage mode (whether local or CloudKit) remains active
+        
+        let context = ModelContext(ModelContainerManager.createContainer(useiCloud: oldStorageMode == .iCloudSync))
+        
+        // Verify the new storage has data before cleaning old storage
+        let subscriptionCount = try context.fetchCount(FetchDescriptor<Subscription>())
+        
+        if subscriptionCount > 0 {
+            // Safe to clean up old storage
+            ModelContainerManager.cleanupOldStorage(for: oldStorageMode)
+            print("Successfully cleaned up old \(oldStorageMode) storage")
+        } else {
+            throw DataMigrationError.migrationFailed("New storage appears empty, not cleaning up old data")
+        }
+    }
 }
 

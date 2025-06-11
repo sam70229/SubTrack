@@ -23,7 +23,6 @@ struct MainView: View {
              case "Dashboard":
                  Dashboard()
              case "Calendar":
-//                 CalendarView()
                  NewCalendarView()
              case "Subscriptions":
                  SubscriptionListView()

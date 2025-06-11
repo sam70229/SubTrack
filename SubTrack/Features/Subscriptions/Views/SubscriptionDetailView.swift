@@ -25,7 +25,6 @@ struct SubscriptionDetailView: View {
     @State private var scheduledNotificationsCount: Int?
     
     @State private var subscriptionRepository: SubscriptionRepository?
-    @State private var categoryRepository: CategoryRepository?
     
     @State private var isNotificationEnabled: Bool = false
     @State private var selectedReminder: NotificationDate = .one_day_before
@@ -79,7 +78,6 @@ struct SubscriptionDetailView: View {
         }
         .onAppear {
             subscriptionRepository = SubscriptionRepository(modelContext: modelContext)
-            categoryRepository = CategoryRepository(modelContext: modelContext)
             isNotificationEnabled = subscription.isNotificationEnabled
             // Load notification count
             Task {

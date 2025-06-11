@@ -133,7 +133,7 @@ struct SubscriptionListView: View {
             Button {
                 showSortPicker = true
             } label: {
-                Text(sortedMethod.rawValue)
+                Text(LocalizedStringKey(sortedMethod.rawValue))
             }
             .font(.body)
             

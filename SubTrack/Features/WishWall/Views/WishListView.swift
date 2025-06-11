@@ -7,6 +7,22 @@
 
 import SwiftUI
 
+
+enum SortOptions: String, CaseIterable {
+    case topVoted
+    case mostRecent
+    
+    var description: String {
+        switch self {
+        case .topVoted:
+            return "Top Voted"
+        case .mostRecent:
+            return "Most Recent"
+        }
+    }
+}
+
+
 struct WishListView: View {
     @EnvironmentObject private var appSettings: AppSettings
     @ObservedObject var viewModel: WishViewModel
@@ -14,6 +30,36 @@ struct WishListView: View {
     @State private var showAddWishView: Bool = false
     @State private var showTutorial: Bool = false
     @State private var hoveredWishID: String?
+    
+    // Sort
+    @State private var sortedDict: [String: SortOptions] = [
+        "My Wishes": .mostRecent,
+        "Community Wishes": .mostRecent
+    ]
+    @State private var showSortOptionPicker: Bool = false
+    @State private var sortSectionTitle: String = ""
+    
+    
+    private var myWishList: [Wish] {
+        viewModel.wishes.filter { $0.createdBy == appSettings.deviceID }
+    }
+    
+    private var communityWishList: [Wish] {
+        viewModel.wishes.filter { $0.createdBy != appSettings.deviceID && $0.status != WishStatus.inDevelopment.description }
+    }
+    
+    private var onGoingWishList: [Wish] {
+        viewModel.wishes.filter { $0.status == WishStatus.inDevelopment.description }
+    }
+    
+    private func sortedWishes(for sectionTitle: String, wishes: [Wish]) -> [Wish] {
+        switch sortedDict[sectionTitle]! {
+        case .topVoted:
+            return wishes.sorted { $0.voteCount > $1.voteCount }
+        case .mostRecent:
+            return wishes.sorted { $0.createdBy > $1.createdBy }
+        }
+    }
     
     var body: some View {
         ZStack {
@@ -27,18 +73,19 @@ struct WishListView: View {
                 endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
-
+            
             ScrollView {
                 LazyVStack(spacing: 24) {
-                    let myWishes = viewModel.wishes.filter { $0.createdBy == appSettings.deviceID}
-                    let otherWishes = viewModel.wishes.filter { $0.createdBy != appSettings.deviceID}
-                    
-                    if myWishes.count > 0 {
-                        myWishList(wishList: myWishes)
+                    if onGoingWishList.count > 0 {
+                        OnGoingWishListView(ongoingWishes: onGoingWishList)
                     }
                     
-                    if otherWishes.count > 0 {
-                        othersWishList(wishList: otherWishes)
+                    if myWishList.count > 0 {
+                        myWishList(wishList: myWishList)
+                    }
+                    
+                    if communityWishList.count > 0 {
+                        othersWishList(wishList: communityWishList)
                     }
                     
                     // Add some bottom padding for better scrolling experience
@@ -67,6 +114,25 @@ struct WishListView: View {
         }
         .sheet(isPresented: $showTutorial) {
             WishListTutorialView()
+        }
+        .sheet(isPresented: $showSortOptionPicker) {
+            VStack {
+                ForEach(SortOptions.allCases, id: \.self) { option in
+                    Text(LocalizedStringKey(option.description))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(.secondary)
+                        )
+                        .padding(.horizontal)
+                        .onTapGesture {
+                            sortedDict[sortSectionTitle] = option
+                            showSortOptionPicker = false
+                        }
+                }
+            }
+            .presentationDetents([.height(150)])
         }
         .alert("Error", isPresented: Binding<Bool>(
             get: { viewModel.errorMessage != nil },
@@ -102,129 +168,120 @@ struct WishListView: View {
     }
     
     private func myWishList(wishList: [Wish]) -> some View {
-        Section {
-            ForEach(wishList) { wish in
-                NavigationLink {
-                    WishDetailView(wish: wish, viewModel: viewModel)
-                } label: {
-                    WishView(wish: wish)
-                        .padding(8)
-                }
-                .buttonStyle(PlainButtonStyle())
-            }
-        } header: {
-            Text("My Wishes")
-                .font(.subheadline)
+        VStack {
+            let title: String = "My Wishes"
+            sectionHeader(title: title, subtitle: "\(wishList.count) wishes", icon: "person")
+            
+            wishGrid(sortedWishes(for: title, wishes: wishList), isOwner: true)
         }
     }
     
     private func othersWishList(wishList: [Wish]) -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            sectionHeader(title: "Community Wishes", subtitle: "\(wishList.count) wishes", icon: "globe")
+            let title = "Community Wishes"
+            sectionHeader(title: title, subtitle: "\(wishList.count) wishes", icon: "globe")
             
-            LazyVGrid(columns: [
-                GridItem(.flexible(), spacing: 12),
-                GridItem(.flexible(), spacing: 12)
-            ], spacing: 12) {
-                ForEach(wishList) { wish in
-                    wishCard(wish: wish, isOwner: false)
-                }
-            }
+            wishGrid(sortedWishes(for: title, wishes: wishList), isOwner: false)
         }
         .padding(.vertical, 4)
-//        Section {
-//            ForEach(wishList) { wish in
-//                NavigationLink {
-//                    WishDetailView(wish: wish, viewModel: viewModel)
-//                } label: {
-////                    WishView(wish: wish)
-////                        .padding(8)
-//                    wishCard(wish: wish, isOwner: false)
-//                }
-//                .buttonStyle(PlainButtonStyle())
-//            }
-//        } header: {
-//            Text("Community Wishes")
-//                .font(.subheadline)
-//        }
+    }
+    
+    private func wishGrid(_ wishes: [Wish], isOwner: Bool) -> some View {
+        LazyVGrid(columns: [
+            GridItem(.flexible(), spacing: 12),
+            GridItem(.flexible(), spacing: 12)
+        ], spacing: 12) {
+            ForEach(wishes) { wish in
+                wishCard(wish: wish, isOwner: isOwner)
+            }
+        }
     }
     
     // MARK: - Section Header
-        private func sectionHeader(title: String, subtitle: String, icon: String) -> some View {
-            HStack(spacing: 12) {
-                Image(systemName: icon)
-                    .font(.title2)
+    private func sectionHeader(title: String, subtitle: String, icon: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.title2)
+                .foregroundStyle(.secondary)
+                .frame(width: 24, height: 24)
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.title2.bold())
+                    .foregroundStyle(.primary)
+                
+                Text(subtitle)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
-                    .frame(width: 24, height: 24)
-                
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(.title2.bold())
-                        .foregroundStyle(.primary)
-                    
-                    Text(subtitle)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                
-                Spacer()
             }
-            .padding(.horizontal, 4)
+            
+            Spacer()
+            
+            // filter button
+            Button {
+                showSortOptionPicker = true
+                sortSectionTitle = title
+            } label: {
+                Image(systemName: "line.3.horizontal.decrease.circle.fill")
+            }
+            
         }
+        .padding(.horizontal, 4)
+    }
     
     private func wishCard(wish: Wish, isOwner: Bool) -> some View {
-            NavigationLink {
-                WishDetailView(wish: wish, viewModel: viewModel)
-            } label: {
-                ZStack {
-                    // Glass background
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(.regularMaterial)
-                        .background {
-                            RoundedRectangle(cornerRadius: 20)
-                                .fill(
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [
-                                            isOwner ? Color.blue.opacity(0.1) : Color.purple.opacity(0.1),
-                                            Color.clear
-                                        ]),
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
+        NavigationLink {
+            WishDetailView(wish: wish, viewModel: viewModel)
+        } label: {
+            ZStack {
+                // Glass background
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(.regularMaterial)
+                    .background {
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [
+                                        isOwner ? Color.blue.opacity(0.1) : Color.purple.opacity(0.1),
+                                        Color.clear
+                                    ]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
                                 )
-                        }
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [
-                                            Color.white.opacity(0.3),
-                                            Color.white.opacity(0.1)
-                                        ]),
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    ),
-                                    lineWidth: 1
-                                )
-                        }
-                    
-                    // Content
-                    VStack(alignment: .leading, spacing: 0) {
-                        WishView(wish: wish)
+                            )
                     }
-                }
-                .scaleEffect(hoveredWishID == wish.id.uuidString ? 1.05 : 1.0)
-                .shadow(
-                    color: Color.black.opacity(hoveredWishID == wish.id.uuidString ? 0.3 : 0.1),
-                    radius: hoveredWishID == wish.id.uuidString ? 15 : 8,
-                    x: 0,
-                    y: hoveredWishID == wish.id.uuidString ? 8 : 4
-                )
-                .animation(.spring(response: 0.4, dampingFraction: 0.8), value: hoveredWishID)
-                .onHover { isHovering in
-                    hoveredWishID = isHovering ? wish.id.uuidString : nil
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [
+                                        Color.white.opacity(0.3),
+                                        Color.white.opacity(0.1)
+                                    ]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 1
+                            )
+                    }
+                
+                // Content
+                VStack(alignment: .leading, spacing: 0) {
+                    WishView(wish: wish)
                 }
             }
-            .buttonStyle(.plain)
+            .scaleEffect(hoveredWishID == wish.id.uuidString ? 1.05 : 1.0)
+            .shadow(
+                color: Color.black.opacity(hoveredWishID == wish.id.uuidString ? 0.3 : 0.1),
+                radius: hoveredWishID == wish.id.uuidString ? 15 : 8,
+                x: 0,
+                y: hoveredWishID == wish.id.uuidString ? 8 : 4
+            )
+            .animation(.spring(response: 0.4, dampingFraction: 0.8), value: hoveredWishID)
+            .onHover { isHovering in
+                hoveredWishID = isHovering ? wish.id.uuidString : nil
+            }
         }
+        .buttonStyle(.plain)
+    }
 }
