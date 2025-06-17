@@ -46,7 +46,3 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         completionHandler()
     }
 }
-
-extension Notification.Name {
-    static let openSubscriptionDetail = Notification.Name("openSubscriptionDetail")
-}

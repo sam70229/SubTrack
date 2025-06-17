@@ -5,6 +5,15 @@
 //  Created by Sam on 2025/3/16.
 //
 
+
+// Without CloudKit:
+// User → SwiftData → Local SQLite Database
+//
+// With CloudKit:
+// User → SwiftData → Local SQLite Database → CloudKit Sync → iCloud
+//                            ↑                                  ↓
+//                            ←──────── Sync Changes ────────────
+
 import SwiftUI
 import SwiftData
 import Supabase
@@ -15,35 +24,22 @@ struct SubTrackApp: App {
     @StateObject private var appUsageManager = AppUsageManager()
     @StateObject private var exchangeRates = ExchangeRateRepository()
     @StateObject private var notificationService = NotificationService()
+    @StateObject private var modelContainerManager: ModelContainerManager
     
     // Firebase
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     
     // Create a shared model container for the entire app
-    let modelContainer: ModelContainer
+//    let modelContainer: ModelContainer
     
     init() {
-        do {
-            // Define your schema with all model types
-            let schema = Schema([
-                Subscription.self,
-                BillingRecord.self,
-                CreditCard.self
-                // Add other model types as needed
-            ])
-            
-            let config = ModelConfiguration(
-                schema: schema,
-                isStoredInMemoryOnly: false,
-                allowsSave: true,
-                cloudKitDatabase: .automatic
-            )
-            
-//            modelContainer = try ModelContainer(for: schema, migrationPlan: MigrationPlan.self, configurations: config)
-            modelContainer = try ModelContainer(for: schema, configurations: config)
-        } catch {
-            fatalError("Failed to create ModelContainer: \(error)")
-        }
+        // TODO: - Register custom transformers for CloudKit
+//        TagArrayTransformer.register()
+//        ColorOptionArrayTransformer.register()
+        
+        
+        let manager = ModelContainerManager()
+        _modelContainerManager = StateObject(wrappedValue: manager)
     }
     
     var body: some Scene {
@@ -52,9 +48,16 @@ struct SubTrackApp: App {
                 .environmentObject(appSettings)
                 .environmentObject(appUsageManager)
                 .environmentObject(exchangeRates)
+                .environmentObject(modelContainerManager)
                 .environmentObject(notificationService)
-                .modelContainer(modelContainer)  // Inject the model container into the SwiftUI environment
+                //.modelContainer(modelContainer)  // Inject the model container into the SwiftUI environment
+                .modelContainer(modelContainerManager.modelContainer)
                 .preferredColorScheme(appSettings.colorScheme)
+                .onReceive(NotificationCenter.default.publisher(for: .iCloudSyncPreferenceChanged)) { _ in
+                    Task {
+                        await modelContainerManager.recreateContainer(useiCloud: appSettings.iCloudSyncEnabled)
+                    }
+                }
         }
     }
 }

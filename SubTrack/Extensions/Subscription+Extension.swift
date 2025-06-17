@@ -52,8 +52,8 @@ extension SchemaV1.Subscription {
     }
     
     func totalAmountTillToday() -> Decimal {
-        return billingRecords.filter { $0.isPaid && $0.billingDate <= Date() }
-            .reduce(0) { $0 + $1.amount }
+        return billingRecords?.filter { $0.isPaid && $0.billingDate <= Date() }
+            .reduce(0) { $0 + $1.amount } ?? 0
     }
     
     // Format the total amount with the subscription's currency
@@ -81,7 +81,7 @@ extension SchemaV1.Subscription {
         }
         
         while currentDate <= today {
-            let existingRecord = billingRecords.first {
+            let existingRecord = billingRecords?.first {
                 Calendar.current.isDate($0.billingDate, inSameDayAs: currentDate)
             }
             
@@ -92,7 +92,7 @@ extension SchemaV1.Subscription {
                     amount: price,
                     currencyCode: currencyCode
                 )
-                billingRecords.append(record)
+                billingRecords?.append(record)
             }
             
             currentDate = period.calculateNextDate(from: currentDate)
@@ -104,7 +104,7 @@ extension SchemaV1.Subscription {
         let today = Date()
         
         // Update all future billing records with the new price
-        for record in billingRecords {
+        for record in billingRecords ?? [] {
             if record.billingDate > today {
                 record.amount = price
                 record.currencyCode = currencyCode

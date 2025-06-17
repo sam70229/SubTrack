@@ -12,6 +12,7 @@
 		221065C52DE5B05200EF4CED /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = 221065C42DE5B05200EF4CED /* Realtime */; };
 		221065CE2DE5B82E00EF4CED /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 221065CD2DE5B82E00EF4CED /* Supabase */; };
 		222983272DA3B28800B29732 /* monitorExtension.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = 2229831B2DA3B28800B29732 /* monitorExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		224CFF532DF803FD00CE653B /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = 221065BE2DE5B05200EF4CED /* Auth */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -134,6 +135,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				224CFF532DF803FD00CE653B /* Auth in Frameworks */,
 				221065C52DE5B05200EF4CED /* Realtime in Frameworks */,
 				221065C32DE5B05200EF4CED /* PostgREST in Frameworks */,
 				221065C12DE5B05200EF4CED /* Functions in Frameworks */,
