@@ -61,7 +61,7 @@ class ExchangeRateRepository: ObservableObject {
             self.lastUpdated = response.lastUpdated
             self.baseCurrency = response.base
         } catch {
-            print("Error fetching exchange rates: \(error)")
+            logError("Error fetching exchange rates: \(error)")
         }
     }
     

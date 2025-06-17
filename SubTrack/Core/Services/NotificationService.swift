@@ -87,7 +87,7 @@ class NotificationService: ObservableObject {
             )
             
             try await notificationCenter.add(request)
-            print("Scheduled notification for \(subscription.name) on \(date)")
+            logInfo("Scheduled notification for \(subscription.name) on \(date)")
         }
     }
     
@@ -131,7 +131,7 @@ class NotificationService: ObservableObject {
                 reminderDate = calendar.date(byAdding: .day, value: -7, to: nextBillingDate) ?? nextBillingDate
             }
 
-            print("reminderDate: \(reminderDate)")
+            logInfo("reminderDate: \(reminderDate)")
             // Set notification time to 10 AM
             if let finalDate = calendar.date(bySettingHour: 10, minute: 0, second: 0, of: reminderDate) {
                 dates.append(finalDate)

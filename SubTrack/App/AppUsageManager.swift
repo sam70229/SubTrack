@@ -27,7 +27,7 @@ class AppUsageManager: ObservableObject {
             do {
                 try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
             } catch {
-                print("Failed to authorize: \(error)")
+                logError("Failed to authorize: \(error)")
             }
         }
     }
@@ -46,7 +46,7 @@ class AppUsageManager: ObservableObject {
             try center.startMonitoring(token, during: schedule, events: [.daily: events])
             isTracking = true
         } catch {
-            print("Error starting monitoring: \(error)")
+            logError("Error starting monitoring: \(error)")
         }
     }
     

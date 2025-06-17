@@ -91,12 +91,12 @@ class StorageManager {
                     let resourceValues = try file.resourceValues(forKeys: [.creationDateKey])
                     if let creationDate = resourceValues.creationDate, creationDate < cutoffDate {
                         try FileManager.default.removeItem(at: file)
-                        print("Cleaned up old backup: \(file.lastPathComponent)")
+                        logInfo("Cleaned up old backup: \(file.lastPathComponent)")
                     }
                 }
             }
         } catch {
-            print("Error cleaning up old backups: \(error)")
+            logError("Error cleaning up old backups: \(error)")
             throw error
         }
     }
