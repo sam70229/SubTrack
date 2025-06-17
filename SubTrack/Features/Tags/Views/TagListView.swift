@@ -5,27 +5,32 @@
 //  Created by Sam on 2025/6/8.
 //
 import SwiftUI
+import SwiftData
 
 
 struct TagListView: View {
+    @Environment(\.modelContext) private var modelContext: ModelContext
+    
     @EnvironmentObject private var appSettings: AppSettings
+    
+    @Query var tags: [Tag]
     
     @State private var searchString: String = ""
     @State private var newTag: String = ""
     @State private var isAddingTag: Bool = false
     @FocusState private var isTextFieldFocused: Bool
     
-    var tags: [Tag] {
+    var searchedTags: [Tag] {
         if searchString.isEmpty {
-            return appSettings.tags
+            return tags
         } else {
-            return appSettings.tags.filter { $0.name.localizedCaseInsensitiveContains(searchString) }
+            return tags.filter { $0.name.localizedCaseInsensitiveContains(searchString) }
         }
     }
     
     var body: some View {
         List {
-            ForEach(tags, id: \.self) { tag in
+            ForEach(searchedTags, id: \.self) { tag in
                 HStack {
                     Text("\(tag.name)")
                 }
@@ -86,14 +91,15 @@ struct TagListView: View {
         
         // Check for duplicates
         let tagName = trimmedTag.hasPrefix("#") ? trimmedTag : "#\(trimmedTag)"
-        guard !appSettings.tags.contains(where: { $0.name.lowercased() == tagName.lowercased() }) else {
+        guard !tags.contains(where: { $0.name.lowercased() == tagName.lowercased() }) else {
             // Optionally show an alert for duplicate
             cancelAddingTag()
             return
         }
         
         let tag = Tag(name: tagName)
-        appSettings.tags.append(tag)
+        modelContext.insert(tag)
+        try? modelContext.save()
         
         // Reset state
         cancelAddingTag()
@@ -108,10 +114,11 @@ struct TagListView: View {
     }
     
     private func deleteTag(at offsets: IndexSet) {
-        let tagsToDelete = offsets.map { tags[$0] }
-        appSettings.tags.removeAll { tag in
-            tagsToDelete.contains { $0.id == tag.id }
+        let tagsToDelete = offsets.map { searchedTags[$0] }
+        for tag in tagsToDelete {
+            modelContext.delete(tag)
         }
+        try? modelContext.save()
     }
 }
 

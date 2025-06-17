@@ -43,7 +43,7 @@ struct SubscriptionListView: View {
         }
         
         return sortedSubscriptions().filter {
-            $0.name.localizedCaseInsensitiveContains(searchText) || $0.tags.contains { $0.name.localizedCaseInsensitiveContains(searchText) }
+            $0.name.localizedCaseInsensitiveContains(searchText) || (($0.tags?.contains { $0.name.localizedCaseInsensitiveContains(searchText) }) != nil)
         }
     }
     
@@ -70,6 +70,7 @@ struct SubscriptionListView: View {
             .listRowSpacing(8)
         }
         .navigationTitle("Subscriptions")
+        .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
                 Button {
@@ -97,25 +98,6 @@ struct SubscriptionListView: View {
                 AddSubscriptionView()
             }
         }
-        .sheet(isPresented: $showSortPicker) {
-            VStack {
-                ForEach(SortedMethod.allCases, id: \.self) { option in
-                    Text(LocalizedStringKey(option.rawValue))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(.secondary)
-                        )
-                        .padding(.horizontal)
-                        .onTapGesture {
-                            sortedMethod = option
-                            showSortPicker = false
-                        }
-                }
-            }
-            .presentationDetents([.height(200)])
-        }
         .navigationDestination(item: $selectedSubscription) { subscription in
             SubscriptionDetailView(subscription: subscription)
         }
@@ -136,6 +118,26 @@ struct SubscriptionListView: View {
                 Text(LocalizedStringKey(sortedMethod.rawValue))
             }
             .font(.body)
+            .popover(isPresented: $showSortPicker, arrowEdge: .top) {
+                VStack {
+                    ForEach(SortedMethod.allCases, id: \.self) { option in
+                        Text(LocalizedStringKey(option.rawValue))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(.secondary)
+                            )
+                            .padding(.horizontal)
+                            .onTapGesture {
+                                sortedMethod = option
+                                showSortPicker = false
+                            }
+                    }
+                }
+                .padding()
+                .presentationCompactAdaptation(.none)
+            }
             
             Spacer()
         }

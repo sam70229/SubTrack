@@ -29,9 +29,19 @@ struct WishView: View {
             }
             
             Spacer()
-
-            Text("\(wish.voteCount)")
-                .padding(.bottom, 8)
+            
+            VStack {
+                if wish.status == WishStatus.inDevelopment.description {
+                    Image(systemName: "hammer.fill")
+                }
+                
+                Spacer()
+                
+                Text("\(wish.voteCount)")
+                    .padding(.bottom, 8)
+                
+                Spacer()
+            }
         }
         .padding()
         .frame(height: 100)

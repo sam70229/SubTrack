@@ -139,27 +139,21 @@ class AppSettings: ObservableObject {
         }
     }
     
-    // MARK: - Tags
-    @AppStorage("tagsData") private var tagsData: Data = Data()
-    
-    var tags: [Tag] {
-        get {
-            guard !tagsData.isEmpty else { return [] }
-            return (try? JSONDecoder().decode([Tag].self, from: tagsData)) ?? []
-        }
-        set {
-            if let encoded = try? JSONEncoder().encode(newValue) {
-                tagsData = encoded
-            }
-        }
-    }
-    
-    // MARK: - iCloud Sync
-    @AppStorage("iCloudSyncEnabled") var iCloudSyncEnabled: Bool = true {
+    // MARK: - iCloud Sync/Backup
+    @AppStorage("iCloudSyncEnabled") var iCloudSyncEnabled: Bool = false {
         didSet {
             // Post notification when sync preference changes
             NotificationCenter.default.post(
                 name: .iCloudSyncPreferenceChanged,
+                object: nil
+            )
+        }
+    }
+    
+    @AppStorage("iCloudBackupEnabled") var iCloudBackupEnabled: Bool = false {
+        didSet {
+            NotificationCenter.default.post(
+                name: .iCloudBackupPreferenceChanged,
                 object: nil
             )
         }

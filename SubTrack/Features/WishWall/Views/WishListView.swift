@@ -61,6 +61,10 @@ struct WishListView: View {
         }
     }
     
+    private var topVotedWishes: [Wish] {
+        Array(viewModel.wishes.sorted { $0.voteCount > $1.voteCount }.prefix(3))
+    }
+    
     var body: some View {
         ZStack {
             // Background gradient for depth
@@ -78,6 +82,10 @@ struct WishListView: View {
                 LazyVStack(spacing: 24) {
                     if onGoingWishList.count > 0 {
                         OnGoingWishListView(ongoingWishes: onGoingWishList)
+                    }
+                    
+                    if topVotedWishes.count > 0 {
+                        topVotedWishList(wishList: topVotedWishes)
                     }
                     
                     if myWishList.count > 0 {
@@ -114,25 +122,6 @@ struct WishListView: View {
         }
         .sheet(isPresented: $showTutorial) {
             WishListTutorialView()
-        }
-        .sheet(isPresented: $showSortOptionPicker) {
-            VStack {
-                ForEach(SortOptions.allCases, id: \.self) { option in
-                    Text(LocalizedStringKey(option.description))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(.secondary)
-                        )
-                        .padding(.horizontal)
-                        .onTapGesture {
-                            sortedDict[sortSectionTitle] = option
-                            showSortOptionPicker = false
-                        }
-                }
-            }
-            .presentationDetents([.height(150)])
         }
         .alert("Error", isPresented: Binding<Bool>(
             get: { viewModel.errorMessage != nil },
@@ -206,11 +195,11 @@ struct WishListView: View {
                 .frame(width: 24, height: 24)
             
             VStack(alignment: .leading, spacing: 2) {
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(.title2.bold())
                     .foregroundStyle(.primary)
                 
-                Text(subtitle)
+                Text(LocalizedStringKey(subtitle))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -224,9 +213,53 @@ struct WishListView: View {
             } label: {
                 Image(systemName: "line.3.horizontal.decrease.circle.fill")
             }
-            
+            .popover(isPresented: $showSortOptionPicker) {
+                VStack {
+                    ForEach(SortOptions.allCases, id: \.self) { option in
+                        Text(LocalizedStringKey(option.description))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(.secondary)
+                            )
+                            .padding(.horizontal)
+                            .onTapGesture {
+                                sortedDict[sortSectionTitle] = option
+                                showSortOptionPicker = false
+                            }
+                    }
+                }
+                .padding()
+                .presentationCompactAdaptation(.none)
+            }
         }
         .padding(.horizontal, 4)
+    }
+    
+    private func topVotedWishList(wishList: [Wish]) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Label("Top Voted", systemImage: "flame")
+                .font(.headline)
+                .foregroundStyle(.orange)
+            
+            VStack {
+                ForEach(wishList) { wish in
+                    HStack {
+                        Text(wish.title)
+                        
+                        Spacer()
+                        
+                        Text(wish.voteCount, format: .number)
+                    }
+                    .padding()
+                    .background(.secondary.opacity(0.1))
+                    .clipShape(
+                        RoundedRectangle(cornerRadius: 12)
+                    )
+                }
+            }
+        }
     }
     
     private func wishCard(wish: Wish, isOwner: Bool) -> some View {
@@ -284,4 +317,10 @@ struct WishListView: View {
         }
         .buttonStyle(.plain)
     }
+}
+
+
+#Preview {
+    WishListView(viewModel: .init())
+        .environmentObject(AppSettings())
 }

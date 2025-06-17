@@ -11,7 +11,7 @@ import SwiftData
 typealias Subscription = SchemaV1.Subscription
 typealias BillingRecord = SchemaV1.BillingRecord
 typealias CreditCard = SchemaV1.CreditCard
-typealias Category = SchemaV1.Category
+typealias Tag = SchemaV1.Tag
 
 
 struct MigrationPlan: SchemaMigrationPlan {

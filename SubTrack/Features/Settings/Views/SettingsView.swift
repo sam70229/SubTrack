@@ -153,19 +153,18 @@ struct SettingsView: View {
                 Label("Clear All Local Data", systemImage: "trash")
             }
             
-            // TODO: Support import/export, but i dunno why we need this
-            //                NavigationLink {
-            //                    Text("Import/Export")
-            //                        .navigationTitle("Import/Export")
-            //                } label: {
-            //                    Label("Import/Export", systemImage: "square.and.arrow.up.on.square")
-            //                }
+            // TODO: Support import/export, maybe the code is already in the ModelContainerManager.
+//            NavigationLink {
+//                Text("Import/Export")
+//                    .navigationTitle("Import/Export")
+//            } label: {
+//                Label("Import/Export", systemImage: "square.and.arrow.up.on.square")
+//            }
         }
         .alert(isPresented: $showClearDataAlert) {
             Alert(title: Text("Do u really wanna clear all data?"), primaryButton: .destructive(Text("Confirm"), action: {
                 do {
                     try modelContext.delete(model: Subscription.self)
-                    try modelContext.delete(model: Category.self)
                     try modelContext.delete(model: BillingRecord.self)
                     try modelContext.delete(model: CreditCard.self)
                 } catch {
@@ -185,13 +184,13 @@ struct SettingsView: View {
             }
             
             // TODO: MAYBE NEEDED, BUT CAN WAIT
-            //                Link(destination: URL(string: "https://example.com/privacy")!) {
-            //                    Label("Privacy Policy", systemImage: "hand.raised")
-            //                }
-            //
-            //                Link(destination: URL(string: "https://example.com/terms")!) {
-            //                    Label("Terms of Service", systemImage: "doc.text")
-            //                }
+//            Link(destination: URL(string: "https://example.com/privacy")!) {
+//                Label("Privacy Policy", systemImage: "hand.raised")
+//            }
+//
+//            Link(destination: URL(string: "https://example.com/terms")!) {
+//                Label("Terms of Service", systemImage: "doc.text")
+//            }
         } header: {
             Text("About")
         } footer: {

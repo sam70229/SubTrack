@@ -13,25 +13,36 @@ enum SchemaV1: VersionedSchema {
     static var versionIdentifier: Schema.Version = Schema.Version(1, 0, 0)
     
     static var models: [any PersistentModel.Type] {
-        [Subscription.self, BillingRecord.self, CreditCard.self]
+        [Subscription.self, BillingRecord.self, CreditCard.self, Tag.self]
     }
 }
 
 extension SchemaV1{
     @Model
     final class Subscription {
-        @Attribute(.unique) var id: UUID
-        var name: String
+        var id: UUID = UUID()
+        var name: String = ""
         var subscriptionDescription: String?
-        var price: Decimal
-        var currencyCode: String // For supporting diff country
-        var period: Period
-        var firstBillingDate: Date
-        var tags: [Tag]
-        var icon: String
-        var colorHex: String
-        var isActive: Bool
-        var createdAt: Date
+        var price: Decimal = 0
+        var currencyCode: String = "USD" // For supporting diff country
+        
+        // Sync to iCloud workaround
+        private var rawPeriod: Int = Period.monthly.rawValue  // ✅ Fully qualified default value
+
+        // Computed property to use `Period` enum in app logic
+        var period: Period {
+            get { Period(rawValue: rawPeriod) ?? .monthly }
+            set { rawPeriod = newValue.rawValue }
+        }
+        
+        var firstBillingDate: Date = Date()
+
+        var tags: [Tag]? = []
+
+        var icon: String = ""
+        var colorHex: String = ""
+        var isActive: Bool = true
+        var createdAt: Date = Date()
         var creditCard: CreditCard?
         
         var nextBillingDate: Date {
@@ -39,7 +50,7 @@ extension SchemaV1{
         }
         
         @Relationship(deleteRule: .cascade, inverse: \BillingRecord.subscription)
-        var billingRecords: [BillingRecord] = []
+        var billingRecords: [BillingRecord]?
         
         init(
             id: UUID = UUID(),
@@ -49,7 +60,7 @@ extension SchemaV1{
             currencyCode: String = Locale.current.currency?.identifier ?? "USD",
             period: Period,
             firstBillingDate: Date,
-            tags: [Tag] = [],
+            tags: [Tag]? = nil,
             creditCard: CreditCard? = nil,
             icon: String,
             colorHex: String,
@@ -69,6 +80,7 @@ extension SchemaV1{
             self.colorHex = colorHex
             self.isActive = isActive
             self.createdAt = createdAt
+            self.billingRecords = []
         }
         
         var color: Color {
@@ -78,10 +90,13 @@ extension SchemaV1{
     
     @Model
     final class CreditCard {
-        @Attribute(.unique) var id: UUID
-        var name: String
-        var last4Digits: String
-        var colors: [ColorOption]
+        var id: UUID = UUID()
+        var name: String = ""
+        var last4Digits: String = ""
+        var colors: [ColorOption] = [
+            ColorOption(name: "Black", hex: Color.black.toHexString()),
+            ColorOption(name: "Gray", hex: Color.gray.toHexString())
+        ]
         
         @Relationship(deleteRule: .nullify, inverse: \Subscription.creditCard)
         var subscriptions: [Subscription]? = []
@@ -108,11 +123,11 @@ extension SchemaV1{
     
     @Model
     final class BillingRecord {
-        @Attribute(.unique) var id: UUID
-        var subscriptionId: UUID
-        var billingDate: Date
-        var amount: Decimal
-        var currencyCode: String
+        var id: UUID = UUID()
+        var subscriptionId: UUID = UUID()
+        var billingDate: Date = Date()
+        var amount: Decimal = 0
+        var currencyCode: String = "USD"
         var isPaid: Bool = true
         
         @Relationship(deleteRule: .cascade, inverse: \Subscription.id)
@@ -127,21 +142,52 @@ extension SchemaV1{
             self.isPaid = isPaid
         }
     }
-    
+
     @Model
-    class Category {
-        @Attribute(.unique) var id: UUID
-        var name: String
-        var colorHex: String
+    final class Tag {
+        var id: UUID = UUID()
+        var name: String = ""
         
-        init(id: UUID = UUID(), name: String, colorHex: String) {
+        @Relationship(inverse: \Subscription.tags)
+        var subscriptions: [Subscription]? = []
+        
+        init(id: UUID = UUID(), name: String) {
             self.id = id
             self.name = name
-            self.colorHex = colorHex
         }
-        
-        var color: Color {
-            Color(hex: colorHex) ?? .gray
-        }
+    }
+}
+
+
+// MARK: - Custom Transformers for CloudKit compatibility
+
+@objc(ColorOptionArrayTransformer)
+final class ColorOptionArrayTransformer: ValueTransformer {
+    override class func transformedValueClass() -> AnyClass {
+        return NSData.self
+    }
+    
+    override class func allowsReverseTransformation() -> Bool {
+        return true
+    }
+    
+    override func transformedValue(_ value: Any?) -> Any? {
+        guard let colors = value as? [ColorOption] else { return nil }
+        return try? JSONEncoder().encode(colors)
+    }
+    
+    override func reverseTransformedValue(_ value: Any?) -> Any? {
+        guard let data = value as? Data else { return nil }
+        return try? JSONDecoder().decode([ColorOption].self, from: data)
+    }
+}
+
+// Register transformers
+extension ColorOptionArrayTransformer {
+    static func register() {
+        ValueTransformer.setValueTransformer(
+            ColorOptionArrayTransformer(),
+            forName: NSValueTransformerName("ColorOptionArrayTransformer")
+        )
     }
 }

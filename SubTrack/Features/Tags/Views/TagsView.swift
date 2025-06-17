@@ -5,14 +5,14 @@
 //  Created by Sam on 2025/5/5.
 //
 import SwiftUI
-
+import SwiftData
 
 struct TagsView: View {
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var appSettings: AppSettings
+    @Environment(\.modelContext) private var modelContext
     
     @Binding var selectedTags: [Tag]
-    @State var allTags: [Tag] = []
+    @Query var allTags: [Tag]
     
     @State private var newTag: String = ""
     
@@ -32,15 +32,19 @@ struct TagsView: View {
                 .padding(.horizontal, 8)
                 .submitLabel(.return)
                 .onSubmit(of: .text) {
-                    if !newTag.hasPrefix("#") {
-                        newTag = "#\(newTag)"
+                    var tagName = newTag
+                    if !tagName.hasPrefix("#") {
+                        tagName = "#\(tagName)"
                     }
-                    let tag = Tag(name: "\(newTag)")
-                    allTags.append(tag)
-                    appSettings.tags.append(tag)
-                    selectedTags.append(tag)
-                    
-                    // Clear input
+                    if !allTags.contains(where: { $0.name == tagName }) {
+                        let tag = Tag(name: tagName)
+                        modelContext.insert(tag)
+                        selectedTags.append(tag)
+                    } else if let existingTag = allTags.first(where: { $0.name == tagName }) {
+                        if !selectedTags.contains(existingTag) {
+                            selectedTags.append(existingTag)
+                        }
+                    }
                     newTag = ""
                 }
             
@@ -59,16 +63,11 @@ struct TagsView: View {
             
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    // SET tags to subs
+                    // Tags are already persisted; just dismiss
                     dismiss()
                 } label: {
                     Text("Done")
                 }
-            }
-        }
-        .onAppear {
-            if allTags.isEmpty {
-                allTags = appSettings.tags
             }
         }
     }
@@ -107,11 +106,12 @@ struct TagsView: View {
     }
 }
 
-
 #Preview {
     @Previewable @State var selectedTags: [Tag] = [Tag(name: "#Test1")]
+    let container = try? ModelContainer(for: Tag.self)
+    
     NavigationStack {
         TagsView(selectedTags: $selectedTags)
-            .environmentObject(AppSettings())
+            .modelContainer(container!)
     }
 }

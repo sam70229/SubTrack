@@ -300,9 +300,15 @@ struct AddSubscriptionView: View {
             }
             .pickerStyle(.navigationLink)
             
-            DatePicker("First Billing Date",
-                      selection: $firstBillingDate,
-                      displayedComponents: .date)
+            VStack(alignment: .leading) {
+                Text("Starting Date")
+
+                DatePicker("",
+                           selection: $firstBillingDate,
+                           displayedComponents: .date)
+                .datePickerStyle(.graphical)
+                .labelsHidden()
+            }
         } header: {
             Text("Billing Information")
         }

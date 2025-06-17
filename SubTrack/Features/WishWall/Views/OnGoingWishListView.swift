@@ -41,6 +41,5 @@ struct OnGoingWishListView: View {
                 )
             }
         }
-        .padding(.horizontal)
     }
 }

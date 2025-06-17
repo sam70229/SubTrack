@@ -58,6 +58,9 @@
     "+%lld" : {
       "shouldTranslate" : false
     },
+    "⚠️ Confirm Restore" : {
+
+    },
     "1 day before" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -385,6 +388,26 @@
         }
       }
     },
+    "Backup" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "備份"
+          }
+        }
+      }
+    },
+    "Backup to iCloud" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "備份至iCloud"
+          }
+        }
+      }
+    },
     "Biennially" : {
       "localizations" : {
         "zh-Hant" : {
@@ -510,7 +533,14 @@
       }
     },
     "Coming soon..." : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "即將推出"
+          }
+        }
+      }
     },
     "Confirm" : {
       "localizations" : {
@@ -538,6 +568,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "轉換後價格"
+          }
+        }
+      }
+    },
+    "Create Backup?" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "建立備份？"
           }
         }
       }
@@ -895,16 +935,6 @@
         }
       }
     },
-    "First Billing Date" : {
-      "localizations" : {
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "第一次扣款日"
-          }
-        }
-      }
-    },
     "Get Started" : {
       "localizations" : {
         "zh-Hant" : {
@@ -950,6 +980,7 @@
       }
     },
     "iCloud Sync Status" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
@@ -992,7 +1023,14 @@
       }
     },
     "In Development" : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開發中"
+          }
+        }
+      }
     },
     "Information" : {
       "localizations" : {
@@ -1000,16 +1038,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "資訊"
-          }
-        }
-      }
-    },
-    "Just now" : {
-      "localizations" : {
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "剛剛"
           }
         }
       }
@@ -1120,7 +1148,7 @@
       }
     },
     "My Wishes" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
@@ -1221,7 +1249,7 @@
       }
     },
     "No Subscriptions upcoming in %lld days." : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
@@ -1327,17 +1355,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "原價"
-          }
-        }
-      }
-    },
-    "Other Wishes" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "其他人的願望"
           }
         }
       }
@@ -1526,12 +1543,45 @@
         }
       }
     },
+    "Replace Data" : {
+
+    },
     "Reset to default" : {
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "重置為預設值"
+          }
+        }
+      }
+    },
+    "Restore" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "回復"
+          }
+        }
+      }
+    },
+    "Restore from Backup" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "從備份復原"
+          }
+        }
+      }
+    },
+    "Restore from Backup?" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "從備份復原？"
           }
         }
       }
@@ -1732,7 +1782,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "開始日期"
+            "value" : "起始日"
           }
         }
       }
@@ -1860,6 +1910,7 @@
       "shouldTranslate" : false
     },
     "Sync Information" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {
@@ -1980,6 +2031,12 @@
         }
       }
     },
+    "This action cannot be undone. All current data will be replaced with the backup data." : {
+
+    },
+    "This will create a backup of all your subscription data in your iCloud Drive." : {
+
+    },
     "This will only affect on app launch." : {
       "localizations" : {
         "zh-Hant" : {
@@ -1989,6 +2046,9 @@
           }
         }
       }
+    },
+    "This will restore your data from the latest backup. Your current data will be replaced." : {
+
     },
     "Title" : {
       "localizations" : {

@@ -277,11 +277,13 @@ private extension Dashboard {
                 
                 totalCost += monthlyCost
                 
-                if subscription.tags.isEmpty {
-                    tagTotals[uncategorizedTag, default: 0] += monthlyCost
-                } else {
-                    for tag in subscription.tags {
-                        tagTotals[tag, default: 0] += monthlyCost
+                if let tags = subscription.tags {
+                    if tags.isEmpty {
+                        tagTotals[uncategorizedTag, default: 0] += monthlyCost
+                    } else {
+                        for tag in tags {
+                            tagTotals[tag, default: 0] += monthlyCost
+                        }
                     }
                 }
             }
@@ -358,7 +360,7 @@ struct UpcomingSubscriptionsPager: View {
         }
         .frame(height: 140)
         .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-        .cardBackground(cornerRadius: 16, shadowRadius: 3)
+//        .cardBackground(cornerRadius: 16, shadowRadius: 3)
     }
 }
 

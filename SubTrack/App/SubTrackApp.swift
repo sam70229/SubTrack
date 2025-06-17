@@ -33,28 +33,13 @@ struct SubTrackApp: App {
 //    let modelContainer: ModelContainer
     
     init() {
-        do {
-//            // Define your schema with all model types
-//            let schema = Schema([
-//                Subscription.self,
-//                BillingRecord.self,
-//                CreditCard.self
-//                // Add other model types as needed
-//            ])
-//            
-//            let config = ModelConfiguration(
-//                schema: schema,
-//                isStoredInMemoryOnly: false,
-//                allowsSave: true,
-//                cloudKitDatabase: .automatic
-//            )
-//            
-//            modelContainer = try ModelContainer(for: schema, configurations: config)
-            let manager = ModelContainerManager()
-            _modelContainerManager = StateObject(wrappedValue: manager)
-        } catch {
-            fatalError("Failed to create ModelContainer: \(error)")
-        }
+        // TODO: - Register custom transformers for CloudKit
+//        TagArrayTransformer.register()
+//        ColorOptionArrayTransformer.register()
+        
+        
+        let manager = ModelContainerManager()
+        _modelContainerManager = StateObject(wrappedValue: manager)
     }
     
     var body: some Scene {
@@ -63,6 +48,7 @@ struct SubTrackApp: App {
                 .environmentObject(appSettings)
                 .environmentObject(appUsageManager)
                 .environmentObject(exchangeRates)
+                .environmentObject(modelContainerManager)
                 .environmentObject(notificationService)
                 //.modelContainer(modelContainer)  // Inject the model container into the SwiftUI environment
                 .modelContainer(modelContainerManager.modelContainer)

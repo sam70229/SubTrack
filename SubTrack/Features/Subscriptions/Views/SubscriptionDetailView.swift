@@ -69,7 +69,7 @@ struct SubscriptionDetailView: View {
         .sheet(isPresented: $showTagsSheet) {
             NavigationStack {
                 TagsView(selectedTags: Binding(
-                    get: {subscription.tags},
+                    get: {subscription.tags ?? []},
                     set: {newValue in
                         subscription.tags = newValue
                     }
@@ -126,7 +126,9 @@ struct SubscriptionDetailView: View {
                 
                 Spacer()
                 
-                Text(subscription.tags.prefix(2).map { $0.name }.joined(separator: ", ") + (subscription.tags.count > 2 ? ", ..." : ""))
+                if let tags = subscription.tags {
+                    Text(tags.prefix(2).map { $0.name }.joined(separator: ", ") + (tags.count > 2 ? ", ..." : ""))
+                }
                 
                 Button {
                     showTagsSheet = true
