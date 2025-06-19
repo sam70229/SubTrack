@@ -21,7 +21,6 @@ struct SubscriptionDetailView: View {
         Calendar.current.dateComponents([.day], from: Date(), to: subscription.nextBillingDate).day ?? 0
     }
     
-    // Add this @State property at the top of SubscriptionDetailView:
     @State private var scheduledNotificationsCount: Int?
     
     @State private var subscriptionRepository: SubscriptionRepository?
@@ -32,6 +31,11 @@ struct SubscriptionDetailView: View {
     @State private var showDeleteConfirmation: Bool = false
     @State private var errorMessage: String? = nil
     @State private var showTagsSheet: Bool = false
+    
+    // Edit states
+    @State private var isEditing: Bool = false
+    @State private var editedPrice: Decimal = 0
+    @FocusState private var isTextFieldFocused: Bool
     
     var body: some View {
         List {
@@ -51,9 +55,21 @@ struct SubscriptionDetailView: View {
                 Text("Delete")
             }
         }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    withAnimation {
+                        if isEditing { subscription.price = editedPrice }
+                        isEditing.toggle()
+                        isTextFieldFocused.toggle()
+                    }
+                } label: {
+                    Image(systemName: isEditing ? "checkmark" : "pencil")
+                }
+            }
+        }
         .alert(item: $errorMessage) { msg in
                 .init(title: Text("Error"))
-            
         }
         .alert(isPresented: $showDeleteConfirmation) {
             Alert(title: Text("Delete Subscription"), primaryButton: .destructive(Text("Confirm"), action: {
@@ -79,6 +95,7 @@ struct SubscriptionDetailView: View {
         .onAppear {
             subscriptionRepository = SubscriptionRepository(modelContext: modelContext)
             isNotificationEnabled = subscription.isNotificationEnabled
+            editedPrice = subscription.price
             // Load notification count
             Task {
                 let count = await NotificationService.shared.getScheduledNotificationsCount(for: subscription)
@@ -93,14 +110,28 @@ struct SubscriptionDetailView: View {
         Section {
             HStack {
                 Text("Name")
+
                 Spacer()
+
                 Text("\(subscription.name)")
             }
             
             HStack {
                 Text("Price")
+                
                 Spacer()
-                Text(subscription.price, format: .currency(code: subscription.currencyCode))
+                let formatStyle: Decimal.FormatStyle.Currency = CurrencyInfo.hasDecimals(subscription.currencyCode) ? .currency(code: subscription.currencyCode) : .currency(code: subscription.currencyCode).precision(.fractionLength(0))
+                
+                if isEditing {
+                    TextField("Price", value: $editedPrice, format: formatStyle)
+                        .keyboardType(.decimalPad)
+                        .multilineTextAlignment(.trailing)
+                        .frame(width: 150)
+                        .keyboardDoneButton()
+                        .focused($isTextFieldFocused)
+                } else {
+                    Text(subscription.price, format: formatStyle)
+                }
             }
             
             if subscription.currencyCode != appSettings.currencyCode {
@@ -130,13 +161,15 @@ struct SubscriptionDetailView: View {
                     Text(tags.prefix(2).map { $0.name }.joined(separator: ", ") + (tags.count > 2 ? ", ..." : ""))
                 }
                 
-                Button {
-                    showTagsSheet = true
-                } label: {
-                    Image(systemName: "chevron.right")
-                        .font(.caption2)
+                if isEditing {
+                    Button {
+                        showTagsSheet = true
+                    } label: {
+                        Image(systemName: "chevron.right")
+                            .font(.caption2)
+                    }
+                    .foregroundStyle(.secondary)
                 }
-                .foregroundStyle(.secondary)
             }
             
             
@@ -269,6 +302,7 @@ struct SubscriptionDetailView: View {
                         Text(LocalizedStringKey(selectedReminder.description))
                     }
                     .pickerStyle(.navigationLink)
+                    .disabled(!isEditing)
                     
                     // Show scheduled notifications count
                     NavigationLink {

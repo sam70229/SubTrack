@@ -5,7 +5,7 @@
 //  Created by Sam on 2025/3/17.
 //
 import SwiftUI
-
+import SwiftData
 
 enum CalendarViewType: String {
     case standard = "standard"
@@ -13,7 +13,10 @@ enum CalendarViewType: String {
 }
 
 struct MainView: View {
+    @Environment(\.modelContext) private var modelContext: ModelContext
     @EnvironmentObject private var appSettings: AppSettings
+    @StateObject private var identityManager = IdentityManager()
+
     @State private var calendarViewType: CalendarViewType = .standard
     @State private var tabSelection = 0
     
@@ -51,6 +54,10 @@ struct MainView: View {
             .onAppear {
                 self.calendarViewType = appSettings.defaultCalendarView
                 self.tabSelection = appSettings.defaultTab
+                if identityManager.modelContext == nil {
+                    identityManager.modelContext = modelContext
+                    self.identityManager.createDeviceID()
+                }
             }
             .onReceive(NotificationCenter.default.publisher(for: .openSubscriptionDetail)) { notification in
                 if let subscriptionId = notification.userInfo?["subscriptionId"] as? String,
@@ -60,6 +67,7 @@ struct MainView: View {
                 }
             }
         }
+        .environmentObject(identityManager)
     }
 }
 

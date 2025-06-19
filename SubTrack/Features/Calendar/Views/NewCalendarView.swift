@@ -49,8 +49,6 @@ struct NewCalendarView: View {
             }
         }
         .padding(.top, 0)
-        .navigationTitle("Total Costs: \(formattedMonthlyTotal(currency: appSettings.currencyCode))")
-        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
                 Button {

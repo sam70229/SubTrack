@@ -13,6 +13,7 @@ struct DashboardMetrics: Equatable {
     let yearlyProjection: Decimal
     let averageMonthlyCost: Decimal
     let activeSubscriptionCount: Int
+    let monthlySubscriptionCount: Int
     let mostExpensiveSubscription: Subscription?
     let mostCommonBillingCycle: Period
 }
@@ -52,7 +53,7 @@ struct Dashboard: View {
             
             VStack(spacing: 20) {
                 
-                monthlyTotalCard
+                summarySection
                 
                 upcomingSection
                 
@@ -78,16 +79,15 @@ struct Dashboard: View {
         }
     }
     
-    private var monthlyTotalCard: some View {
+    private var summarySection: some View {
         HStack(spacing: 0) {
-            
             metricView(title: "Due This Month", value: formatCurrency(metrics.monthlyTotal))
             
             Divider()
                 .background(Color.white.opacity(0.3))
                 .frame(height: 50)
                         
-            metricView(title: "Total Subs", value: "\(metrics.activeSubscriptionCount)")
+            metricView(title: "Subs this month", value: "\(metrics.monthlySubscriptionCount)")
         }
         .foregroundStyle(.primary)
         .frame(maxWidth: .infinity)
@@ -227,10 +227,36 @@ private extension Dashboard {
                 yearlyProjection: monthlyTotal * 12,
                 averageMonthlyCost: calculateAverageMonthlyCost(),
                 activeSubscriptionCount: activeSubscriptions.count,
+                monthlySubscriptionCount: getSubscriptionForMonth(),
                 mostExpensiveSubscription: getMostExpensiveSubscription(),
                 mostCommonBillingCycle: getMostCommonBillingCycle()
             )
         }
+    
+    func getSubscriptionForMonth() -> Int {
+        var monthlyCount = 0
+        
+        let calendar = Calendar.current
+        let date = Date()
+        
+        let thisMonth = calendar.dateComponents([.month], from: date)
+        // Get monthly first
+        for sub in subscriptions {
+            switch sub.period {
+            case .bimonthly, .quarterly, .semiannually, .annually, .biennially:
+                if calendar.dateComponents([.month], from: sub.nextBillingDate) == thisMonth {
+                    monthlyCount += 1
+                }
+            case .monthly:
+                monthlyCount += 1
+            case .semimonthly:
+                monthlyCount += 2
+            case .custom:
+                monthlyCount += 0
+            }
+        }
+        return monthlyCount
+    }
         
         func calculateMonthlyTotal() -> Decimal {
             subscriptions

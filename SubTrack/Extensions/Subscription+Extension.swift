@@ -149,7 +149,7 @@ extension SchemaV1.Subscription {
                    reminderOption: notificationTiming
                )
            } catch {
-               await logError("Failed to schedule notification for \(name): \(error)")
+               logError("Failed to schedule notification for \(name): \(error)")
            }
        }
 }

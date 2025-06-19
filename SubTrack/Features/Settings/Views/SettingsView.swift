@@ -12,6 +12,7 @@ import Foundation
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext: ModelContext
     @EnvironmentObject private var appSettings: AppSettings
+    @EnvironmentObject private var identityManager: IdentityManager
     
     @StateObject private var wishListViewModel = WishViewModel()
     
@@ -24,6 +25,8 @@ struct SettingsView: View {
     // SYSTEM ALERT
     @State private var showSystemAlert: Bool = false
     @State private var errorMessage: String? = nil
+    
+    @State private var deviceID: String = ""
     
     var body: some View {
         List {
@@ -74,7 +77,7 @@ struct SettingsView: View {
             if currencies.isEmpty {
                 currencies = CurrencyInfo.loadAvailableCurrencies()
             }
-            wishListViewModel.setDeviceId(appSettings.deviceID)
+            wishListViewModel.setDeviceId(identityManager.deviceID)
         }
         .alert(isPresented: $showSystemAlert) {
             Alert(title: Text("Error"), message: Text(errorMessage!), dismissButton: .default(Text("OK")))
@@ -194,7 +197,10 @@ struct SettingsView: View {
         } header: {
             Text("About")
         } footer: {
-            Text("Version \(Bundle.main.versionNumber), Build: \(Bundle.main.buildNumber)")
+            VStack(alignment: .leading) {
+                Text("Version \(Bundle.main.versionNumber), Build: \(Bundle.main.buildNumber)")
+                Text("Device ID: \(identityManager.deviceID)")
+            }.font(.caption2)
         }
     }
 }
@@ -203,5 +209,6 @@ struct SettingsView: View {
     NavigationStack {
         SettingsView()
             .environmentObject(AppSettings())
+            .environmentObject(IdentityManager())
     }
 }

@@ -13,11 +13,20 @@ enum SchemaV1: VersionedSchema {
     static var versionIdentifier: Schema.Version = Schema.Version(1, 0, 0)
     
     static var models: [any PersistentModel.Type] {
-        [Subscription.self, BillingRecord.self, CreditCard.self, Tag.self]
+        [UserIdentity.self, Subscription.self, BillingRecord.self, CreditCard.self, Tag.self]
     }
 }
 
 extension SchemaV1{
+    @Model
+    final class UserIdentity {
+        var deviceId: String = UUID().uuidString
+        
+        init(deviceId: String) {
+            self.deviceId = deviceId
+        }
+    }
+    
     @Model
     final class Subscription {
         var id: UUID = UUID()

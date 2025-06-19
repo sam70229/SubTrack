@@ -42,7 +42,7 @@ struct InfoRow: View {
 
 
 struct WishDetailView: View {
-    @EnvironmentObject private var appSettings: AppSettings
+    @EnvironmentObject private var identityManager: IdentityManager
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var viewModel: WishViewModel
@@ -77,7 +77,7 @@ struct WishDetailView: View {
                 
                 informationCard
                 
-                if (wish.createdBy == appSettings.deviceID) {
+                if (wish.createdBy == identityManager.deviceID) {
                     actionSection
                 }
                 
@@ -90,7 +90,7 @@ struct WishDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                if wish.createdBy != appSettings.deviceID {
+                if wish.createdBy != identityManager.deviceID {
                     voteButton
                 }
             }
@@ -119,7 +119,7 @@ struct WishDetailView: View {
         }
         .onAppear {
             // Ensure viewModel has the correct device ID
-            viewModel.setDeviceId(appSettings.deviceID)
+            viewModel.setDeviceId(identityManager.deviceID)
         }
     }
     
@@ -176,7 +176,7 @@ struct WishDetailView: View {
             .padding(.top, 8)
             
             // Creator badge
-            if wish.createdBy == appSettings.deviceID {
+            if wish.createdBy == identityManager.deviceID {
                 HStack(spacing: 6) {
                     Image(systemName: "person.crop.circle.fill")
                         .font(.caption)
@@ -282,8 +282,8 @@ struct WishDetailView: View {
                 InfoRow(
                     icon: "person.fill",
                     title: "Creator",
-                    value: wish.createdBy == appSettings.deviceID ? "You" : "Anonymous User",
-                    tintColor: wish.createdBy == appSettings.deviceID ? .purple : .gray
+                    value: wish.createdBy == identityManager.deviceID ? "You" : "Anonymous User",
+                    tintColor: wish.createdBy == identityManager.deviceID ? .purple : .gray
                 )
                 
                 InfoRow(
@@ -373,7 +373,7 @@ struct WishDetailView: View {
     
     private func performVote() {
         // Prevent voting on own wishes
-        guard wish.createdBy != appSettings.deviceID else { return }
+        guard wish.createdBy != identityManager.deviceID else { return }
         
         // Prevent multiple votes while processing
         guard !isVoting else { return }
@@ -392,7 +392,7 @@ struct WishDetailView: View {
         }
         
         // Call the API
-        viewModel.vote(for: wish, deviceID: appSettings.deviceID)
+        viewModel.vote(for: wish, deviceID: identityManager.deviceID)
         
         // Reset animation after a delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {

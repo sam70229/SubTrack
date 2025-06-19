@@ -2,7 +2,7 @@ import SwiftUI
 
 struct AddWishView: View {
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var appSettings: AppSettings
+    @EnvironmentObject private var identityManager: IdentityManager
     @ObservedObject var viewModel: WishViewModel
     
     @State private var title: String = ""
@@ -42,7 +42,7 @@ struct AddWishView: View {
             }
         }
         .onAppear {
-            viewModel.setDeviceId(appSettings.deviceID)
+            viewModel.setDeviceId(identityManager.deviceID)
         }
     }
 }

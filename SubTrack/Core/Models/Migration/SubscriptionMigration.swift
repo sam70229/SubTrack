@@ -12,6 +12,7 @@ typealias Subscription = SchemaV1.Subscription
 typealias BillingRecord = SchemaV1.BillingRecord
 typealias CreditCard = SchemaV1.CreditCard
 typealias Tag = SchemaV1.Tag
+typealias UserIdentity = SchemaV1.UserIdentity
 
 
 struct MigrationPlan: SchemaMigrationPlan {

@@ -794,6 +794,16 @@
         }
       }
     },
+    "Device ID: %@" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "裝置ID: %@"
+          }
+        }
+      }
+    },
     "Disable" : {
       "localizations" : {
         "zh-Hant" : {
@@ -1544,7 +1554,14 @@
       }
     },
     "Replace Data" : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "覆蓋資料"
+          }
+        }
+      }
     },
     "Reset to default" : {
       "localizations" : {
@@ -1818,6 +1835,17 @@
         }
       }
     },
+    "Subs this month" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "這個月訂閱數"
+          }
+        }
+      }
+    },
     "Subscription" : {
       "localizations" : {
         "zh-Hant" : {
@@ -2072,6 +2100,7 @@
       }
     },
     "Total Costs: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hant" : {
           "stringUnit" : {

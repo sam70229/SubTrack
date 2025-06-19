@@ -25,6 +25,7 @@ enum SortOptions: String, CaseIterable {
 
 struct WishListView: View {
     @EnvironmentObject private var appSettings: AppSettings
+    @EnvironmentObject private var identityManager: IdentityManager
     @ObservedObject var viewModel: WishViewModel
     
     @State private var showAddWishView: Bool = false
@@ -41,11 +42,11 @@ struct WishListView: View {
     
     
     private var myWishList: [Wish] {
-        viewModel.wishes.filter { $0.createdBy == appSettings.deviceID }
+        viewModel.wishes.filter { $0.createdBy == identityManager.deviceID }
     }
     
     private var communityWishList: [Wish] {
-        viewModel.wishes.filter { $0.createdBy != appSettings.deviceID && $0.status != WishStatus.inDevelopment.description }
+        viewModel.wishes.filter { $0.createdBy != identityManager.deviceID && $0.status != WishStatus.inDevelopment.description }
     }
     
     private var onGoingWishList: [Wish] {
@@ -103,7 +104,7 @@ struct WishListView: View {
             }
         }
         .refreshable {
-            viewModel.fetchWishes(deviceID: appSettings.deviceID)
+            viewModel.fetchWishes(deviceID: identityManager.deviceID)
         }
         .navigationTitle("Wish Wall")
         .toolbar {
@@ -146,7 +147,7 @@ struct WishListView: View {
             }
         }
         .onAppear {
-            viewModel.fetchWishes(deviceID: appSettings.deviceID)
+            viewModel.fetchWishes(deviceID: identityManager.deviceID)
             
             // Tutorial
             if !appSettings.hasSeenWishTutorial {

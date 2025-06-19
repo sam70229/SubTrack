@@ -34,12 +34,12 @@ struct SubTrackApp: App {
     
     init() {
         // TODO: - Register custom transformers for CloudKit
-//        TagArrayTransformer.register()
 //        ColorOptionArrayTransformer.register()
         
         
         let manager = ModelContainerManager()
         _modelContainerManager = StateObject(wrappedValue: manager)
+
     }
     
     var body: some Scene {
