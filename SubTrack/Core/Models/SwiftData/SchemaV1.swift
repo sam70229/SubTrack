@@ -34,7 +34,7 @@ extension SchemaV1{
         var subscriptionDescription: String?
         var price: Decimal = 0
         var currencyCode: String = "USD" // For supporting diff country
-        
+
         // Sync to iCloud workaround
         private var rawPeriod: Int = Period.monthly.rawValue  // ✅ Fully qualified default value
 
@@ -43,7 +43,7 @@ extension SchemaV1{
             get { Period(rawValue: rawPeriod) ?? .monthly }
             set { rawPeriod = newValue.rawValue }
         }
-        
+
         var firstBillingDate: Date = Date()
 
         var tags: [Tag]? = []
@@ -53,9 +53,34 @@ extension SchemaV1{
         var isActive: Bool = true
         var createdAt: Date = Date()
         var creditCard: CreditCard?
-        
+
+        // Free Trial Tracking
+        var trialEndDate: Date? = nil
+
         var nextBillingDate: Date {
             calculateNextBillingDate()
+        }
+
+        // MARK: - Free Trial Computed Properties
+
+        /// Indicates if this subscription currently has an active free trial
+        var isFreeTrial: Bool {
+            guard let endDate = trialEndDate else { return false }
+            return endDate > Date()
+        }
+
+        /// Indicates if the free trial has expired
+        var isTrialExpired: Bool {
+            guard let endDate = trialEndDate else { return false }
+            return endDate <= Date()
+        }
+
+        /// Days remaining in free trial (nil if no trial or trial expired)
+        var trialDaysRemaining: Int? {
+            guard let endDate = trialEndDate, isFreeTrial else { return nil }
+            let calendar = Calendar.current
+            let components = calendar.dateComponents([.day], from: Date(), to: endDate)
+            return components.day
         }
         
         @Relationship(deleteRule: .cascade, inverse: \BillingRecord.subscription)
@@ -74,7 +99,8 @@ extension SchemaV1{
             icon: String,
             colorHex: String,
             isActive: Bool = true,
-            createdAt: Date = Date()
+            createdAt: Date = Date(),
+            trialEndDate: Date? = nil
         ) {
             self.id = id
             self.name = name
@@ -89,6 +115,7 @@ extension SchemaV1{
             self.colorHex = colorHex
             self.isActive = isActive
             self.createdAt = createdAt
+            self.trialEndDate = trialEndDate
             self.billingRecords = []
         }
         

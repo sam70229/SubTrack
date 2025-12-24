@@ -206,9 +206,14 @@ struct SettingsView: View {
 }
 
 #Preview {
-    NavigationStack {
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: Subscription.self, configurations: config)
+    let context = ModelContext(container)
+
+    return NavigationStack {
         SettingsView()
             .environmentObject(AppSettings())
-            .environmentObject(IdentityManager())
+            .environmentObject(IdentityManager(modelContext: context))
+            .modelContainer(container)
     }
 }

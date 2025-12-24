@@ -44,9 +44,6 @@ enum PriceDisplayMode: String, CaseIterable {
 
 
 class AppSettings: ObservableObject {
-    // Device ID
-    @AppStorage("device_id") var deviceID: String = UUID().uuidString
-
     @AppStorage("showDebugInfo") var showDebugInfo: Bool = false
     @AppStorage("billingInfoDisplay") var billingInfoDisplay: BillingInfoDisplay = .period
     
@@ -126,7 +123,7 @@ class AppSettings: ObservableObject {
     // MARK: - TabItems
     @AppStorage("maxTabCount") var maxTabCount: Int = 4
 
-    @AppStorage("enabledTabs") private var enabledTabsData: Data = try! JSONEncoder().encode(TabItem.defaultTabs)
+    @AppStorage("enabledTabs") private var enabledTabsData: Data = {(try? JSONEncoder().encode(TabItem.defaultTabs)) ?? Data()}()
     
     var enabledTabs: [TabItem] {
         get {

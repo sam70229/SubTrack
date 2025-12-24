@@ -36,15 +36,26 @@ struct SubscriptionListView: View {
     
     // Search
     @State private var searchText: String = ""
-    
+
+    // Filter
+    @State private var showFreeTrialsOnly: Bool = false
+
     var filteredSubscriptions: [Subscription] {
-        guard !searchText.isEmpty else {
-            return sortedSubscriptions()
+        var result = sortedSubscriptions()
+
+        // Filter by free trials
+        if showFreeTrialsOnly {
+            result = result.filter { $0.isFreeTrial }
         }
-        
-        return sortedSubscriptions().filter {
-            $0.name.localizedCaseInsensitiveContains(searchText) || (($0.tags?.contains { $0.name.localizedCaseInsensitiveContains(searchText) }) != nil)
+
+        // Filter by search text
+        if !searchText.isEmpty {
+            result = result.filter {
+                $0.name.localizedCaseInsensitiveContains(searchText) || (($0.tags?.contains { $0.name.localizedCaseInsensitiveContains(searchText) }) != nil)
+            }
         }
+
+        return result
     }
     
     var body: some View {
@@ -74,11 +85,17 @@ struct SubscriptionListView: View {
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
                 Button {
+                    showFreeTrialsOnly.toggle()
+                } label: {
+                    Image(systemName: showFreeTrialsOnly ? "hourglass.circle.fill" : "hourglass.circle")
+                }
+
+                Button {
                     sorted.toggle()
                 } label :{
                     Image(systemName: sorted ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
                 }
-                
+
                 Button {
                     showAddSubscription = true
                 } label: {

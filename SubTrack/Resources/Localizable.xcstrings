@@ -26,6 +26,12 @@
         }
       }
     },
+    "%lld days left in trial" : {
+
+    },
+    "%lld days remaining" : {
+
+    },
     "%lld enabled" : {
       "localizations" : {
         "zh-Hant" : {
@@ -944,6 +950,12 @@
           }
         }
       }
+    },
+    "Free Trial" : {
+
+    },
+    "FREE TRIAL" : {
+
     },
     "Get Started" : {
       "localizations" : {
@@ -2121,6 +2133,9 @@
         }
       }
     },
+    "Trial Ends On" : {
+
+    },
     "UI Options" : {
       "localizations" : {
         "zh-Hant" : {
@@ -2298,6 +2313,9 @@
           }
         }
       }
+    },
+    "You'll be notified 3 days, 1 day, and on the day before your trial ends." : {
+
     },
     "Your data is synced across all your devices" : {
       "localizations" : {

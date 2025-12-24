@@ -28,11 +28,29 @@ struct SubscriptionListItemView: View {
             }
             
             // Details
-            VStack(alignment: .leading, spacing: 2) {
-                Text(subscription.name)
-                    .font(.headline)
-                
-                if appSettings.billingInfoDisplay == .period {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 6) {
+                    Text(subscription.name)
+                        .font(.headline)
+
+                    if subscription.isFreeTrial {
+                        Text("FREE TRIAL")
+                            .font(.system(size: 9, weight: .bold))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(
+                                Capsule()
+                                    .fill(Color.green)
+                            )
+                    }
+                }
+
+                if subscription.isFreeTrial, let daysRemaining = subscription.trialDaysRemaining {
+                    Text("\(daysRemaining) days left in trial")
+                        .font(.caption2)
+                        .foregroundStyle(.orange)
+                } else if appSettings.billingInfoDisplay == .period {
                     Text(subscription.period.description)
                         .font(.caption)
                         .foregroundStyle(.secondary)

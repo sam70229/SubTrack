@@ -25,21 +25,22 @@ struct SubTrackApp: App {
     @StateObject private var exchangeRates = ExchangeRateRepository()
     @StateObject private var notificationService = NotificationService()
     @StateObject private var modelContainerManager: ModelContainerManager
+    @StateObject private var identityManager: IdentityManager
     
     // Firebase
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-    
-    // Create a shared model container for the entire app
-//    let modelContainer: ModelContainer
     
     init() {
         // TODO: - Register custom transformers for CloudKit
 //        ColorOptionArrayTransformer.register()
         
-        
         let manager = ModelContainerManager()
         _modelContainerManager = StateObject(wrappedValue: manager)
-
+        
+        // Create IdentityManager with modelContext from container
+        let context = manager.modelContainer.mainContext
+        let identity = IdentityManager(modelContext: context)
+        _identityManager = StateObject(wrappedValue: identity)
     }
     
     var body: some Scene {
@@ -50,13 +51,17 @@ struct SubTrackApp: App {
                 .environmentObject(exchangeRates)
                 .environmentObject(modelContainerManager)
                 .environmentObject(notificationService)
-                //.modelContainer(modelContainer)  // Inject the model container into the SwiftUI environment
+                .environmentObject(identityManager)
                 .modelContainer(modelContainerManager.modelContainer)
                 .preferredColorScheme(appSettings.colorScheme)
                 .onReceive(NotificationCenter.default.publisher(for: .iCloudSyncPreferenceChanged)) { _ in
                     Task {
                         await modelContainerManager.recreateContainer(useiCloud: appSettings.iCloudSyncEnabled)
                     }
+                }
+                .task {
+                    // Load device ID on app launch
+                    identityManager.createDeviceID()
                 }
         }
     }

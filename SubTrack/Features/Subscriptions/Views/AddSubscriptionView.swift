@@ -55,6 +55,10 @@ struct AddSubscriptionView: View {
     @State private var showTagsSheet: Bool = false
     @State private var selectedTags: [Tag] = []
 
+    // Free Trial Section
+    @State private var hasFreeTrial: Bool = false
+    @State private var trialEndDate: Date = Calendar.current.date(byAdding: .day, value: 7, to: Date()) ?? Date()
+
     // Define the color options as a collection of ColorOption objects
     private let colorOptions: [ColorOption] = ColorOption.generateColors()
     
@@ -69,9 +73,11 @@ struct AddSubscriptionView: View {
                 iconSelectionSection
                 
                 tagSelection
-                
+
                 billingInfoSection
-                   
+
+                freeTrialSection
+
                 creditCardSection
             }
             .presentationSizing(.fitted)
@@ -299,7 +305,7 @@ struct AddSubscriptionView: View {
                 }
             }
             .pickerStyle(.navigationLink)
-            
+
             VStack(alignment: .leading) {
                 Text("Starting Date")
 
@@ -313,7 +319,41 @@ struct AddSubscriptionView: View {
             Text("Billing Information")
         }
     }
-    
+
+    private var freeTrialSection: some View {
+        Section {
+            Toggle("Free Trial", isOn: $hasFreeTrial)
+
+            if hasFreeTrial {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Trial Ends On")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+
+                    DatePicker("",
+                               selection: $trialEndDate,
+                               in: Date()...,
+                               displayedComponents: .date)
+                    .datePickerStyle(.graphical)
+                    .labelsHidden()
+
+                    if let daysRemaining = Calendar.current.dateComponents([.day], from: Date(), to: trialEndDate).day {
+                        Text("\(daysRemaining) days remaining")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+        } header: {
+            Text("Free Trial")
+        } footer: {
+            if hasFreeTrial {
+                Text("You'll be notified 3 days, 1 day, and on the day before your trial ends.")
+                    .font(.caption)
+            }
+        }
+    }
+
     private var creditCardSection: some View {
         Section {
             Toggle("Record Credit Card Info", isOn: $recordCreditCard)
@@ -351,7 +391,7 @@ struct AddSubscriptionView: View {
             errorMessage = "Please enter a valid price"
             return
         }
-        
+
         isLoading = true
         let subscription = Subscription(
             name: name,
@@ -363,19 +403,29 @@ struct AddSubscriptionView: View {
             creditCard: creditCard,
             icon: selectedIcon.image,
             colorHex: selectedColorOption.hex,
+            trialEndDate: hasFreeTrial ? trialEndDate : nil
         )
         
         do {
             try repository?.addSubscription(subscription)
-            
-            // Notification
-            if subscription.isNotificationEnabled {
-                Task {
-                    
+
+            // Schedule notifications
+            Task {
+                // Regular billing notifications
+                if subscription.isNotificationEnabled {
                     await subscription.scheduleNotifications()
                 }
+
+                // Free trial expiration notifications
+                if subscription.isFreeTrial {
+                    do {
+                        try await NotificationService.shared.scheduleTrialExpirationNotifications(for: subscription)
+                    } catch {
+                        logError("Failed to schedule trial notifications: \(error)")
+                    }
+                }
             }
-            
+
             isLoading = false
             dismiss()
         } catch {

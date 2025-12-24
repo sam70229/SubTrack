@@ -91,16 +91,98 @@ class NotificationService: ObservableObject {
         }
     }
     
+    func scheduleTrialExpirationNotifications(for subscription: Subscription) async throws {
+        guard let trialEndDate = subscription.trialEndDate,
+              subscription.isFreeTrial else {
+            // Cancel any existing trial notifications if no trial or trial expired
+            await cancelTrialNotifications(for: subscription)
+            return
+        }
+
+        guard isAuthorized else {
+            let granted = await requestAuthorization()
+            guard granted else {
+                throw NotificationError.notAuthorized
+            }
+            return
+        }
+
+        await cancelTrialNotifications(for: subscription)
+
+        let calendar = Calendar.current
+        let notificationSchedule: [(days: Int, title: String)] = [
+            (3, "Free trial ending soon"),
+            (1, "Free trial ending tomorrow"),
+            (0, "Free trial ends today")
+        ]
+
+        for (daysBeforeEnd, title) in notificationSchedule {
+            guard let notificationDate = calendar.date(byAdding: .day, value: -daysBeforeEnd, to: trialEndDate),
+                  notificationDate > Date() else {
+                continue // Skip past dates
+            }
+
+            let content = UNMutableNotificationContent()
+            content.title = title
+            content.body = "Your free trial for '\(subscription.name)' will end on \(trialEndDate.formatted(date: .abbreviated, time: .omitted)). You'll be charged \(formatPrice(subscription.price, currency: subscription.currencyCode)) afterwards."
+            content.sound = .default
+            content.badge = 1
+            content.userInfo = [
+                "subscriptionId": subscription.id.uuidString,
+                "subscriptionName": subscription.name,
+                "type": "trial_expiration",
+                "trialEndDate": ISO8601DateFormatter().string(from: trialEndDate)
+            ]
+
+            // Set notification time to 10 AM
+            guard let finalDate = calendar.date(bySettingHour: 10, minute: 0, second: 0, of: notificationDate) else {
+                continue
+            }
+
+            let dateComponents = calendar.dateComponents(
+                [.year, .month, .day, .hour, .minute],
+                from: finalDate
+            )
+
+            let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
+            let identifier = "trial-\(subscription.id.uuidString)-\(daysBeforeEnd)d"
+
+            let request = UNNotificationRequest(
+                identifier: identifier,
+                content: content,
+                trigger: trigger
+            )
+
+            try await notificationCenter.add(request)
+            logInfo("Scheduled trial notification for \(subscription.name) \(daysBeforeEnd) days before expiration")
+        }
+    }
+
+    func cancelTrialNotifications(for subscription: Subscription) async {
+        let pending = await notificationCenter.pendingNotificationRequests()
+
+        let trialNotificationIDs = pending
+            .filter { $0.identifier.starts(with: "trial-\(subscription.id.uuidString)") }
+            .map { $0.identifier }
+
+        if !trialNotificationIDs.isEmpty {
+            notificationCenter.removePendingNotificationRequests(withIdentifiers: trialNotificationIDs)
+        }
+    }
+
     func cancelNotifications(for subscription: Subscription) async {
         let pending = await notificationCenter.pendingNotificationRequests()
-        
+
         let notificationIDs = pending
             .filter { $0.identifier.starts(with: subscription.id.uuidString) }
             .map { $0.identifier }
-        
+
         if !notificationIDs.isEmpty {
             notificationCenter.removePendingNotificationRequests(withIdentifiers: notificationIDs)
         }
+
+        // Also cancel trial notifications
+        await cancelTrialNotifications(for: subscription)
     }
     
     func cancelAllNotifications() {
