@@ -8,10 +8,10 @@ import SwiftUI
 import SwiftData
 
 enum SortedMethod: String, CaseIterable {
-    case Price = "Price"
-    case Period = "Period"
-    case Name = "Name"
-    
+    case price = "Price"
+    case period = "Period"
+    case name = "Name"
+
     var id: String { self.rawValue }
 }
 
@@ -31,32 +31,14 @@ struct SubscriptionListView: View {
     
     // Sorted
     @State private var sorted: Bool = false
-    @State private var showSortPicker: Bool = false
-    @State private var sortedMethod: SortedMethod = .Price
+    @State private var sortedMethod: SortedMethod = .price
     
     // Search
     @State private var searchText: String = ""
 
     // Filter
     @State private var showFreeTrialsOnly: Bool = false
-
-    var filteredSubscriptions: [Subscription] {
-        var result = sortedSubscriptions()
-
-        // Filter by free trials
-        if showFreeTrialsOnly {
-            result = result.filter { $0.isFreeTrial }
-        }
-
-        // Filter by search text
-        if !searchText.isEmpty {
-            result = result.filter {
-                $0.name.localizedCaseInsensitiveContains(searchText) || (($0.tags?.contains { $0.name.localizedCaseInsensitiveContains(searchText) }) != nil)
-            }
-        }
-
-        return result
-    }
+    @State private var filteredSubscriptions: [Subscription] = []
     
     var body: some View {
         VStack {
@@ -89,6 +71,8 @@ struct SubscriptionListView: View {
                 } label: {
                     Image(systemName: showFreeTrialsOnly ? "hourglass.circle.fill" : "hourglass.circle")
                 }
+                .foregroundStyle(showFreeTrialsOnly ? .blue : .primary)
+                .badge(showFreeTrialsOnly ? filteredSubscriptions.count : 0)
 
                 Button {
                     sorted.toggle()
@@ -108,6 +92,8 @@ struct SubscriptionListView: View {
                 ProgressView()
             } else if subscriptions.isEmpty {
                 ContentUnavailableView("No Subscriptions", systemImage: "creditcard", description: Text("Add subscriptions to start tracking."))
+            } else if filteredSubscriptions.isEmpty {
+                ContentUnavailableView("No Results", systemImage: "magnifyingglass", description: Text("No subscriptions match your current filters or search."))
             }
         }
         .sheet(isPresented: $showAddSubscription) {
@@ -119,47 +105,119 @@ struct SubscriptionListView: View {
             SubscriptionDetailView(subscription: subscription)
         }
         .searchable(text: $searchText, placement: .toolbar)
+        .onAppear {
+            updateFilteredSubscriptions()
+        }
+        .onChange(of: subscriptions) {
+            updateFilteredSubscriptions()
+        }
+        .onChange(of: searchText) {
+            updateFilteredSubscriptions()
+        }
+        .onChange(of: showFreeTrialsOnly) {
+            updateFilteredSubscriptions()
+        }
+        .onChange(of: sorted) {
+            updateFilteredSubscriptions()
+        }
+        .onChange(of: sortedMethod) {
+            updateFilteredSubscriptions()
+        }
     }
     
     func swipeToDelete(_ subscription: Subscription) {
         modelContext.delete(subscription)
     }
-    
-    private var sortHeader: some View {
-        HStack {
-            Text("sorted by")
 
-            Button {
-                showSortPicker = true
-            } label: {
-                Text(LocalizedStringKey(sortedMethod.rawValue))
+    private func comparePrice(_ lhs: Subscription, _ rhs: Subscription) -> Bool {
+        let lhsConverted = exchangeRates.convert(
+            lhs.price,
+            from: lhs.currencyCode,
+            to: appSettings.currencyCode
+        ) ?? lhs.price
+
+        let rhsConverted = exchangeRates.convert(
+            rhs.price,
+            from: rhs.currencyCode,
+            to: appSettings.currencyCode
+        ) ?? rhs.price
+
+        return lhsConverted > rhsConverted
+    }
+
+    private func updateFilteredSubscriptions() {
+        var result = sortedSubscriptions()
+
+        // Filter by free trials
+        if showFreeTrialsOnly {
+            result = result.filter { $0.isFreeTrial }
+        }
+
+        // Filter by search text
+        if !searchText.isEmpty {
+            result = result.filter {
+                $0.name.localizedCaseInsensitiveContains(searchText) || (($0.tags?.contains { $0.name.localizedCaseInsensitiveContains(searchText) }) != nil)
             }
-            .font(.body)
-            .popover(isPresented: $showSortPicker, arrowEdge: .top) {
-                VStack {
+        }
+
+        filteredSubscriptions = result
+    }
+
+    private var sortHeader: some View {
+        HStack(spacing: 12) {
+            HStack(spacing: 6) {
+                Image(systemName: sortMethodIcon(sortedMethod))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                Text("sorted by")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+
+                Menu {
                     ForEach(SortedMethod.allCases, id: \.self) { option in
-                        Text(LocalizedStringKey(option.rawValue))
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 8)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(.secondary)
-                            )
-                            .padding(.horizontal)
-                            .onTapGesture {
-                                sortedMethod = option
-                                showSortPicker = false
-                            }
+                        Button {
+                            sortedMethod = option
+                        } label: {
+                            Label(option.rawValue, systemImage: sortMethodIcon(option))
+                        }
                     }
+                } label: {
+                    HStack(spacing: 4) {
+                        Text(LocalizedStringKey(sortedMethod.rawValue))
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+
+                        Image(systemName: "chevron.down")
+                            .font(.caption2)
+                            .fontWeight(.semibold)
+                    }
+                    .foregroundStyle(.primary)
                 }
-                .padding()
-                .presentationCompactAdaptation(.none)
             }
-            
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(
+                Capsule()
+                    .fill(.thickMaterial)
+                    .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
+            )
+
             Spacer()
         }
-        .frame(maxWidth: .infinity)
         .padding(.horizontal)
+        .padding(.vertical, 8)
+    }
+
+    private func sortMethodIcon(_ method: SortedMethod) -> String {
+        switch method {
+        case .price:
+            return "dollarsign.circle"
+        case .name:
+            return "textformat.abc"
+        case .period:
+            return "calendar"
+        }
     }
     
     private func sortedSubscriptions() -> [Subscription] {
@@ -168,17 +226,11 @@ struct SubscriptionListView: View {
         }
 
         switch sortedMethod {
-        case .Price:
-            return subscriptions.sorted { exchangeRates.convert(
-                $0.price,
-                from: $0.currencyCode,
-                to: appSettings.currencyCode) ?? $0.price > exchangeRates.convert(
-                    $1.price,
-                    from: $1.currencyCode,
-                    to: appSettings.currencyCode) ?? $1.price }
-        case .Name:
+        case .price:
+            return subscriptions.sorted { comparePrice($0, $1) }
+        case .name:
             return subscriptions.sorted { $0.name < $1.name }
-        case .Period:
+        case .period:
             return subscriptions.sorted { $0.period.rawValue < $1.period.rawValue }
         }
     }

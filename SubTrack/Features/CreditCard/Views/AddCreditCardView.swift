@@ -37,7 +37,7 @@ struct AddCreditCardView: View {
                     
                     VStack {
                         HStack {
-                            Text(cardName.isEmpty ? "Card Name" : cardName)
+                            Text(cardName.isEmpty ? String(localized: "Card Name") : cardName)
                             Spacer()
                         }
                         
@@ -57,14 +57,19 @@ struct AddCreditCardView: View {
                     TextField("Card Name", text: $cardName)
                         .submitLabel(.continue)
 
-                    TextField("last 4 digits", text: $cardLast4Digits)
-                        .keyboardType(.numberPad)
-                        .onChange(of: cardLast4Digits) { oldValue, newValue in
-                            if newValue.count > 4 {
-                                cardLast4Digits = oldValue
+                    Section {
+                        TextField("last 4 digits", text: $cardLast4Digits)
+                            .keyboardType(.numberPad)
+                            .onChange(of: cardLast4Digits) { oldValue, newValue in
+                                if newValue.count > 4 {
+                                    cardLast4Digits = oldValue
+                                }
                             }
-                        }
-                        .keyboardDoneButton()
+                            .keyboardDoneButton()
+                    } footer: {
+                        Text("We don't need your full card number. This is only for your records to help identify which card is used.")
+                            .font(.caption)
+                    }
 
                     colorPickerSection
                     

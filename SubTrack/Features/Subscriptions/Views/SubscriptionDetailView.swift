@@ -35,6 +35,7 @@ struct SubscriptionDetailView: View {
     // Edit states
     @State private var isEditing: Bool = false
     @State private var editedPrice: Decimal = 0
+    @State private var editedPeriod: Period = .monthly
     @FocusState private var isTextFieldFocused: Bool
     
     var body: some View {
@@ -59,7 +60,10 @@ struct SubscriptionDetailView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     withAnimation {
-                        if isEditing { subscription.price = editedPrice }
+                        if isEditing {
+                            subscription.price = editedPrice
+                            subscription.period = editedPeriod
+                        }
                         isEditing.toggle()
                         isTextFieldFocused.toggle()
                     }
@@ -96,6 +100,7 @@ struct SubscriptionDetailView: View {
             subscriptionRepository = SubscriptionRepository(modelContext: modelContext)
             isNotificationEnabled = subscription.isNotificationEnabled
             editedPrice = subscription.price
+            editedPeriod = subscription.period
             // Load notification count
             Task {
                 let count = await NotificationService.shared.getScheduledNotificationsCount(for: subscription)
@@ -176,7 +181,17 @@ struct SubscriptionDetailView: View {
             HStack {
                 Text("Period")
                 Spacer()
-                Text(subscription.period.description)
+                if isEditing {
+                    Picker("Period", selection: $editedPeriod) {
+                        ForEach(Period.allCases, id: \.self) { period in
+                            Text(period.description).tag(period)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .labelsHidden()
+                } else {
+                    Text(subscription.period.description)
+                }
             }
             
             HStack {

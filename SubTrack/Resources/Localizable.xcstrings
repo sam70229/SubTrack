@@ -472,7 +472,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "卡的顏色"
+            "value" : "顏色"
           }
         }
       }
@@ -482,7 +482,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "卡的名稱"
+            "value" : "名稱"
           }
         }
       }
@@ -1240,6 +1240,9 @@
         }
       }
     },
+    "No Results" : {
+
+    },
     "No scheduled notifications" : {
       "localizations" : {
         "zh-Hant" : {
@@ -1259,6 +1262,9 @@
           }
         }
       }
+    },
+    "No subscriptions match your current filters or search." : {
+
     },
     "No Subscriptions Needs To Be Paid Today" : {
       "localizations" : {
@@ -2134,7 +2140,14 @@
       }
     },
     "Trial Ends On" : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "試用期結束於"
+          }
+        }
+      }
     },
     "UI Options" : {
       "localizations" : {
@@ -2229,6 +2242,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "投票"
+          }
+        }
+      }
+    },
+    "We don't need your full card number. This is only for your records to help identify which card is used." : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "我們不需要全部卡號，這只是幫助分辨使用哪張卡"
           }
         }
       }
